@@ -64,4 +64,7 @@ layer_0/tile_data = PackedInt32Array(1048634, 2, 0, 1114170, 2, 0, 1179706, 2, 0
 position = Vector2(3968, 1784)
 
 [node name="ParameterEditor" parent="." instance=ExtResource("5_lub3g")]
-position = Vector2(448, 248)
+offset_left = 448.0
+offset_top = 248.0
+offset_right = 448.0
+offset_bottom = 248.0

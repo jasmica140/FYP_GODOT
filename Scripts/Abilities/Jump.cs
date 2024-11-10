@@ -13,15 +13,15 @@ public class Jump : Ability
 
 	//parameters (first jump)
 	public bool variableHeight = true; // press and hold for longer jumps
-	private float airAcceleration = 400.0f;
+	public float airAcceleration = 400.0f;
 	private float airControl;
 	private float airBrake;
 	public float cutoff = 100.0f; //only when variable height is true
 	private float downGravity;
 	
 	//parameters (double jump)
-	private bool doubleJump = true; //whether player can perform double jumps
-	private float djAirAcceleration = 400.0f;
+	public bool doubleJump = true; //whether player can perform double jumps
+	public float djAirAcceleration = 400.0f;
 	private float doubleJumpDist;
 	private float cooldown;
 	private float doubleJumpAirControl; //adjustability of horizontal movement while in mid-air

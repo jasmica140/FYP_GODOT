@@ -1,0 +1,384 @@
+[gd_scene load_steps=2 format=3 uid="uid://cxewafy4tgrth"]
+
+[ext_resource type="Script" path="res://Scripts/ParamaterEditor.cs" id="1_awjve"]
+
+[node name="ParamaterEditor" type="Node2D" node_paths=PackedStringArray("abilitiesContainer", "jumpContainer", "doubleJumpContainer", "wallJumpContainer", "dashContainer", "climbContainer")]
+script = ExtResource("1_awjve")
+abilitiesContainer = NodePath("CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer")
+jumpContainer = NodePath("CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer")
+doubleJumpContainer = NodePath("CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/MarginContainer")
+wallJumpContainer = NodePath("CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer")
+dashContainer = NodePath("CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer")
+climbContainer = NodePath("CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer/MarginContainer")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Window" type="Window" parent="CanvasLayer"]
+title = "Ability Parameter Editor"
+position = Vector2i(0, 36)
+size = Vector2i(500, 193)
+wrap_controls = true
+transient = true
+
+[node name="Control" type="Control" parent="CanvasLayer/Window"]
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+metadata/_edit_use_anchors_ = true
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Window/Control"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 192.0
+grow_horizontal = 2
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/Window/Control/MarginContainer"]
+layout_mode = 2
+color = Color(0.27616, 0.189029, 0.426918, 1)
+
+[node name="AbilityMenuContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 2
+
+[node name="AbilityMenuToggleButton" type="Button" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer"]
+layout_mode = 2
+toggle_mode = true
+text = "Abilities"
+
+[node name="AbilitiesContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="JumpContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer"]
+layout_mode = 2
+
+[node name="JumpToggleButton" type="Button" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer"]
+layout_mode = 2
+toggle_mode = true
+text = "    Jump"
+alignment = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="JumpParamsContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="VariableHeightJumpCheckButton" type="CheckButton" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer"]
+layout_mode = 2
+button_pressed = true
+text = "Variable Height Jump"
+
+[node name="JumpHeightContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="JumpHeight" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpHeightContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Jump Height"
+
+[node name="JumpHeightSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpHeightContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+max_value = 1500.0
+value = 400.0
+
+[node name="JumpCutoffContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="JumpCutoff" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpCutoffContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Jump Cutoff"
+
+[node name="JumpCutoffSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpCutoffContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+max_value = 1500.0
+value = 400.0
+
+[node name="JumpGravityContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="JumpGravity" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpGravityContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Jump Gravity"
+
+[node name="JumpGravitySlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpGravityContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 500.0
+max_value = 1500.0
+value = 500.0
+
+[node name="DoubleJumpContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer"]
+layout_mode = 2
+
+[node name="DoubleJumpToggleButton" type="Button" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer"]
+layout_mode = 2
+toggle_mode = true
+text = "    Double Jump"
+alignment = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="DoubleJumpParamsContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="EnableDoubleJumpCheckButton" type="CheckButton" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/MarginContainer/DoubleJumpParamsContainer"]
+layout_mode = 2
+button_pressed = true
+text = "Enable Double Jump"
+
+[node name="DJAirAccelerationContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/MarginContainer/DoubleJumpParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="DJAirAcceleration" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/MarginContainer/DoubleJumpParamsContainer/DJAirAccelerationContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Double Jump Air Acceleration"
+
+[node name="DJAirAccelerationSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/MarginContainer/DoubleJumpParamsContainer/DJAirAccelerationContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+max_value = 1500.0
+value = 400.0
+
+[node name="WallJumpContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer"]
+layout_mode = 2
+
+[node name="WallJumpToggleButton" type="Button" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer"]
+layout_mode = 2
+toggle_mode = true
+text = "    Wall Jump"
+alignment = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="WallJumpParamsContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="EnableWallFrictionCheckButton" type="CheckButton" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer"]
+layout_mode = 2
+button_pressed = true
+text = "Enable Wall Friction"
+
+[node name="WalJumpHeightContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="WallJumpHeight" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WalJumpHeightContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Wall Jump Height"
+
+[node name="WallJumpHeightSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WalJumpHeightContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 100.0
+max_value = 1500.0
+value = 400.0
+
+[node name="WallJumpDistanceContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="WallJumpDistanceCutoff" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WallJumpDistanceContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Wall Jump Distance"
+
+[node name="WallJumpDistanceSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WallJumpDistanceContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 10.0
+max_value = 500.0
+value = 400.0
+
+[node name="WallJumpGripTimeContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="WallJumpGripTime" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WallJumpGripTimeContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Wall Jump Grip Time"
+
+[node name="WallJumpGripTimeSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WallJumpGripTimeContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+max_value = 5.0
+value = 5.0
+
+[node name="DashContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer"]
+layout_mode = 2
+
+[node name="DashToggleButton" type="Button" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer"]
+layout_mode = 2
+toggle_mode = true
+text = "    Dash"
+alignment = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="DashParamsContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="DashSpeedContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="DashSpeed" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashSpeedContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Dash Speed"
+
+[node name="DashSpeedSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashSpeedContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 500.0
+max_value = 2000.0
+value = 500.0
+
+[node name="DashDistanceContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="DashDistance" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashDistanceContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Dash Distance"
+
+[node name="DashDistanceSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashDistanceContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 200.0
+max_value = 700.0
+value = 200.0
+
+[node name="DashCooldownContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="DashCooldown" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashCooldownContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Dash Cooldown"
+
+[node name="DashCooldownSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashCooldownContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+
+[node name="ClimbContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer"]
+layout_mode = 2
+
+[node name="ClimbToggleButton" type="Button" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer"]
+layout_mode = 2
+toggle_mode = true
+text = "    Climb"
+alignment = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="ClimbParamsContainer" type="VBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="ClimbSpeedContainer" type="HBoxContainer" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer/MarginContainer/ClimbParamsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="ClimbSpeed" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer/MarginContainer/ClimbParamsContainer/ClimbSpeedContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Climb Speed"
+
+[node name="ClimbSpeedSlider" type="HSlider" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer/MarginContainer/ClimbParamsContainer/ClimbSpeedContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 100.0
+max_value = 1500.0
+value = 400.0
+
+[connection signal="pressed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilityMenuToggleButton" to="." method="_on_ability_menu_toggle_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/JumpToggleButton" to="." method="_on_jump_toggle_button_pressed"]
+[connection signal="toggled" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/JumpToggleButton" to="." method="_on_jump_toggle_button_toggled"]
+[connection signal="pressed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/VariableHeightJumpCheckButton" to="." method="_on_variable_height_jump_check_button_pressed"]
+[connection signal="toggled" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/VariableHeightJumpCheckButton" to="." method="_on_variable_height_jump_check_button_toggled"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpHeightContainer/JumpHeightSlider" to="." method="_on_jump_height_slider_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpCutoffContainer/JumpCutoffSlider" to="." method="_on_jump_cutoff_slider_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/JumpContainer/MarginContainer/JumpParamsContainer/JumpGravityContainer/JumpGravitySlider" to="." method="_on_jump_gravity_slider_value_changed"]
+[connection signal="pressed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/DoubleJumpToggleButton" to="." method="_on_double_jump_toggle_button_pressed"]
+[connection signal="toggled" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/MarginContainer/DoubleJumpParamsContainer/EnableDoubleJumpCheckButton" to="." method="_on_enable_double_jump_check_button_toggled"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DoubleJumpContainer/MarginContainer/DoubleJumpParamsContainer/DJAirAccelerationContainer/DJAirAccelerationSlider" to="." method="_on_dj_air_acceleration_slider_value_changed"]
+[connection signal="pressed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/WallJumpToggleButton" to="." method="_on_wall_jump_toggle_button_pressed"]
+[connection signal="toggled" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/EnableWallFrictionCheckButton" to="." method="_on_enable_wall_friction_check_button_toggled"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WalJumpHeightContainer/WallJumpHeightSlider" to="." method="_on_wall_jump_height_slider_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WallJumpDistanceContainer/WallJumpDistanceSlider" to="." method="_on_wall_jump_distance_slider_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/WallJumpContainer/MarginContainer/WallJumpParamsContainer/WallJumpGripTimeContainer/WallJumpGripTimeSlider" to="." method="_on_wall_jump_grip_time_slider_value_changed"]
+[connection signal="pressed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/DashToggleButton" to="." method="_on_dash_toggle_button_pressed"]
+[connection signal="toggled" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/DashToggleButton" to="." method="_on_dash_toggle_button_toggled"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashSpeedContainer/DashSpeedSlider" to="." method="_on_dash_speed_slider_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashDistanceContainer/DashDistanceSlider" to="." method="_on_dash_distance_slider_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/DashContainer/MarginContainer/DashParamsContainer/DashCooldownContainer/DashCooldownSlider" to="." method="_on_dash_cooldown_slider_value_changed"]
+[connection signal="pressed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer/ClimbToggleButton" to="." method="_on_climb_toggle_button_pressed"]
+[connection signal="value_changed" from="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer/AbilitiesContainer/ClimbContainer/MarginContainer/ClimbParamsContainer/ClimbSpeedContainer/ClimbSpeedSlider" to="." method="_on_climb_speed_slider_value_changed"]

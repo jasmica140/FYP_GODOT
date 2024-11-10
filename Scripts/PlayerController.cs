@@ -3,10 +3,10 @@ using System;
 using ImGuiNET;
 
 public partial class PlayerController : CharacterBody2D
-{
-	// states 
-	//enum states = {AIR, FLOOR, LADDER, WALL}
+{	
 	
+	public static PlayerController pc { get; private set; }
+
 	// Movement-related variables
 	public Vector2 velocity;
 	public int direction = 1;
@@ -31,21 +31,28 @@ public partial class PlayerController : CharacterBody2D
 	public RayCast2D _wallChecker;
 	
 	// Ability instances
-	private Jump jump;
-	private Dash dash;
-	private Climb climb;
-	private WallJump wallJump;
+	public Jump jump;
+	public Dash dash;
+	public Climb climb;
+	public WallJump wallJump;
+	
+	public Node CurrentScene { get; set; }
 
 	public override void _Ready()
 	{
+		pc = this;
+		
+		Viewport root = GetTree().Root;
+		CurrentScene = root.GetChild(root.GetChildCount() - 1);
+		
 		// get sprite resources
-		_idleSprite = GetNode<Sprite2D>("IdleSprite");
-		_jumpSprite = GetNode<Sprite2D>("JumpSprite");
-		_duckSprite = GetNode<Sprite2D>("DuckSprite");
-		_rollSprite = GetNode<Sprite2D>("RollSprite");
-		_walkSprite = GetNode<AnimatedSprite2D>("WalkSprite");
-		_dashSprite = GetNode<AnimatedSprite2D>("DashSprite");
-		_climbSprite = GetNode<AnimatedSprite2D>("ClimbSprite");
+		pc._idleSprite = GetNode<Sprite2D>("IdleSprite");
+		pc._jumpSprite = GetNode<Sprite2D>("JumpSprite");
+		pc._duckSprite = GetNode<Sprite2D>("DuckSprite");
+		pc._rollSprite = GetNode<Sprite2D>("RollSprite");
+		pc._walkSprite = GetNode<AnimatedSprite2D>("WalkSprite");
+		pc._dashSprite = GetNode<AnimatedSprite2D>("DashSprite");
+		pc._climbSprite = GetNode<AnimatedSprite2D>("ClimbSprite");
 
 		_wallChecker = GetNode<RayCast2D>("WallChecker");
 
@@ -191,7 +198,7 @@ public partial class PlayerController : CharacterBody2D
 	
 	//check if player is near a wall
 	public bool isNearWall() {
-		return _wallChecker.IsColliding();
+		return pc._wallChecker.IsColliding();
 	}
 	
 	// set direction for wall jumps
@@ -201,7 +208,7 @@ public partial class PlayerController : CharacterBody2D
 		} else if (velocity.X < 0){
 			direction = -1;
 		}
-		_wallChecker.RotationDegrees = 90 * -direction;
+		pc._wallChecker.RotationDegrees = 90 * -direction;
 	}
 
 	public void _on_ladder_checker_body_entered (Node2D body) {
@@ -219,38 +226,59 @@ public partial class PlayerController : CharacterBody2D
 		bool jumping = velY != 0;
 		bool dashing = isDashingLeft != isDashingRight;
 
-		_duckSprite.Visible = ducking;
-		_climbSprite.Visible = (climb.isClimbing || onLadder && !IsOnFloor() && !jumping) && !ducking;
-		_idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !_climbSprite.Visible;
-		_walkSprite.Visible = walking && !jumping && !ducking && !dashing && !_climbSprite.Visible;
-		_dashSprite.Visible = dashing && !jumping && !ducking && !_climbSprite.Visible;
-		_jumpSprite.Visible = jumping && !ducking && !_climbSprite.Visible;
+		pc._duckSprite.Visible = ducking;
+		pc._climbSprite.Visible = (climb.isClimbing || onLadder && !IsOnFloor() && !jumping) && !ducking;
+		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible;
+		pc._walkSprite.Visible = walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible;
+		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible;
+		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible;
 
-		if (_walkSprite.Visible)
+		if (pc._walkSprite.Visible)
 		{
-			_walkSprite.Play();
-			_walkSprite.FlipH = direction == -1;
+			pc._walkSprite.Play();
+			pc._walkSprite.FlipH = direction == -1;
 		} 
-		else if (_dashSprite.Visible)
+		else if (pc._dashSprite.Visible)
 		{
-			_dashSprite.Play();
-			_dashSprite.FlipH = direction == -1;
+			pc._dashSprite.Play();
+			pc._dashSprite.FlipH = direction == -1;
 		}
-		else if (_jumpSprite.Visible)
+		else if (pc._jumpSprite.Visible)
 		{
-			_jumpSprite.FlipH = direction == -1;
+			pc._jumpSprite.FlipH = direction == -1;
 		}
-		else if (_climbSprite.Visible && velY != 0)
+		else if (pc._climbSprite.Visible && velY != 0)
 		{
-			_climbSprite.Play();
+			pc._climbSprite.Play();
 		}
-		else if (_climbSprite.Visible && velY == 0)
+		else if (pc._climbSprite.Visible && velY == 0)
 		{
-			_climbSprite.Stop();
+			pc._climbSprite.Stop();
 		} 
 		else if (!walking)
 		{
-			_idleSprite.FlipH = direction == -1;
+			pc._idleSprite.FlipH = direction == -1;
 		} 
+	}
+	
+	public void GotoScene(string path) {
+		CallDeferred(MethodName.DeferredGotoScene, path);
+	}
+	
+	public void DeferredGotoScene(string path) {
+		// It is now safe to remove the current scene.
+		CurrentScene.Free();
+
+		// Load a new scene.
+		var nextScene = GD.Load<PackedScene>(path);
+
+		// Instance the new scene.
+		CurrentScene = nextScene.Instantiate();
+
+		// Add it to the active scene, as child of root.
+		GetTree().Root.AddChild(CurrentScene);
+
+		// Optionally, to make it compatible with the SceneTree.change_scene_to_file() API.
+		GetTree().CurrentScene = CurrentScene;
 	}
 }

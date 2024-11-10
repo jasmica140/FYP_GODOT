@@ -5,7 +5,7 @@ using ImGuiNET;
 public partial class Climb : Ability
 {
 	public bool isClimbing = false;
-	private float climbSpeed = 400.0f;
+	public float climbSpeed = 400.0f;
 	private bool canJump = true;
 	
 	public Climb(PlayerController playerController) : base(playerController){	}

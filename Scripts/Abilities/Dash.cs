@@ -9,9 +9,9 @@ public class Dash : Ability
 	private float startXPos;       // Duration of dash
 
 	//parameters 
-	private float distance = 300.0f;
-	private float speed = 1500.0f; // Velocity during dash
-	private float cooldown; // time before dash can be used again
+	public float distance = 300.0f;
+	public float speed = 1500.0f; // Velocity during dash
+	public float cooldown = 0.1f; // time before dash can be used again
 	private int direction; // 0 = left; 1= right; 2 = up; 3 = down;
 	private bool invincibilityFrame; // is player vulnerable to injury during dash?
 	private int energyCost; //cost to use dash?
@@ -24,7 +24,7 @@ public class Dash : Ability
 		if (!player.isDashingRight && !player.isDashingLeft)
 		{
 			startXPos = player.Position.X; // player x position when starting dash
-			dashTimer = dashDuration; // Start timer
+			dashTimer = cooldown; // Start timer
 		}
 	}
 
@@ -51,7 +51,7 @@ public class Dash : Ability
 				// Decrease the dash timer
 				dashTimer -= delta;
 				
-				if (dashTimer <= -dashDuration){ // buffer
+				if (dashTimer <= -cooldown){ // buffer
 					player.isDashingRight = false; // Reset right dashing flag
 					player.isDashingLeft = false; // Reset left dashing flag
 				}
@@ -63,6 +63,6 @@ public class Dash : Ability
 	public void displayStats() {
 		ImGui.DragFloat("dash speed", ref speed);
 		ImGui.DragFloat("dash distance", ref distance);
-		ImGui.DragFloat("cooloff", ref dashDuration);
+		ImGui.DragFloat("cooldown", ref cooldown);
 	}
 }

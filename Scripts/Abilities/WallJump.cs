@@ -4,9 +4,9 @@ using ImGuiNET;
 
 public class WallJump : Ability
 {
-	private float height = 800.0f; 
-	private float distance = 150.0f;
-	private float gripTime = 1.0f;
+	public float height = 800.0f; 
+	public float distance = 150.0f;
+	public float gripTime = 1.0f;
 	private float gripTimer = 1.0f;
 	
 	public bool canWallJump = true;

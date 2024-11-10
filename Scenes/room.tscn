@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cda5vrxivq8fy" path="res://Assets/Sprites/Tiles/ladder_mid.png" id="2_c7pec"]
 [ext_resource type="PackedScene" uid="uid://dibmkkw6tox7t" path="res://Scenes/player.tscn" id="2_pfc3c"]
 [ext_resource type="Texture2D" uid="uid://j1uvrge6ugpe" path="res://Assets/Sprites/Tiles/ladder_top.png" id="3_qs1p8"]
-[ext_resource type="PackedScene" uid="uid://4q700xfrrbef" path="res://parameter_editor.tscn" id="5_lub3g"]
+[ext_resource type="PackedScene" uid="uid://cxewafy4tgrth" path="res://Scenes/ParamaterEditor.tscn" id="5_447am"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0lhdg"]
 texture = ExtResource("2_c7pec")
@@ -47,6 +47,9 @@ sources/3 = SubResource("TileSetAtlasSource_ocioc")
 
 [node name="Root" type="Node2D"]
 
+[node name="ParameterEditor" parent="." instance=ExtResource("5_447am")]
+position = Vector2(-3058, 987)
+
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = ExtResource("1_i5bg7")
 format = 2
@@ -62,9 +65,3 @@ layer_0/tile_data = PackedInt32Array(1048634, 2, 0, 1114170, 2, 0, 1179706, 2, 0
 
 [node name="Player" parent="." instance=ExtResource("2_pfc3c")]
 position = Vector2(3968, 1784)
-
-[node name="ParameterEditor" parent="." instance=ExtResource("5_lub3g")]
-offset_left = 448.0
-offset_top = 248.0
-offset_right = 448.0
-offset_bottom = 248.0

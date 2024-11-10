@@ -61,53 +61,11 @@ public partial class PlayerController : CharacterBody2D
 		dash = new Dash(this);
 		climb = new Climb(this);
 		wallJump = new WallJump(this);
-		
-		 if (DisplayServer.WindowGetVsyncMode() == DisplayServer.VSyncMode.Disabled)
-		{
-			int refreshRate = (int)DisplayServer.ScreenGetRefreshRate();
-			Engine.MaxFps = refreshRate > 0 ? refreshRate : 60;
-		}
-
-#if IMGUI
-		var io = ImGui.GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
-#endif
 	}
 
 	public override void _Process(double delta)
 	{
 		Vector2 position = Position;
-#if IMGUI
-	ImGui.Begin("Abilities", ImGuiWindowFlags.AlwaysAutoResize); // Start a main container window
-
-	// Call each ability’s display function in the desired order
-	if (ImGui.CollapsingHeader("Jump"))
-	{
-		jump.displayJumpStats(delta, Position);
-	}
-	
-	if (ImGui.CollapsingHeader("Double Jump"))
-	{
-		jump.displayDoubleJumpStats();
-	}
-
-	if (ImGui.CollapsingHeader("Wall Jump"))
-	{
-		wallJump.displayStats();
-	}
-
-	if (ImGui.CollapsingHeader("Dash"))
-	{
-		dash.displayStats();
-	}
-	
-	if (ImGui.CollapsingHeader("Climb"))
-	{
-		climb.displayStats();
-	}
-
-	ImGui.End(); // End the main container window
-#endif
 	}
 	
 	public override void _PhysicsProcess(double delta)

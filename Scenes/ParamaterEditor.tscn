@@ -14,25 +14,33 @@ climbContainer = NodePath("CanvasLayer/Window/Control/MarginContainer/AbilityMen
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="Window" type="Window" parent="CanvasLayer"]
+transparent_bg = true
 title = "Ability Parameter Editor"
-position = Vector2i(0, 36)
-size = Vector2i(500, 193)
+position = Vector2i(11, 36)
+size = Vector2i(500, 1100)
 wrap_controls = true
 transient = true
+always_on_top = true
+transparent = true
+content_scale_mode = 1
+content_scale_aspect = 4
 
 [node name="Control" type="Control" parent="CanvasLayer/Window"]
 layout_mode = 3
-anchors_preset = 10
+anchors_preset = 15
 anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 metadata/_edit_use_anchors_ = true
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Window/Control"]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 192.0
+offset_bottom = 31.0
 grow_horizontal = 2
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer/Window/Control/MarginContainer"]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://dibmkkw6tox7t"]
+[gd_scene load_steps=29 format=3 uid="uid://dibmkkw6tox7t"]
 
 [ext_resource type="Texture2D" uid="uid://ciq24lqpig58n" path="res://Assets/Sprites/Player/p3_stand.png" id="1_b21mf"]
 [ext_resource type="Script" path="res://Scripts/PlayerController.cs" id="1_pbawd"]
@@ -18,6 +18,11 @@
 [ext_resource type="Texture2D" uid="uid://ck5xujmqquco5" path="res://Assets/Sprites/Player/p3_climb1.png" id="16_y4clr"]
 [ext_resource type="Texture2D" uid="uid://d2yluefk67n02" path="res://Assets/Sprites/Player/p3_climb2.png" id="17_v2oxm"]
 [ext_resource type="Texture2D" uid="uid://bsbj8dipr3p03" path="res://Assets/Sprites/Player/p3_circle.png" id="18_yhg4d"]
+[ext_resource type="Texture2D" uid="uid://dogjoofvy3hsx" path="res://Assets/kenney_platformer-art-deluxe/Base pack/HUD/hud_p3Alt.png" id="19_b0g2c"]
+[ext_resource type="Script" path="res://Scripts/HeartContainer.cs" id="20_8qk1u"]
+[ext_resource type="Texture2D" uid="uid://b0aisfv03f1ik" path="res://Assets/kenney_platformer-art-deluxe/Base pack/HUD/hud_heartFull.png" id="21_0a6up"]
+[ext_resource type="Texture2D" uid="uid://bqayh33a7lxja" path="res://Assets/kenney_platformer-art-deluxe/Base pack/HUD/hud_heartHalf.png" id="22_ohphr"]
+[ext_resource type="Texture2D" uid="uid://dsahb4f70nh7v" path="res://Assets/kenney_platformer-art-deluxe/Base pack/HUD/hud_heartEmpty.png" id="23_usi7s"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_84kpl"]
 animations = [{
@@ -80,6 +85,23 @@ animations = [{
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dinqd"]
 size = Vector2(32, 80)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_qugw6"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("21_0a6up")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_ohphr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_usi7s")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
 
 [node name="Player" type="CharacterBody2D"]
 position = Vector2(168, 144)
@@ -149,6 +171,42 @@ shape = SubResource("RectangleShape2D_dinqd")
 visible = false
 position = Vector2(-168, -120)
 texture = ExtResource("18_yhg4d")
+
+[node name="IconSprite" type="Sprite2D" parent="."]
+position = Vector2(-439, -290)
+scale = Vector2(0.5, 0.457447)
+texture = ExtResource("19_b0g2c")
+
+[node name="HeartContainer" type="Node2D" parent="."]
+position = Vector2(-168, -144)
+script = ExtResource("20_8qk1u")
+
+[node name="HeartSprite1" type="AnimatedSprite2D" parent="HeartContainer"]
+position = Vector2(-243.625, -145.125)
+scale = Vector2(0.429245, 0.438889)
+sprite_frames = SubResource("SpriteFrames_qugw6")
+
+[node name="HeartSprite2" type="AnimatedSprite2D" parent="HeartContainer"]
+position = Vector2(-220.625, -145.125)
+scale = Vector2(0.429245, 0.438889)
+sprite_frames = SubResource("SpriteFrames_qugw6")
+
+[node name="HeartSprite3" type="AnimatedSprite2D" parent="HeartContainer"]
+position = Vector2(-197.625, -145.125)
+scale = Vector2(0.429245, 0.438889)
+sprite_frames = SubResource("SpriteFrames_qugw6")
+
+[node name="HeartSprite4" type="AnimatedSprite2D" parent="HeartContainer"]
+position = Vector2(-174.625, -145.125)
+scale = Vector2(0.429245, 0.438889)
+sprite_frames = SubResource("SpriteFrames_qugw6")
+
+[node name="HeartSprite5" type="AnimatedSprite2D" parent="HeartContainer"]
+position = Vector2(-151.625, -145.125)
+scale = Vector2(0.429245, 0.438889)
+sprite_frames = SubResource("SpriteFrames_qugw6")
+
+[node name="PlayerInfo" type="CanvasLayer" parent="."]
 
 [connection signal="body_entered" from="LadderChecker" to="." method="_on_ladder_checker_body_entered"]
 [connection signal="body_exited" from="LadderChecker" to="." method="_on_ladder_checker_body_exited"]

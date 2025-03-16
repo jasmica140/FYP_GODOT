@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://gbc4oyxwiow0"]
+
+[ext_resource type="Script" path="res://Scripts/Primitives/Floor.cs" id="1_dx70r"]
+[ext_resource type="Texture2D" uid="uid://bwaj7132v73jw" path="res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneMid.png" id="2_nsb42"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0spn1"]
+size = Vector2(70, 70)
+
+[node name="Floor" type="Node2D"]
+script = ExtResource("1_dx70r")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_nsb42")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_0spn1")

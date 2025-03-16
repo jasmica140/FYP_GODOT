@@ -16,11 +16,10 @@ climbContainer = NodePath("CanvasLayer/Window/Control/MarginContainer/AbilityMen
 [node name="Window" type="Window" parent="CanvasLayer"]
 transparent_bg = true
 title = "Ability Parameter Editor"
-position = Vector2i(11, 36)
+position = Vector2i(11, 100)
 size = Vector2i(500, 1100)
 wrap_controls = true
 transient = true
-always_on_top = true
 transparent = true
 content_scale_mode = 1
 content_scale_aspect = 4
@@ -51,6 +50,10 @@ color = Color(0.27616, 0.189029, 0.426918, 1)
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer"]
+layout_mode = 2
+text = "test"
 
 [node name="AbilityMenuToggleButton" type="Button" parent="CanvasLayer/Window/Control/MarginContainer/AbilityMenuContainer"]
 layout_mode = 2

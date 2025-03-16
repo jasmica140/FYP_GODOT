@@ -2998,6 +2998,6 @@ texture_region_size = Vector2i(72, 72)
 11:12/0 = 0
 
 [resource]
-tile_size = Vector2i(72, 72)
+tile_size = Vector2i(70, 70)
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_11mg4")

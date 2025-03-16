@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://bmlky5iquohrx"]
+
+[ext_resource type="Script" path="res://Scripts/Primitives/Platform.cs" id="1_iaxxv"]
+[ext_resource type="Texture2D" uid="uid://dj5q5qmdxjuqx" path="res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneHalf.png" id="2_06lfe"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hxylb"]
+size = Vector2(40, 70)
+
+[node name="Platform" type="Node2D"]
+script = ExtResource("1_iaxxv")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_06lfe")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -15)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_hxylb")

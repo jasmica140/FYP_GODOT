@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cgggxna884y35"]
+
+[ext_resource type="Script" path="res://Scripts/MapGeneration/Room.cs" id="1_m7b3s"]
+
+[node name="Room" type="Node2D"]
+script = ExtResource("1_m7b3s")
+
+[node name="PrimitivesContainer" type="Node2D" parent="."]

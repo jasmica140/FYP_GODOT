@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://cov670x0i8fl8"]
+
+[ext_resource type="Script" path="res://Scripts/Primitives/Cactus.cs" id="1_nwmu7"]
+[ext_resource type="Texture2D" uid="uid://cq0jg2at3j28m" path="res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Enemy sprites/snakeSlime.png" id="2_5m0y8"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1u21k"]
+radius = 25.0
+height = 146.0
+
+[node name="Cactus" type="Node2D"]
+script = ExtResource("1_nwmu7")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_5m0y8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_1u21k")

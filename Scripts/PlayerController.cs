@@ -28,6 +28,7 @@ public partial class PlayerController : CharacterBody2D
 	private AnimatedSprite2D _climbSprite;
 
 	// player child nodes 
+	public RayCast2D _floorChecker;
 	public RayCast2D _wallChecker;
 	
 	// Ability instances
@@ -46,15 +47,16 @@ public partial class PlayerController : CharacterBody2D
 		CurrentScene = root.GetChild(root.GetChildCount() - 1);
 		
 		// get sprite resources
-		pc._idleSprite = GetNode<Sprite2D>("IdleSprite");
-		pc._jumpSprite = GetNode<Sprite2D>("JumpSprite");
-		pc._duckSprite = GetNode<Sprite2D>("DuckSprite");
-		pc._rollSprite = GetNode<Sprite2D>("RollSprite");
-		pc._walkSprite = GetNode<AnimatedSprite2D>("WalkSprite");
-		pc._dashSprite = GetNode<AnimatedSprite2D>("DashSprite");
-		pc._climbSprite = GetNode<AnimatedSprite2D>("ClimbSprite");
+		pc._idleSprite = GetNode<Sprite2D>("SpriteContainer/IdleSprite");
+		pc._jumpSprite = GetNode<Sprite2D>("SpriteContainer/JumpSprite");
+		pc._duckSprite = GetNode<Sprite2D>("SpriteContainer/DuckSprite");
+		pc._rollSprite = GetNode<Sprite2D>("SpriteContainer/RollSprite");
+		pc._walkSprite = GetNode<AnimatedSprite2D>("SpriteContainer/WalkSprite");
+		pc._dashSprite = GetNode<AnimatedSprite2D>("SpriteContainer/DashSprite");
+		pc._climbSprite = GetNode<AnimatedSprite2D>("SpriteContainer/ClimbSprite");
 
-		_wallChecker = GetNode<RayCast2D>("WallChecker");
+		pc._floorChecker = GetNode<RayCast2D>("FloorChecker");
+		pc._wallChecker = GetNode<RayCast2D>("WallChecker");
 
 		// initialize abilities
 		jump = new Jump(this);
@@ -63,31 +65,28 @@ public partial class PlayerController : CharacterBody2D
 		wallJump = new WallJump(this);
 	}
 
-	public override void _Process(double delta)
-	{
+	public override void _Process(double delta) {
 		Vector2 position = Position;
 	}
 	
-	public override void _PhysicsProcess(double delta)
-	{	
+	public override void _PhysicsProcess(double delta) {	
 		velocity = Velocity;
 		bool duck = false;
-		
+			
 		// apply gravity if in air
-		if (!IsOnFloor() && (!isNearWall() || !wallJump.wallFriction || !wallJump.canWallJump)) {
+		if (!isNearFloor() && (!isNearWall() || !wallJump.wallFriction || !wallJump.canWallJump)) {
 			velocity.Y += gravity * (float)delta;	
-		} else if (!IsOnFloor() && isNearWall() && wallJump.wallFriction && wallJump.canWallJump) { // slide down wall
+		} else if (!isNearFloor() && isNearWall() && wallJump.wallFriction && wallJump.canWallJump) { // slide down wall
 			velocity.Y = gravity * (float)delta;
+		} else if (isNearFloor()) {
+			velocity.Y = 0;
 		}
 		
 		// handle walk
 		velocity.X = 0;
-		if (Input.IsKeyPressed(Key.Left))
-		{
+		if (Input.IsKeyPressed(Key.Left)) {
 			velocity.X = -moveSpeed;
-		}
-		else if (Input.IsKeyPressed(Key.Right))
-		{
+		} else if (Input.IsKeyPressed(Key.Right)) {
 			velocity.X = moveSpeed;
 		}
 
@@ -104,7 +103,7 @@ public partial class PlayerController : CharacterBody2D
 		}
 
 		// handle wall jump
-		if (!IsOnFloor() && isNearWall() && Input.IsKeyPressed(Key.Space) 
+		if (!isNearFloor() && isNearWall() && Input.IsKeyPressed(Key.Space) 
 			&& (Input.IsKeyPressed(Key.Right) || Input.IsKeyPressed(Key.Left))) {
 			wallJump.Activate();
 		}
@@ -130,11 +129,9 @@ public partial class PlayerController : CharacterBody2D
 		}
 
 		// handle duck
-		if (Input.IsKeyPressed(Key.Down))
-		{
+		if (Input.IsKeyPressed(Key.Down)) {
 			duck = true;
 		}
-		
 		
 		jump.Deactivate();  // reset jump counter
 		wallJump.updateGripTimer((float)delta);
@@ -155,6 +152,11 @@ public partial class PlayerController : CharacterBody2D
 	}
 	
 	//check if player is near a wall
+
+	public bool isNearFloor() {
+		return pc._floorChecker.IsColliding();
+	}
+	
 	public bool isNearWall() {
 		return pc._wallChecker.IsColliding();
 	}
@@ -185,7 +187,7 @@ public partial class PlayerController : CharacterBody2D
 		bool dashing = isDashingLeft != isDashingRight;
 
 		pc._duckSprite.Visible = ducking;
-		pc._climbSprite.Visible = (climb.isClimbing || onLadder && !IsOnFloor() && !jumping) && !ducking;
+		pc._climbSprite.Visible = (climb.isClimbing || onLadder && !isNearFloor() && !jumping) && !ducking;
 		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible;
 		pc._walkSprite.Visible = walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible;
 		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible;

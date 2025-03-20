@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://uqthmlhlxh6m"]
+[gd_scene load_steps=3 format=3 uid="uid://uqthmlhlxh6m"]
 
 [ext_resource type="Script" path="res://Scripts/MapGeneration/MapGenerator.cs" id="1_k17ra"]
+[ext_resource type="Script" path="res://Scripts/MainScene.cs" id="1_t0bvj"]
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1_t0bvj")
 
 [node name="MapGenerator" type="Node" parent="."]
 script = ExtResource("1_k17ra")
@@ -10,3 +12,5 @@ script = ExtResource("1_k17ra")
 [node name="RoomsContainer" type="Node2D" parent="."]
 
 [node name="PrimitivesContainer" type="Node2D" parent="."]
+
+[node name="PlayerSpawn" type="Node2D" parent="."]

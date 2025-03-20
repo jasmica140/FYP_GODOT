@@ -60,6 +60,7 @@ layer_0/tile_data = PackedInt32Array(851980, 65536, 6, 851981, 65536, 6, 851982,
 
 [node name="Ladder" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_jitwm")
+collision_visibility_mode = 1
 format = 2
 layer_0/name = "ladder"
 layer_0/tile_data = PackedInt32Array(1048634, 2, 0, 1114170, 2, 0, 1179706, 2, 0, 1245242, 2, 0, 1310778, 2, 0, 1376314, 2, 0, 1441850, 2, 0, 1507386, 2, 0, 1572922, 2, 0, 1638458, 2, 0, 1703994, 2, 0, 983098, 2, 0)

@@ -15,33 +15,31 @@ public static class PrimitiveRegistry {
 	}
 }
 
-public abstract partial class Primitive : Node2D
+public abstract partial class Primitive : StaticBody2D
 {
 	protected Sprite2D sprite;
 
 	public Vector2 Position { get; set; }
-	//public List<BehaviorType> Behaviors { get; set; } = new List<BehaviorType>();
 	
 	// Define categories
-		public enum PrimitiveCategory { None, Hazard, Collectible, Platform, Obstacle, Environmental, MovementModifier, Floor }
+	public enum PrimitiveCategory { None, Hazard, Collectible, Platform, Obstacle, Environmental, MovementModifier, Floor }
 	public PrimitiveCategory Category { get; protected set; } = PrimitiveCategory.None;
-	
-	public Primitive(Vector2 position)
-	{
+
+	// Each primitive contains a list of atoms
+	protected List<Atom> atoms = new List<Atom>();
+
+	public Primitive(Vector2 position) {
 		Position = position;
 		sprite = new Sprite2D();
 		AddChild(sprite);
 		//sprite.Scale = new Vector2(3, 3); // Scale up by 3x
 		//sprite.Position += new Vector2(16, 16); // Offset to prevent stacking
 	}
-
-	public void SetTexture(Texture2D texture)
-	{
-		sprite.Texture = texture;
-	}
-
-	public abstract bool ValidatePlacement(Room room); // Ensures rules aren't broken
 	
+	public List<Atom> GetAtoms() {
+		return atoms;
+	}	
+
 	// Every Primitive must define how it generates itself in a Room
 	public abstract void GenerateInRoom(Room room);
 }

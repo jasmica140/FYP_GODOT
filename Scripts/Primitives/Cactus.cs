@@ -2,11 +2,27 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
+public partial class CactusAtom : Atom {
+	public CactusAtom() {
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Enemy sprites/snakeSlime.png")); // Replace with actual path
+	}
+	
+	public override bool ValidatePlacement(Room room) {
+		//bool hasFloorBelow = room.HasPrimitiveBelow(this.GlobalPosition, typeof(Floor));
+//
+		//if (!hasFloorBelow) {
+			//GD.Print($"❌ ERROR: Mushroom at {this.GlobalPosition} has no valid floor below!");
+			//return false;
+		//}
+
+		return true;
+	}
+}
+
 public partial class Cactus : Primitive
 {
 	public Cactus() : base(Vector2.Zero) {	
 		Category = PrimitiveCategory.Hazard;
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Enemy sprites/snakeSlime.png")); // Replace with actual path
 	}  // Default constructor needed for instantiation
 	
 	public Cactus(Vector2 position) : base(position) {}
@@ -26,16 +42,11 @@ public partial class Cactus : Primitive
 
 		this.GlobalPosition = chosenPosition;
 		room.AddPrimitive(this);
-	}
-	
-	public override bool ValidatePlacement(Room room) {
-		//bool hasFloorBelow = room.HasPrimitiveBelow(this.GlobalPosition, typeof(Floor));
-//
-		//if (!hasFloorBelow) {
-			//GD.Print($"❌ ERROR: Mushroom at {this.GlobalPosition} has no valid floor below!");
-			//return false;
-		//}
-
-		return true;
+		
+		CactusAtom atom = new CactusAtom();
+		atoms.Add(atom);
+		AddChild(atom);
+		atom.GlobalPosition = chosenPosition;
+		room.AddAtom(atom); // ✅ `AddAtom()` is called here to place each FloorTile atom
 	}
 }

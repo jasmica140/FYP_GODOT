@@ -2,16 +2,25 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
+public partial class MushroomAtom : Atom {
+	public MushroomAtom() {
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Mushroom expansion/PNG/tallShroom_red.png")); 
+	}
+	
+	public override bool ValidatePlacement(Room room) {
+		// Ensure Mushroom is placed on a floor
+		return room.HasPrimitiveBelow(GlobalPosition, typeof(Floor));
+	}
+}
+
 public partial class Mushroom : Primitive
 {
 	public Mushroom() : base(Vector2.Zero) {	
-		Category = PrimitiveCategory.MovementModifier;
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Mushroom expansion/PNG/tallShroom_red.png")); // Replace with actual path
+		Category = PrimitiveCategory.Hazard;
 	}  // Default constructor needed for instantiation
 	
 	public Mushroom(Vector2 position) : base(position) {}
-
-
+	
 	public override void GenerateInRoom(Room room) {
 		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
 
@@ -23,19 +32,14 @@ public partial class Mushroom : Primitive
 		// Pick a random valid position from the list
 		Random random = new Random();
 		Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-
+		
 		this.GlobalPosition = chosenPosition;
 		room.AddPrimitive(this);
-	}
-	
-	public override bool ValidatePlacement(Room room) {
-		//bool hasFloorBelow = room.HasPrimitiveBelow(this.GlobalPosition, typeof(Floor));
-//
-		//if (!hasFloorBelow) {
-			//GD.Print($"❌ ERROR: Mushroom at {this.GlobalPosition} has no valid floor below!");
-			//return false;
-		//}
 
-		return true;
+		MushroomAtom atom = new MushroomAtom();
+		atoms.Add(atom);
+		AddChild(atom);
+		atom.GlobalPosition = chosenPosition;
+		room.AddAtom(atom); // ✅ `AddAtom()` is called here to place each FloorTile atom
 	}
 }

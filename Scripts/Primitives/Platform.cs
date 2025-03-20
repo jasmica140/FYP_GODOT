@@ -1,11 +1,20 @@
 using Godot;
 using System;
 
+public partial class PlatformTile : Atom {
+	public PlatformTile() {
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneHalf.png")); // Replace with actual path
+	}
+	
+	public override bool ValidatePlacement(Room room) {
+		return true;
+	}
+}
+
 public partial class Platform : Primitive
 {
 	public Platform() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Platform;
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneHalf.png")); // Replace with actual path
 	}  // Required constructor
 
 	public Platform(Vector2 position) : base(position) {}
@@ -28,10 +37,11 @@ public partial class Platform : Primitive
 
 		this.GlobalPosition = position;
 		room.AddPrimitive(this);
-	}
-	
-	public override bool ValidatePlacement(Room room)
-	{
-		return true;
+
+		PlatformTile atom = new PlatformTile();
+		atoms.Add(atom);
+		AddChild(atom);
+		atom.GlobalPosition = position;
+		room.AddAtom(atom); // ✅ `AddAtom()` is called here to place each FloorTile atom
 	}
 }

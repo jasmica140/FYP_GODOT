@@ -4,9 +4,11 @@
 [ext_resource type="Texture2D" uid="uid://cda5vrxivq8fy" path="res://Assets/Sprites/Tiles/ladder_mid.png" id="2_i6jb8"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mtvmh"]
-size = Vector2(64, 64)
+size = Vector2(46, 70)
 
-[node name="Ladder" type="Node2D"]
+[node name="Ladder" type="StaticBody2D"]
+collision_layer = 4
+collision_mask = 0
 script = ExtResource("1_hntlk")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

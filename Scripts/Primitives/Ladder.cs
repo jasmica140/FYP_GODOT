@@ -5,6 +5,17 @@ using System.Collections.Generic;
 public partial class LadderTile : Atom {
 	public LadderTile() {
 		SetTexture((Texture2D)GD.Load("res://Assets/Sprites/Tiles/ladder_mid.png")); // Replace with actual path
+		
+		// Add a collision shape
+		CollisionShape2D collision = new CollisionShape2D();
+		RectangleShape2D shape = new RectangleShape2D();
+		shape.Size = new Vector2(50, 70); 
+		
+		SetCollisionLayerValue(3, true);
+		SetCollisionMaskValue(1, true);
+
+		collision.Shape = shape;
+		AddChild(collision);
 	}
 	
 	public override bool ValidatePlacement(Room room) {

@@ -11,6 +11,9 @@ public partial class FloorTile : Atom {
 		RectangleShape2D shape = new RectangleShape2D();
 		shape.Size = new Vector2(70, 70); 
 
+		SetCollisionLayerValue(2, true);
+		SetCollisionMaskValue(1, true);
+		
 		collision.Shape = shape;
 		AddChild(collision);
 	}

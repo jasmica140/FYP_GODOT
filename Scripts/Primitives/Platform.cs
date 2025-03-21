@@ -4,6 +4,17 @@ using System;
 public partial class PlatformTile : Atom {
 	public PlatformTile() {
 		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneHalf.png")); // Replace with actual path
+		
+		// Add a collision shape
+		CollisionShape2D collision = new CollisionShape2D();
+		RectangleShape2D shape = new RectangleShape2D();
+		shape.Size = new Vector2(70, 40); 
+		collision.Shape = shape;
+		collision.Position = new Vector2(0, -15); 
+		AddChild(collision);
+		
+		SetCollisionLayerValue(2, true);
+		SetCollisionMaskValue(1, true);
 	}
 	
 	public override bool ValidatePlacement(Room room) {

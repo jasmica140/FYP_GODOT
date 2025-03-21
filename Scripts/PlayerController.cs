@@ -172,10 +172,12 @@ public partial class PlayerController : CharacterBody2D
 	}
 
 	public void _on_ladder_checker_body_entered (Node2D body) {
+		GD.Print("is on ladder");
 		onLadder = true;
 	}
 
 	public void _on_ladder_checker_body_exited (Node2D body) {
+		GD.Print("is off ladder");
 		onLadder = false;
 		climb.isClimbing = false;
 	}

@@ -105,7 +105,7 @@ animations = [{
 
 [node name="Player" type="CharacterBody2D"]
 position = Vector2(168, 144)
-collision_mask = 6
+collision_mask = 0
 script = ExtResource("1_pbawd")
 
 [node name="SpriteContainer" type="Control" parent="."]
@@ -170,14 +170,22 @@ shape = SubResource("CapsuleShape2D_aqetx")
 position = Vector2(-168, -144)
 zoom = Vector2(2, 2)
 
+[node name="CeilingChecker" type="RayCast2D" parent="."]
+position = Vector2(-168, -145)
+rotation = 3.14159
+target_position = Vector2(-0.000335963, 46)
+collision_mask = 2
+
 [node name="FloorChecker" type="RayCast2D" parent="."]
 position = Vector2(-168, -136)
-target_position = Vector2(0, 41)
+target_position = Vector2(0, 39)
+collision_mask = 2
 
 [node name="WallChecker" type="RayCast2D" parent="."]
 position = Vector2(-168, -136)
 rotation = -1.5708
 target_position = Vector2(0, 41)
+collision_mask = 2
 
 [node name="LadderChecker" type="Area2D" parent="."]
 position = Vector2(-168, -160)
@@ -186,7 +194,6 @@ collision_mask = 4
 [node name="CollisionShape2D" type="CollisionShape2D" parent="LadderChecker"]
 position = Vector2(0, 16)
 shape = SubResource("RectangleShape2D_dinqd")
-debug_color = Color(0.754072, 0.449823, 0.220654, 0.42)
 
 [node name="HeartContainer" type="Node2D" parent="."]
 position = Vector2(-168, -144)

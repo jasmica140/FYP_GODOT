@@ -14,11 +14,13 @@ public partial class PlayerController : CharacterBody2D
 	public bool isDashingRight = false;
 	public bool isDashingLeft = false;
 	public bool onLadder = false;
+	public bool onSlope = false;
 	public float moveSpeed = 150.0f;
 
 	public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
 
 	// Sprite variables
+	private Control _spriteContainer;
 	private Sprite2D _idleSprite;
 	private Sprite2D _jumpSprite;
 	private Sprite2D _duckSprite;
@@ -28,7 +30,9 @@ public partial class PlayerController : CharacterBody2D
 	private AnimatedSprite2D _climbSprite;
 
 	// player child nodes 
+	public RayCast2D _ceilingChecker;
 	public RayCast2D _floorChecker;
+	public RayCast2D _slopeChecker;
 	public RayCast2D _wallChecker;
 	
 	// Ability instances
@@ -47,6 +51,7 @@ public partial class PlayerController : CharacterBody2D
 		CurrentScene = root.GetChild(root.GetChildCount() - 1);
 		
 		// get sprite resources
+		pc._spriteContainer = GetNode<Control>("SpriteContainer");
 		pc._idleSprite = GetNode<Sprite2D>("SpriteContainer/IdleSprite");
 		pc._jumpSprite = GetNode<Sprite2D>("SpriteContainer/JumpSprite");
 		pc._duckSprite = GetNode<Sprite2D>("SpriteContainer/DuckSprite");
@@ -55,9 +60,11 @@ public partial class PlayerController : CharacterBody2D
 		pc._dashSprite = GetNode<AnimatedSprite2D>("SpriteContainer/DashSprite");
 		pc._climbSprite = GetNode<AnimatedSprite2D>("SpriteContainer/ClimbSprite");
 
+		pc._ceilingChecker = GetNode<RayCast2D>("CeilingChecker");
 		pc._floorChecker = GetNode<RayCast2D>("FloorChecker");
+		pc._slopeChecker = GetNode<RayCast2D>("SlopeChecker");
 		pc._wallChecker = GetNode<RayCast2D>("WallChecker");
-
+		
 		// initialize abilities
 		jump = new Jump(this);
 		dash = new Dash(this);
@@ -72,13 +79,21 @@ public partial class PlayerController : CharacterBody2D
 	public override void _PhysicsProcess(double delta) {	
 		velocity = Velocity;
 		bool duck = false;
-			
+		
+		if (isOnSlope()) {
+			pc._spriteContainer.RotationDegrees = -45;
+			pc._spriteContainer.Position = new Vector2(30,-154);
+		} else { // reset when not on slope
+			pc._spriteContainer.RotationDegrees = 0;
+			pc._spriteContainer.Position = Vector2.Zero;
+		}
+		
 		// apply gravity if in air
 		if (!isNearFloor() && (!isNearWall() || !wallJump.wallFriction || !wallJump.canWallJump)) {
 			velocity.Y += gravity * (float)delta;	
 		} else if (!isNearFloor() && isNearWall() && wallJump.wallFriction && wallJump.canWallJump) { // slide down wall
 			velocity.Y = gravity * (float)delta;
-		} else if (isNearFloor()) {
+		} else if (isNearFloor() || isOnSlope()) {
 			velocity.Y = 0;
 		}
 		
@@ -86,8 +101,14 @@ public partial class PlayerController : CharacterBody2D
 		velocity.X = 0;
 		if (Input.IsKeyPressed(Key.Left)) {
 			velocity.X = -moveSpeed;
+			if (isOnSlope()) {
+				velocity.Y = moveSpeed;
+			}
 		} else if (Input.IsKeyPressed(Key.Right)) {
 			velocity.X = moveSpeed;
+			if (isOnSlope()) {
+				velocity.Y = -moveSpeed;
+			}
 		}
 
 		// handle right dash
@@ -150,15 +171,21 @@ public partial class PlayerController : CharacterBody2D
 	public void moveAndFall() {
 		velocity.Y = velocity.Y + gravity;
 	}
-	
-	//check if player is near a wall
 
-	public bool isNearFloor() {
+	public bool isNearCeiling() { //check if player is near a ceiling
+		return pc._ceilingChecker.IsColliding();
+	}
+	
+	public bool isNearFloor() { //check if player is near floor
 		return pc._floorChecker.IsColliding();
 	}
 	
-	public bool isNearWall() {
+	public bool isNearWall() { //check if player is near a wall
 		return pc._wallChecker.IsColliding();
+	}
+	
+	public bool isOnSlope() { //check if player is on slope
+		return pc._slopeChecker.IsColliding();
 	}
 	
 	// set direction for wall jumps
@@ -190,10 +217,10 @@ public partial class PlayerController : CharacterBody2D
 
 		pc._duckSprite.Visible = ducking;
 		pc._climbSprite.Visible = (climb.isClimbing || onLadder && !isNearFloor() && !jumping) && !ducking;
-		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible;
-		pc._walkSprite.Visible = walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible;
-		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible;
-		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible;
+		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isNearFloor() || isOnSlope());
+		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible;
+		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible;
+		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible;
 
 		if (pc._walkSprite.Visible)
 		{

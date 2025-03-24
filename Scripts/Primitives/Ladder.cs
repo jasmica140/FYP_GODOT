@@ -48,7 +48,6 @@ public partial class Ladder : Primitive {
 
 		for (int y = 0; y < numOfTiles; y++) {
 			Vector2 position =  chosenPosition - new Vector2(0, y * 70); 
-			GD.Print(position);
 			LadderTile tile = new LadderTile();
 			tile.GlobalPosition = position;
 			ladderTiles.Add(tile);

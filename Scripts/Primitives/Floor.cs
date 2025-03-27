@@ -16,6 +16,7 @@ public partial class FloorTile : Atom {
 		
 		collision.Shape = shape;
 		AddChild(collision);
+		AddToGroup("Floor");
 	}
 	
 	public override bool ValidatePlacement(Room room) {

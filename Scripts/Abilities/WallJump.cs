@@ -33,14 +33,14 @@ public class WallJump : Ability
 	}
 	
 	public void updateGripTimer (float delta) {
-		if (player.isNearWall() && !player.isNearFloor()) {
+		if (player.isNearWall() && !player.isOnFloor()) {
 			// Decrease the grip timer
 			gripTimer -= delta;
 			
 			if (gripTimer < 0) {
 				canWallJump = false;
 			}			
-		} else if (player.isNearFloor()) {
+		} else if (player.isOnFloor()) {
 			resetGrip();
 		}
 	}

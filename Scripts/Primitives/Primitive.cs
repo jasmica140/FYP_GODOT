@@ -23,11 +23,12 @@ public abstract partial class Primitive : StaticBody2D
 	public Vector2 Position { get; set; }
 	
 	// Define categories
-	public enum PrimitiveCategory { None, Hazard, Collectible, Platform, Obstacle, Environmental, MovementModifier, Floor }
+	public enum PrimitiveCategory { None, Hazard, Collectible, Platform, Obstacle, Environmental, MovementModifier, Floor, Test }
 	public PrimitiveCategory Category { get; protected set; } = PrimitiveCategory.None;
 
 	// Each primitive contains a list of atoms
 	protected List<Atom> atoms = new List<Atom>();
+	//protected List <Anchor> anochor = new List<anchor>();
 
 	public Primitive(Vector2 position) {
 		Position = position;
@@ -40,6 +41,7 @@ public abstract partial class Primitive : StaticBody2D
 	public List<Atom> GetAtoms() {
 		return atoms;
 	}	
+	
 
 	// Every Primitive must define how it generates itself in a Room
 	public abstract void GenerateInRoom(Room room);

@@ -15,6 +15,7 @@ public partial class PlayerController : CharacterBody2D
 	public bool isDashingLeft = false;
 	public bool onLadder = false;
 	public bool onSlope = false;
+	private int laddersTouched = 0;
 	public float moveSpeed = 150.0f;
 
 	public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
@@ -80,20 +81,12 @@ public partial class PlayerController : CharacterBody2D
 		velocity = Velocity;
 		bool duck = false;
 		
-		if (isOnSlope()) {
-			pc._spriteContainer.RotationDegrees = -45;
-			pc._spriteContainer.Position = new Vector2(30,-154);
-		} else { // reset when not on slope
-			pc._spriteContainer.RotationDegrees = 0;
-			pc._spriteContainer.Position = Vector2.Zero;
-		}
-		
 		// apply gravity if in air
-		if (!isNearFloor() && (!isNearWall() || !wallJump.wallFriction || !wallJump.canWallJump)) {
+		if (!isOnFloor() && (!isNearWall() || !wallJump.wallFriction || !wallJump.canWallJump)) {
 			velocity.Y += gravity * (float)delta;	
-		} else if (!isNearFloor() && isNearWall() && wallJump.wallFriction && wallJump.canWallJump) { // slide down wall
+		} else if (!isOnFloor() && isNearWall() && wallJump.wallFriction && wallJump.canWallJump) { // slide down wall
 			velocity.Y = gravity * (float)delta;
-		} else if (isNearFloor() || isOnSlope()) {
+		} else if (isOnFloor() || isOnSlope()) {
 			velocity.Y = 0;
 		}
 		
@@ -123,8 +116,22 @@ public partial class PlayerController : CharacterBody2D
 			isDashingLeft = true;
 		}
 
+		// handle slope
+		if (isOnSlope()) {
+			pc._spriteContainer.RotationDegrees = -45;
+			pc._spriteContainer.Position = new Vector2(30,-154);
+		} else { // reset when not on slope
+			pc._spriteContainer.RotationDegrees = 0;
+			pc._spriteContainer.Position = Vector2.Zero;
+		}
+		
+		// handle mushroom jump
+		if (isOnMushroom()) {
+			velocity.Y = -1000; 
+		}
+		
 		// handle wall jump
-		if (!isNearFloor() && isNearWall() && Input.IsKeyPressed(Key.Space) 
+		if (!isOnFloor() && isNearWall() && Input.IsKeyPressed(Key.Space) 
 			&& (Input.IsKeyPressed(Key.Right) || Input.IsKeyPressed(Key.Left))) {
 			wallJump.Activate();
 		}
@@ -167,25 +174,8 @@ public partial class PlayerController : CharacterBody2D
 		MoveAndSlide();
 	}
 	
-	// 
 	public void moveAndFall() {
 		velocity.Y = velocity.Y + gravity;
-	}
-
-	public bool isNearCeiling() { //check if player is near a ceiling
-		return pc._ceilingChecker.IsColliding();
-	}
-	
-	public bool isNearFloor() { //check if player is near floor
-		return pc._floorChecker.IsColliding();
-	}
-	
-	public bool isNearWall() { //check if player is near a wall
-		return pc._wallChecker.IsColliding();
-	}
-	
-	public bool isOnSlope() { //check if player is on slope
-		return pc._slopeChecker.IsColliding();
 	}
 	
 	// set direction for wall jumps
@@ -197,27 +187,66 @@ public partial class PlayerController : CharacterBody2D
 		}
 		pc._wallChecker.RotationDegrees = 90 * -direction;
 	}
+	
 
-	public void _on_ladder_checker_body_entered (Node2D body) {
-		GD.Print("is on ladder");
-		onLadder = true;
-	}
-
-	public void _on_ladder_checker_body_exited (Node2D body) {
-		GD.Print("is off ladder");
-		onLadder = false;
-		climb.isClimbing = false;
+	public bool isNearCeiling() { //check if player is near a ceiling
+		return pc._ceilingChecker.IsColliding();
 	}
 	
-	private void _UpdateSpriteRenderer(float velX, float velY, bool ducking)
-	{		
+	public bool isOnFloor() { //check if player is near floor
+		return pc._floorChecker.IsColliding();
+	}
+	
+	public bool isNearWall() { //check if player is near a wall
+		return pc._wallChecker.IsColliding();
+	}
+	
+	public bool isOnSlope() { //check if player is on slope
+		return pc._slopeChecker.IsColliding();
+	}
+	
+	public bool isOnMushroom() { //check if player is near floor
+		if (!pc._floorChecker.IsColliding())
+			return false;
+		if (pc._floorChecker.GetCollider() is not PhysicsBody2D body)
+			return false;
+		
+		return body.IsInGroup("Mushroom");
+	}
+	
+
+	private bool IsLadder(Node2D body) {
+		return body.IsInGroup("Ladder");
+	}
+	
+	public void _on_ladder_checker_body_entered(Node2D body) {
+		if (IsLadder(body)) {
+			laddersTouched++;
+			onLadder = true;
+		}
+	}
+
+	public void _on_ladder_checker_body_exited(Node2D body) {
+		if (IsLadder(body)) {
+			laddersTouched = Math.Max(0, laddersTouched - 1);
+
+			if (laddersTouched == 0) {
+				onLadder = false;
+				climb.isClimbing = false;
+			}
+		}
+	}
+	
+	
+	
+	private void _UpdateSpriteRenderer(float velX, float velY, bool ducking) {		
 		bool walking = velX != 0;
 		bool jumping = velY != 0;
 		bool dashing = isDashingLeft != isDashingRight;
 
 		pc._duckSprite.Visible = ducking;
-		pc._climbSprite.Visible = (climb.isClimbing || onLadder && !isNearFloor() && !jumping) && !ducking;
-		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isNearFloor() || isOnSlope());
+		pc._climbSprite.Visible = (climb.isClimbing || onLadder && !isOnFloor() && !jumping) && !ducking;
+		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isOnFloor() || isOnSlope());
 		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible;
 		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible;
 		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible;

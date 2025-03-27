@@ -47,9 +47,10 @@ public partial class Slope : Primitive {
 	public List<SlopeTile> slopeTiles = new List<SlopeTile>();
 	public List<MiddleSlopeTile> middleSlopeTiles = new List<MiddleSlopeTile>();
 	public List<FillerStoneTile> fillerStoneTiles = new List<FillerStoneTile>();
-
+	//public List<Anchor> anchors = new List<Anchor>();
+	
 	public Slope() : base(Vector2.Zero) {
-		Category = PrimitiveCategory.Platform;
+		Category = PrimitiveCategory.MovementModifier;
 	}  // Required constructor
 
 	public Slope(Vector2 position) : base(position) {}

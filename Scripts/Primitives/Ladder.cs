@@ -16,6 +16,7 @@ public partial class LadderTile : Atom {
 
 		collision.Shape = shape;
 		AddChild(collision);
+		AddToGroup("Ladder");
 	}
 	
 	public override bool ValidatePlacement(Room room) {
@@ -33,6 +34,10 @@ public partial class Ladder : Primitive {
 
 	public Ladder(Vector2 position) : base(position) {}
 
+	private void addCollision() {
+		
+	}
+	
 	public override void GenerateInRoom(Room room) {
 		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
 
@@ -57,4 +62,6 @@ public partial class Ladder : Primitive {
 		
 		room.AddPrimitive(this);
 	}
+	
+	
 }

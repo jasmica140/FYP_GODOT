@@ -10,7 +10,8 @@ public static class PrimitiveRegistry {
 			typeof(Ladder),
 			typeof(Mushroom),
 			typeof(Platform),
-			typeof(Slope)
+			typeof(Slope),
+			typeof(FloorBlade)
 			// Add more primitives here
 		};
 	}

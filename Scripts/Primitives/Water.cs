@@ -9,12 +9,14 @@ public partial class WaterTile : Atom {
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
-		shape.Size = new Vector2(70, 70); 
-
-		SetCollisionLayerValue(2, true);
-		SetCollisionMaskValue(1, true);
+		shape.Size = new Vector2(70, 45); 
 		
 		collision.Shape = shape;
+		collision.Position = new Vector2(1, 11);
+		
+		SetCollisionLayerValue(5, true);
+		SetCollisionMaskValue(1, true);
+		
 		AddChild(collision);
 		AddToGroup("Water");
 	}
@@ -25,7 +27,6 @@ public partial class WaterTile : Atom {
 }
 
 public partial class Water : Primitive {
-	public List<WaterTile> waterTiles = new List<WaterTile>();
 
 	public Water() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Test;
@@ -36,25 +37,31 @@ public partial class Water : Primitive {
 	public override void GenerateInRoom(Room room) {
 		// Look for the Floor primitive in the room
 		Primitive floorPrimitive = room.Primitives.Find(p => p is Floor);
-
-		//if (floorPrimitive != null) {
-			//List <Atom> floorAtoms = floorPrimitive.GetAtoms();
-			//GD.Print(floorAtoms.Count);
-			//foreach (Atom atom in floorPrimitive.GetAtoms()) {
-				//if (atom is FloorTile) {
-					//WaterTile tile = new WaterTile(); // Create new water tile
-					//tile.GlobalPosition = atom.GlobalPosition;
-					//waterTiles.Add(tile);
-					//AddChild(tile); 
-					//room.AddAtom(tile);
-					//floorPrimitive.ReplaceAtom(atom, tile); // Replace floor tile
-				//} 
-			//}
-			//room.AddPrimitive(this);
-			//GD.Print("💧 Floor tiles replaced with water tiles.");
-		//} else {
-			//GD.PrintErr("❌ No Floor primitive found in the room!");
-		//}
+		List<Atom> tilesToReplace = new List<Atom>();
+		
+		if (floorPrimitive != null) {
+			List <Atom> floorAtoms = floorPrimitive.GetAtoms();
+			GD.Print(floorAtoms.Count);
+			foreach (Atom atom in floorPrimitive.GetAtoms()) {
+				if (atom is FloorTile && atom.GlobalPosition.X > 500) {
+					
+					WaterTile tile = new WaterTile(); // Create new water tile
+					tile.GlobalPosition = atom.GlobalPosition;
+					AddAtom(tile); 
+					room.AddAtom(tile);
+					tilesToReplace.Add(atom);
+				} 
+			}
+			
+			foreach (var tile in tilesToReplace) {
+				floorPrimitive.RemoveAtom(tile);
+			}
+			
+			room.AddPrimitive(this);
+			GD.Print("💧 Floor tiles replaced with water tiles.");
+		} else {
+			GD.PrintErr("❌ No Floor primitive found in the room!");
+		}
 	}
 	
 	//public override void GenerateInRoom(Room room) {

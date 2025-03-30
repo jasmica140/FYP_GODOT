@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://dibmkkw6tox7t"]
+[gd_scene load_steps=34 format=3 uid="uid://dibmkkw6tox7t"]
 
 [ext_resource type="Texture2D" uid="uid://ciq24lqpig58n" path="res://Assets/Sprites/Player/p3_stand.png" id="1_b21mf"]
 [ext_resource type="Script" path="res://Scripts/PlayerController.cs" id="1_pbawd"]
@@ -101,7 +101,10 @@ radius = 35.0
 height = 88.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dinqd"]
-size = Vector2(32, 80)
+size = Vector2(32, 82)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qqenc"]
+size = Vector2(58, 40.5)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_qugw6"]
 animations = [{
@@ -225,8 +228,16 @@ position = Vector2(-167.75, -163)
 collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="LadderChecker"]
-position = Vector2(0, 16)
+position = Vector2(-0.25, 16)
 shape = SubResource("RectangleShape2D_dinqd")
+
+[node name="WaterChecker" type="Area2D" parent="."]
+position = Vector2(-167.75, -163)
+collision_mask = 16
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WaterChecker"]
+position = Vector2(-0.25, 5.75)
+shape = SubResource("RectangleShape2D_qqenc")
 
 [node name="HeartContainer" type="Node2D" parent="."]
 position = Vector2(-167.75, -147)
@@ -261,3 +272,5 @@ sprite_frames = SubResource("SpriteFrames_qugw6")
 
 [connection signal="body_entered" from="LadderChecker" to="." method="_on_ladder_checker_body_entered"]
 [connection signal="body_exited" from="LadderChecker" to="." method="_on_ladder_checker_body_exited"]
+[connection signal="body_entered" from="WaterChecker" to="." method="_on_water_checker_body_entered"]
+[connection signal="body_exited" from="WaterChecker" to="." method="_on_water_checker_body_exited"]

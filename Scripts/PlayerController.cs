@@ -16,9 +16,11 @@ public partial class PlayerController : CharacterBody2D
 	public bool isRecoilingRight = false;
 	public bool isRecoilingLeft = false;
 	public bool onLadder = false;
+	public bool inWater = false;
 	public bool onSlope = false;
 	public bool isHurt = false;
 	private int laddersTouched = 0;
+	private int waterTouched = 0;
 	public float moveSpeed = 150.0f;
 
 	public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
@@ -134,6 +136,11 @@ public partial class PlayerController : CharacterBody2D
 			} else if (direction == -1) {
 				isRecoilingRight = true;
 			}
+		}
+		
+		// handle swim 
+		if (inWater) {
+			velocity.Y = 0;
 		}
 
 		// handle slope
@@ -258,10 +265,31 @@ public partial class PlayerController : CharacterBody2D
 	public void _on_ladder_checker_body_exited(Node2D body) {
 		if (IsLadder(body)) {
 			laddersTouched = Math.Max(0, laddersTouched - 1);
-
+			
 			if (laddersTouched == 0) {
 				onLadder = false;
 				climb.isClimbing = false;
+			}
+		}
+	}
+	
+	private bool IsWater(Node2D body) {
+		return body.IsInGroup("Water");
+	}
+	
+	public void _on_water_checker_body_entered(Node2D body) {		
+		if (IsWater(body)) {
+			waterTouched++;
+			inWater = true;
+		}
+	}
+
+	public void _on_water_checker_body_exited(Node2D body) {
+		if (IsWater(body)) {
+			waterTouched = Math.Max(0, waterTouched - 1);
+			
+			if (waterTouched == 0) {
+				inWater = false;
 			}
 		}
 	}
@@ -275,13 +303,19 @@ public partial class PlayerController : CharacterBody2D
 
 		pc._duckSprite.Visible = ducking;
 		pc._hurtSprite.Visible = isHurt;
+		pc._swimSprite.Visible = inWater;
 		pc._climbSprite.Visible = (climb.isClimbing || onLadder && !isOnFloor() && !jumping) && !ducking && !pc._hurtSprite.Visible;
-		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isOnFloor() || isOnSlope()) && !pc._hurtSprite.Visible;
-		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible;
-		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible;
+		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isOnFloor() || isOnSlope()) && !pc._hurtSprite.Visible && !inWater;
+		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
+		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
 		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible;
 
-		if (pc._walkSprite.Visible)
+		if (pc._swimSprite.Visible)
+		{
+			pc._swimSprite.Play();
+			pc._swimSprite.FlipH = direction == -1;
+		} 
+		else if (pc._walkSprite.Visible)
 		{
 			pc._walkSprite.Play();
 			pc._walkSprite.FlipH = direction == -1;

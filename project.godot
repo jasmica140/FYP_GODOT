@@ -64,3 +64,4 @@ dashLeft={
 2d_physics/layer_2="floor"
 2d_physics/layer_3="ladder"
 2d_physics/layer_4="slope"
+2d_physics/layer_5="water"

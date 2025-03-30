@@ -50,6 +50,16 @@ public abstract partial class Primitive : StaticBody2D
 		return atoms;
 	}	
 	
+	public void RemoveAtom(Atom atom) {
+		if (atoms.Contains(atom)) {
+			atoms.Remove(atom);         // Remove from the list
+			atom.QueueFree();           // Remove from the scene
+			GD.Print($"❌ Removed {atom.GetType().Name} at {atom.GlobalPosition} from {GetType().Name}");
+		} else {
+			GD.Print($"⚠️ Atom not found in {GetType().Name}'s atom list.");
+		}
+	}
+	
 	public void ReplaceAtom(Atom oldAtom, Atom newAtom) {
 		if (atoms.Contains(oldAtom)) {
 			int index = atoms.IndexOf(oldAtom); 

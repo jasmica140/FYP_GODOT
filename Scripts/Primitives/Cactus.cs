@@ -34,11 +34,11 @@ public partial class Cactus : Primitive
 		Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
 		
 		CactusAtom atom = new CactusAtom();
-		atom.GlobalPosition = chosenPosition + new Vector2(0, -25);
+		atom.GlobalPosition = chosenPosition + new Vector2(0, -30);
 		AddAtom(atom);
 		room.AddAtom(atom); 
 		
-		this.Position = atom.GlobalPosition;
+		this.Position = chosenPosition;
 		room.AddPrimitive(this);
 	}
 }

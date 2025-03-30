@@ -51,7 +51,7 @@ public partial class Platform : Primitive
 		AddAtom(atom);
 		room.AddAtom(atom); 
 		
-		this.Position = atom.GlobalPosition;
+		this.Position = position;
 		room.AddPrimitive(this);
 	}
 }

@@ -52,7 +52,7 @@ public partial class Mushroom : Primitive
 		AddAtom(atom);
 		room.AddAtom(atom); 
 		
-		this.Position = atom.GlobalPosition;
+		this.Position = chosenPosition;
 		room.AddPrimitive(this);
 	}
 }

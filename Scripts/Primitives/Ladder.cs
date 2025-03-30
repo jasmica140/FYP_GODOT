@@ -25,8 +25,6 @@ public partial class LadderTile : Atom {
 }
 
 public partial class Ladder : Primitive {
-	
-	public List<LadderTile> ladderTiles = new List<LadderTile>();
 
 	public Ladder() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.MovementModifier;
@@ -55,11 +53,11 @@ public partial class Ladder : Primitive {
 			Vector2 position =  chosenPosition - new Vector2(0, y * 70); 
 			LadderTile tile = new LadderTile();
 			tile.GlobalPosition = position;
-			ladderTiles.Add(tile);
-			AddChild(tile); // Add the tile to the Floor primitive
+			AddAtom(tile);
 			room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 		}
 		
+		this.Position = chosenPosition;
 		room.AddPrimitive(this);
 	}
 	

@@ -8,13 +8,6 @@ public partial class CactusAtom : Atom {
 	}
 	
 	public override bool ValidatePlacement(Room room) {
-		//bool hasFloorBelow = room.HasPrimitiveBelow(this.GlobalPosition, typeof(Floor));
-//
-		//if (!hasFloorBelow) {
-			//GD.Print($"❌ ERROR: Mushroom at {this.GlobalPosition} has no valid floor below!");
-			//return false;
-		//}
-
 		return true;
 	}
 }
@@ -39,14 +32,13 @@ public partial class Cactus : Primitive
 		// Pick a random valid position from the list
 		Random random = new Random();
 		Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-
-		this.GlobalPosition = chosenPosition;
-		room.AddPrimitive(this);
 		
 		CactusAtom atom = new CactusAtom();
-		atoms.Add(atom);
-		AddChild(atom);
-		atom.GlobalPosition = chosenPosition;
-		room.AddAtom(atom); // ✅ `AddAtom()` is called here to place each FloorTile atom
+		atom.GlobalPosition = chosenPosition + new Vector2(0, -25);
+		AddAtom(atom);
+		room.AddAtom(atom); 
+		
+		this.Position = atom.GlobalPosition;
+		room.AddPrimitive(this);
 	}
 }

@@ -54,7 +54,7 @@ public partial class Room : Node2D
 
 		do {
 			int x = rng.Next(1, Width - 1);
-			int y = rng.Next(1, Height - 1);
+			int y = rng.Next(-Height + 1, 0);
 			
 			position = new Vector2(x * 70, y * 70); // Ensure spacing
 			
@@ -121,14 +121,12 @@ public partial class Room : Node2D
 		foreach (Type primitiveType in PrimitiveRegistry.GetAllPrimitives()) // Get all available primitives
 		{
 			Primitive tempPrimitive = (Primitive)Activator.CreateInstance(primitiveType);
-			if (tempPrimitive.Category == category)
-			{
+			if (tempPrimitive.Category == category) {
 				matchingPrimitives.Add(primitiveType);
 			}
 		}
 
-		if (matchingPrimitives.Count == 0)
-		{
+		if (matchingPrimitives.Count == 0) {
 			GD.Print($"⚠️ WARNING: No primitives found for category {category}");
 			return null;
 		}

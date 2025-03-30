@@ -44,9 +44,6 @@ public partial class MiddleSlopeTile : Atom {
 }
 
 public partial class Slope : Primitive {
-	public List<SlopeTile> slopeTiles = new List<SlopeTile>();
-	public List<MiddleSlopeTile> middleSlopeTiles = new List<MiddleSlopeTile>();
-	public List<FillerStoneTile> fillerStoneTiles = new List<FillerStoneTile>();
 	//public List<Anchor> anchors = new List<Anchor>();
 	
 	public Slope() : base(Vector2.Zero) {
@@ -72,27 +69,25 @@ public partial class Slope : Primitive {
 			Vector2 slopePosition =  chosenPosition + new Vector2(i * 70, -i * 70); 
 			SlopeTile slopeTile = new SlopeTile();
 			slopeTile.GlobalPosition = slopePosition;
-			slopeTiles.Add(slopeTile);
-			AddChild(slopeTile); // Add the tile to the Floor primitive
+			AddAtom(slopeTile); // Add the tile to the Floor primitive
 			room.AddAtom(slopeTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 			
 			Vector2 midSlopePosition =  slopePosition + new Vector2(70, 0); 
 			MiddleSlopeTile midSlopeTile = new MiddleSlopeTile();
 			midSlopeTile.GlobalPosition = midSlopePosition;
-			middleSlopeTiles.Add(midSlopeTile);
-			AddChild(midSlopeTile); // Add the tile to the Floor primitive
+			AddAtom(midSlopeTile);
 			room.AddAtom(midSlopeTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 			
 			for (int j = 0; j < i; j++) {
 				Vector2 fillerTilePosition =  slopePosition + new Vector2(70, (j+1)*70); 
 				FillerStoneTile fillerStoneTile = new FillerStoneTile();
 				fillerStoneTile.GlobalPosition = fillerTilePosition;
-				fillerStoneTiles.Add(fillerStoneTile);
-				AddChild(fillerStoneTile); // Add the tile to the Floor primitive
+				AddAtom(fillerStoneTile);
 				room.AddAtom(fillerStoneTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 			}
 		}
 		
+		this.Position = chosenPosition;
 		room.AddPrimitive(this);
 	}
 }

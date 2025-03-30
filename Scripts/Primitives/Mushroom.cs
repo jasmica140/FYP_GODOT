@@ -23,7 +23,7 @@ public partial class MushroomAtom : Atom {
 	
 	public override bool ValidatePlacement(Room room) {
 		// Ensure Mushroom is placed on a floor
-		return room.HasPrimitiveBelow(GlobalPosition, typeof(Floor));
+		return true;
 	}
 }
 
@@ -46,14 +46,13 @@ public partial class Mushroom : Primitive
 		// Pick a random valid position from the list
 		Random random = new Random();
 		Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-		
-		this.GlobalPosition = chosenPosition;
-		room.AddPrimitive(this);
 
 		MushroomAtom atom = new MushroomAtom();
-		atoms.Add(atom);
-		AddChild(atom);
 		atom.GlobalPosition = chosenPosition;
-		room.AddAtom(atom); // ✅ `AddAtom()` is called here to place each FloorTile atom
+		AddAtom(atom);
+		room.AddAtom(atom); 
+		
+		this.Position = atom.GlobalPosition;
+		room.AddPrimitive(this);
 	}
 }

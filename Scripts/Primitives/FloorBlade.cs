@@ -29,14 +29,14 @@ public partial class FloorBladeAtom : Atom {
 	
 	public override bool ValidatePlacement(Room room) {
 		// Ensure Mushroom is placed on a floor
-		return room.HasPrimitiveBelow(GlobalPosition, typeof(Floor));
+		return true;
 	}
 }
 
 public partial class FloorBlade : Primitive
 {
 	public FloorBlade() : base(Vector2.Zero) {	
-		Category = PrimitiveCategory.Test;
+		Category = PrimitiveCategory.Hazard;
 	}  // Default constructor needed for instantiation
 	
 	public FloorBlade(Vector2 position) : base(position) {}
@@ -52,14 +52,13 @@ public partial class FloorBlade : Primitive
 		// Pick a random valid position from the list
 		Random random = new Random();
 		Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-		
-		this.GlobalPosition = chosenPosition + new Vector2(0, 20);
-		room.AddPrimitive(this);
 
 		FloorBladeAtom atom = new FloorBladeAtom();
-		atoms.Add(atom);
-		AddChild(atom);
 		atom.GlobalPosition = chosenPosition + new Vector2(0, 20);
-		room.AddAtom(atom); // ✅ `AddAtom()` is called here to place each FloorTile atom
+		AddAtom(atom);
+		room.AddAtom(atom); 
+		
+		this.Position = atom.GlobalPosition;
+		room.AddPrimitive(this);
 	}
 }

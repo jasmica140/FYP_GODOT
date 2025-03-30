@@ -46,13 +46,12 @@ public partial class Platform : Primitive
 			return;
 		}
 
-		this.GlobalPosition = position;
-		room.AddPrimitive(this);
-
 		PlatformTile atom = new PlatformTile();
-		atoms.Add(atom);
-		AddChild(atom);
 		atom.GlobalPosition = position;
-		room.AddAtom(atom); // ✅ `AddAtom()` is called here to place each FloorTile atom
+		AddAtom(atom);
+		room.AddAtom(atom); 
+		
+		this.Position = atom.GlobalPosition;
+		room.AddPrimitive(this);
 	}
 }

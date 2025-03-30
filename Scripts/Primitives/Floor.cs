@@ -25,7 +25,6 @@ public partial class FloorTile : Atom {
 }
 
 public partial class Floor : Primitive {
-	public List<FloorTile> floorTiles = new List<FloorTile>();
 
 	public Floor() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Floor;
@@ -36,15 +35,15 @@ public partial class Floor : Primitive {
 	public override void GenerateInRoom(Room room) {
 		
 		for (int x = 0; x < room.Width; x++) {
-			Vector2 position = new Vector2(x * 70, (room.Height - 1) * 70); 
+			Vector2 position = new Vector2(x * 70, 0); 
 			
 			FloorTile tile = new FloorTile();
 			tile.GlobalPosition = position;
-			floorTiles.Add(tile);
-			AddChild(tile); // Add the tile to the Floor primitive
+			AddAtom(tile);
 			room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 		}
 
+		//this.GlobalPosition = new Vector2(0, 0); 
 		room.AddPrimitive(this);
 	}
 }

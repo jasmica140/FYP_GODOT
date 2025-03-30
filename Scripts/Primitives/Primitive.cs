@@ -11,7 +11,8 @@ public static class PrimitiveRegistry {
 			typeof(Mushroom),
 			typeof(Platform),
 			typeof(Slope),
-			typeof(FloorBlade)
+			typeof(FloorBlade),
+			typeof(Water)
 			// Add more primitives here
 		};
 	}
@@ -39,10 +40,35 @@ public abstract partial class Primitive : StaticBody2D
 		//sprite.Position += new Vector2(16, 16); // Offset to prevent stacking
 	}
 	
+	// helper to add an atom and track it
+	public void AddAtom(Atom atom) {
+		atoms.Add(atom);
+		AddChild(atom);
+	}
+	
 	public List<Atom> GetAtoms() {
 		return atoms;
 	}	
 	
+	public void ReplaceAtom(Atom oldAtom, Atom newAtom) {
+		if (atoms.Contains(oldAtom)) {
+			int index = atoms.IndexOf(oldAtom); 
+			atoms[index] = newAtom; // Replace in internal list
+			oldAtom.QueueFree(); // Remove from scene
+			AddChild(newAtom); // Add to scene
+			newAtom.GlobalPosition = oldAtom.GlobalPosition; // Copy position
+			GD.Print($"🔄 Replaced {oldAtom.GetType().Name} with {newAtom.GetType().Name} at {newAtom.GlobalPosition}");
+		} else {
+			GD.PrintErr("❌ Tried to replace an atom not part of this primitive.");
+		}
+	}
+	
+	public void ReplaceAtomAt(Vector2 position, Atom newAtom) {
+		Atom target = atoms.Find(a => a.GlobalPosition == position);
+		if (target != null) {
+			ReplaceAtom(target, newAtom);
+		}
+	}
 
 	// Every Primitive must define how it generates itself in a Room
 	public abstract void GenerateInRoom(Room room);

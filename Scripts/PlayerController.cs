@@ -101,6 +101,11 @@ public partial class PlayerController : CharacterBody2D
 			velocity.Y = 0;
 		}
 		
+		// handle swim 
+		if (inWater) {
+			velocity.Y = 0;
+		}
+		
 		// handle walk
 		velocity.X = 0;
 		if (Input.IsKeyPressed(Key.Left)) {
@@ -136,11 +141,6 @@ public partial class PlayerController : CharacterBody2D
 			} else if (direction == -1) {
 				isRecoilingRight = true;
 			}
-		}
-		
-		// handle swim 
-		if (inWater) {
-			velocity.Y = 0;
 		}
 
 		// handle slope

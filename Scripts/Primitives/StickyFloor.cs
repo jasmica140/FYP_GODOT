@@ -3,23 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public partial class WaterTile : Atom {
-	public WaterTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/liquidWaterTop_mid.png")); 
+public partial class StickyFloorTile : Atom {
+	public StickyFloorTile() {
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Candy expansion/Tiles/cakeMid.png")); 
 		
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
-		shape.Size = new Vector2(70, 45); 
-		
-		collision.Shape = shape;
-		collision.Position = new Vector2(1, 11);
-		
-		SetCollisionLayerValue(5, true);
+		shape.Size = new Vector2(70, 70); 
+
+		SetCollisionLayerValue(2, true);
 		SetCollisionMaskValue(1, true);
 		
+		collision.Shape = shape;
 		AddChild(collision);
-		AddToGroup("Water");
+		AddToGroup("StickyFloor");
 	}
 	
 	public override bool ValidatePlacement(Room room) {
@@ -27,13 +25,13 @@ public partial class WaterTile : Atom {
 	}
 }
 
-public partial class Water : Primitive {
+public partial class StickyFloor : Primitive {
 
-	public Water() : base(Vector2.Zero) {
-		Category = PrimitiveCategory.MovementModifier;
+	public StickyFloor() : base(Vector2.Zero) {
+		Category = PrimitiveCategory.Test;
 	}  // Required constructor
 
-	public Water(Vector2 position) : base(position) {}
+	public StickyFloor(Vector2 position) : base(position) {}
 
 	public override void GenerateInRoom(Room room) {
 		// Look for the Floor primitive in the room
@@ -52,19 +50,19 @@ public partial class Water : Primitive {
 		float upper = Mathf.Max(x1, x2);
 	
 		if (floorPrimitive != null) {
-			foreach (Atom atom in floorTiles) {
-				if (atom is FloorTile && atom.GlobalPosition.X > lower && atom.GlobalPosition.X < upper) {
+			foreach (Atom floorTile in floorTiles) {
+				if (floorTile is FloorTile && floorTile.GlobalPosition.X > lower && floorTile.GlobalPosition.X < upper) {
 					
-					WaterTile tile = new WaterTile(); // Create new water tile
-					tile.GlobalPosition = atom.GlobalPosition;
+					StickyFloorTile tile = new StickyFloorTile(); // Create new water tile
+					tile.GlobalPosition = floorTile.GlobalPosition;
 					AddAtom(tile); 
 					room.AddAtom(tile);
-					tilesToReplace.Add(atom);
+					tilesToReplace.Add(floorTile);
 				} 
 			}
 			
-			foreach (var tile in tilesToReplace) {
-				floorPrimitive.RemoveAtom(tile);
+			foreach (var floorTile in tilesToReplace) {
+				floorPrimitive.RemoveAtom(floorTile);
 			}
 			
 			this.Position = tilesToReplace[0].GlobalPosition;

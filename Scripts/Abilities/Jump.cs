@@ -32,7 +32,7 @@ public class Jump : Ability
 	{
 		if (variableHeight) {
 			
-			if (player.isOnFloor()){
+			if (player.isOnFloor() || player.inWater){
 				startJumpYPos = player.Position.Y;
 				jumpCount++;
 				isJumping = true;
@@ -46,13 +46,13 @@ public class Jump : Ability
 		}
 		else if (!variableHeight) {
 			
-			if (player.isOnFloor() && jumpCount == 0)
+			if ((player.isOnFloor() || player.inWater) && jumpCount == 0)
 			{
 				player.velocity.Y = -airAcceleration; // First jump
 				jumpCount++; // First jump is executed, set count to 1
 				jumped = true;
 			}
-			else if (doubleJump && !player.isOnFloor() && jumpCount == 1) // If we are in the air and jump is pressed again
+			else if (doubleJump && (!player.isOnFloor() || !player.inWater) && jumpCount == 1) // If we are in the air and jump is pressed again
 			{
 				player.velocity.Y = -djAirAcceleration; // Double jump 
 				jumpCount++; // Second jump is executed, set count to 2

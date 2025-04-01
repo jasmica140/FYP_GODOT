@@ -99,8 +99,8 @@ public partial class PlayerController : CharacterBody2D
 			velocity.Y = gravity * (float)delta;
 		} else if (isOnFloor() || isOnSlope()) {
 			velocity.Y = 0;
-		}
-		
+		} 
+				
 		// handle swim 
 		if (inWater) {
 			velocity.Y = 0;
@@ -109,14 +109,21 @@ public partial class PlayerController : CharacterBody2D
 		// handle walk
 		velocity.X = 0;
 		if (Input.IsKeyPressed(Key.Left)) {
-			velocity.X = -moveSpeed;
-			if (isOnSlope()) {
-				velocity.Y = moveSpeed;
+			direction = -1; // face left
+			if (!isNearWall()) { // dont move horizontally if against wall
+				velocity.X = -moveSpeed;
+				if (isOnSlope()) {
+					velocity.Y = moveSpeed;
+				}
 			}
+			
 		} else if (Input.IsKeyPressed(Key.Right)) {
-			velocity.X = moveSpeed;
-			if (isOnSlope()) {
-				velocity.Y = -moveSpeed;
+			direction = 1; // face right
+			if (!isNearWall()) { // dont move horizontally if against wall
+				velocity.X = moveSpeed;
+				if (isOnSlope()) {
+					velocity.Y = -moveSpeed;
+				}
 			}
 		}
 

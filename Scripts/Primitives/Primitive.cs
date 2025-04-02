@@ -13,7 +13,8 @@ public static class PrimitiveRegistry {
 			typeof(Slope),
 			typeof(FloorBlade),
 			typeof(Water),
-			typeof(StickyFloor)
+			typeof(StickyFloor),
+			typeof(SlipperyFloor)
 			// Add more primitives here
 		};
 	}

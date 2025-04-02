@@ -5,7 +5,7 @@ using System.Linq;
 
 public partial class SlipperyFloorTile : Atom {
 	public SlipperyFloorTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Candy expansion/Tiles/cakeMid.png")); 
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/tundraMid.png")); 
 		
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();

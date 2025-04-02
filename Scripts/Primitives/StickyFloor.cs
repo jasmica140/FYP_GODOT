@@ -28,7 +28,7 @@ public partial class StickyFloorTile : Atom {
 public partial class StickyFloor : Primitive {
 
 	public StickyFloor() : base(Vector2.Zero) {
-		Category = PrimitiveCategory.Test;
+		Category = PrimitiveCategory.MovementModifier;
 	}  // Required constructor
 
 	public StickyFloor(Vector2 position) : base(position) {}

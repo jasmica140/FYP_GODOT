@@ -112,7 +112,12 @@ public partial class PlayerController : CharacterBody2D
 			direction = -1; // face left
 			if (!isNearWall()) { // dont move horizontally if against wall
 				velocity.X = -moveSpeed;
-				if (isOnSlope()) {
+			
+				if (isOnSlipperyFloor()) { // handle slippery floor
+					velocity.X = -moveSpeed * 4;
+				} else if (isOnStickyFloor()) { // handle sticky floor
+					velocity.X = -moveSpeed / 2;
+				} else if (isOnSlope()) { // handle slope
 					velocity.Y = moveSpeed;
 				}
 			}
@@ -121,11 +126,17 @@ public partial class PlayerController : CharacterBody2D
 			direction = 1; // face right
 			if (!isNearWall()) { // dont move horizontally if against wall
 				velocity.X = moveSpeed;
-				if (isOnSlope()) {
+				
+				if (isOnSlipperyFloor()) { // handle slippery floor
+					velocity.X = moveSpeed * 4;
+				} else if (isOnStickyFloor()) { // handle sticky floor
+					velocity.X = moveSpeed / 2;
+				} else if (isOnSlope()) { // handle slope
 					velocity.Y = -moveSpeed;
 				}
 			}
 		}
+		
 
 		// handle right dash
 		if (Input.IsActionJustPressed("dashRight")) {
@@ -231,6 +242,26 @@ public partial class PlayerController : CharacterBody2D
 	public bool isOnFloor() { //check if player is near floor
 		return pc._floorChecker.IsColliding();
 	}
+	
+	
+	public bool isOnStickyFloor() { //check if player is on mushroom
+		if (!pc._floorChecker.IsColliding())
+			return false;
+		if (pc._floorChecker.GetCollider() is not PhysicsBody2D body)
+			return false;
+		
+		return body.IsInGroup("StickyFloor");
+	}
+	
+	public bool isOnSlipperyFloor() { //check if player is on mushroom
+		if (!pc._floorChecker.IsColliding())
+			return false;
+		if (pc._floorChecker.GetCollider() is not PhysicsBody2D body)
+			return false;
+		
+		return body.IsInGroup("SlipperyFloor");
+	}
+	
 	
 	public bool isNearWall() { //check if player is near a wall
 		return pc._wallChecker.IsColliding();

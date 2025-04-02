@@ -32,12 +32,15 @@ public abstract partial class Primitive : StaticBody2D
 
 	// Each primitive contains a list of atoms
 	protected List<Atom> atoms = new List<Atom>();
+	public List<Anchor> Anchors { get; protected set; } = new();
+
 	//protected List <Anchor> anochor = new List<anchor>();
 
 	public Primitive(Vector2 position) {
 		Position = position;
 		sprite = new Sprite2D();
 		AddChild(sprite);
+		
 		//sprite.Scale = new Vector2(3, 3); // Scale up by 3x
 		//sprite.Position += new Vector2(16, 16); // Offset to prevent stacking
 	}
@@ -84,4 +87,23 @@ public abstract partial class Primitive : StaticBody2D
 
 	// Every Primitive must define how it generates itself in a Room
 	public abstract void GenerateInRoom(Room room);
+	public abstract void GenerateAnchors();
+	
+	public override void _Draw()
+	{
+		foreach (Anchor anchor in Anchors)
+		{
+			// Draw orbit
+			DrawCircle(ToLocal(anchor.Position), anchor.Radius, new Color(1, 1, 0, 0.3f)); // yellow transparent
+
+			// Draw point
+			DrawCircle(ToLocal(anchor.Position), 4, new Color(1, 0, 0)); // red center
+		}
+
+		// Optional: Draw lines between your own anchors (for testing)
+		for (int i = 0; i < Anchors.Count - 1; i++)
+		{
+			DrawLine(ToLocal(Anchors[i].Position), ToLocal(Anchors[i + 1].Position), Colors.Green, 2);
+		}
+	}
 }

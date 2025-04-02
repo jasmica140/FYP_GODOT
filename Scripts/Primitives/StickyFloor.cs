@@ -72,4 +72,6 @@ public partial class StickyFloor : Primitive {
 			GD.PrintErr("❌ No Floor primitive found in the room!");
 		}
 	}
+	
+	public override void GenerateAnchors() {}
 }

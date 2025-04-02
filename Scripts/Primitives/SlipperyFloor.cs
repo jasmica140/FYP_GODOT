@@ -28,7 +28,7 @@ public partial class SlipperyFloorTile : Atom {
 public partial class SlipperyFloor : Primitive {
 
 	public SlipperyFloor() : base(Vector2.Zero) {
-		Category = PrimitiveCategory.Test;
+		Category = PrimitiveCategory.MovementModifier;
 	}  // Required constructor
 
 	public SlipperyFloor(Vector2 position) : base(position) {}
@@ -72,4 +72,6 @@ public partial class SlipperyFloor : Primitive {
 			GD.PrintErr("❌ No Floor primitive found in the room!");
 		}
 	}
+	
+	public override void GenerateAnchors() {}
 }

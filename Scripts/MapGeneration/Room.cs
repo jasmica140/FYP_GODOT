@@ -25,6 +25,7 @@ public partial class Room : Node2D
 			if (chosenPrimitive != null) { chosenPrimitive.GenerateInRoom(this); }
 		}
 		
+		AnchorConnector.ExpandRoomFromAnchors(this, 10);
 		SpawnPlayer(); // spawn the player after generating the room
 	}
 	
@@ -71,6 +72,18 @@ public partial class Room : Node2D
 		return position;
 	}
 
+	public List<Anchor> GetAllAnchors()
+	{
+		List<Anchor> anchors = new List<Anchor>();
+		
+		foreach (Primitive primitive in Primitives)
+		{
+			anchors.AddRange(primitive.Anchors);
+		}
+
+		return anchors;
+	}
+	
 	public void AddAtom(Atom atom) {
 		// Prevent duplicate placement of atoms
 		if (Primitives.Exists(p => p.GlobalPosition == atom.GlobalPosition)) {
@@ -108,6 +121,7 @@ public partial class Room : Node2D
 		}
 
 		// If all atoms pass validation, add the primitive
+		primitive.GenerateAnchors();
 		Primitives.Add(primitive);		
 		Node2D primitivesContainer = GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
 		primitivesContainer.AddChild(primitive); // Add atoms to the correct container

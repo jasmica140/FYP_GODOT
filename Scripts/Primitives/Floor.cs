@@ -46,4 +46,6 @@ public partial class Floor : Primitive {
 		//this.GlobalPosition = new Vector2(0, 0); 
 		room.AddPrimitive(this);
 	}
+	
+	public override void GenerateAnchors() {}
 }

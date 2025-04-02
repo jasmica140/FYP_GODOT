@@ -78,7 +78,7 @@ public partial class Slope : Primitive {
 			AddAtom(midSlopeTile);
 			room.AddAtom(midSlopeTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 			
-			for (int j = 0; j < i; j++) {
+			for (int j = 0; j < i; j++) { // maybe i + 1 to add a layer of fillers under slope
 				Vector2 fillerTilePosition =  slopePosition + new Vector2(70, (j+1)*70); 
 				FillerStoneTile fillerStoneTile = new FillerStoneTile();
 				fillerStoneTile.GlobalPosition = fillerTilePosition;
@@ -90,4 +90,6 @@ public partial class Slope : Primitive {
 		this.Position = chosenPosition;
 		room.AddPrimitive(this);
 	}
+	
+	public override void GenerateAnchors() {}
 }

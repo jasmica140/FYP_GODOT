@@ -54,4 +54,6 @@ public partial class Platform : Primitive
 		this.Position = position;
 		room.AddPrimitive(this);
 	}
+	
+	public override void GenerateAnchors() {}
 }

@@ -41,4 +41,6 @@ public partial class Cactus : Primitive
 		this.Position = chosenPosition;
 		room.AddPrimitive(this);
 	}
+	
+	public override void GenerateAnchors() {}
 }

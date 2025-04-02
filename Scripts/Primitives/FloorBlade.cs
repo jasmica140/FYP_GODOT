@@ -61,4 +61,6 @@ public partial class FloorBlade : Primitive
 		this.Position = chosenPosition;
 		room.AddPrimitive(this);
 	}
+	
+	public override void GenerateAnchors() {}
 }

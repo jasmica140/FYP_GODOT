@@ -1,10 +1,12 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class MushroomAtom : Atom {
 	public MushroomAtom() {
 		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Mushroom expansion/PNG/tallShroom_red.png")); 
+		Size = new Vector2(44, 41);
 		
 		CollisionShape2D collision = new CollisionShape2D();
 		CapsuleShape2D shape = new CapsuleShape2D();
@@ -30,7 +32,7 @@ public partial class MushroomAtom : Atom {
 public partial class Mushroom : Primitive
 {
 	public Mushroom() : base(Vector2.Zero) {	
-		Category = PrimitiveCategory.MovementModifier;
+		Category = PrimitiveCategory.Test;
 	}  // Default constructor needed for instantiation
 	
 	public Mushroom(Vector2 position) : base(position) {}
@@ -54,5 +56,29 @@ public partial class Mushroom : Primitive
 		
 		this.Position = chosenPosition;
 		room.AddPrimitive(this);
+	}
+	
+	public override void GenerateAnchors()
+	{
+		Anchors.Clear();
+
+		Atom tile = GetAtoms().First(); // Assume one atom
+
+		Vector2 basePos = tile.GlobalPosition;
+		float orbit = 10f;
+
+		// 🟢 Anchor at mushroom base
+		Anchors.Add(new Anchor(basePos + new Vector2(0, tile.Size.Y / 2), orbit, "base"));
+
+		// Estimate jump apex — e.g. 3 tiles up
+		float jumpHeight = tile.Size.Y * 10;
+		Vector2 apexPos = basePos + new Vector2(0, -jumpHeight);
+
+		// 🔵 Apex anchor
+		Anchors.Add(new Anchor(apexPos, orbit, "apex"));
+
+		// 🔵 Apex side anchors
+		Anchors.Add(new Anchor(apexPos + new Vector2(-tile.Size.X, 0), orbit, "left_apex"));
+		Anchors.Add(new Anchor(apexPos + new Vector2(tile.Size.X, 0), orbit, "right_apex"));
 	}
 }

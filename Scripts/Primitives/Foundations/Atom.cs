@@ -4,6 +4,7 @@ using System;
 public abstract partial class Atom : StaticBody2D
 {
 	protected Sprite2D sprite;
+	public Vector2 Size { get; protected set; } = new Vector2(70, 70); // default size (override per atom)
 
 	public Atom()
 	{
@@ -16,6 +17,6 @@ public abstract partial class Atom : StaticBody2D
 		sprite.Texture = texture;
 	}
 
-	// Every Atom defines its own placement rules
+	// every atom defines its own placement rules
 	public abstract bool ValidatePlacement(Room room);
 }

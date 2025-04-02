@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cov670x0i8fl8"]
 
-[ext_resource type="Script" path="res://Scripts/Primitives/Cactus.cs" id="1_nwmu7"]
+[ext_resource type="Script" uid="uid://d2sq6w7riekc5" path="res://Scripts/Primitives/Cactus.cs" id="1_nwmu7"]
 [ext_resource type="Texture2D" uid="uid://cq0jg2at3j28m" path="res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Enemy sprites/snakeSlime.png" id="2_5m0y8"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1u21k"]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://j62s74s26o0y"]
 
-[ext_resource type="Script" path="res://Scripts/Primitives/Mushroom.cs" id="1_yte0r"]
+[ext_resource type="Script" uid="uid://dcrbheia2a4xo" path="res://Scripts/Primitives/Mushroom.cs" id="1_yte0r"]
 [ext_resource type="Texture2D" uid="uid://c6d0404e6y4tb" path="res://Assets/kenney_platformer-art-deluxe/Mushroom expansion/PNG/tallShroom_red.png" id="2_3c1eb"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hg6ab"]

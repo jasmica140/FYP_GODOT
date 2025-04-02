@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cxewafy4tgrth"]
 
-[ext_resource type="Script" path="res://Scripts/ParamaterEditor.cs" id="1_awjve"]
+[ext_resource type="Script" uid="uid://crdtatjvia3re" path="res://Scripts/ParamaterEditor.cs" id="1_awjve"]
 
 [node name="ParamaterEditor" type="Node2D" node_paths=PackedStringArray("abilitiesContainer", "jumpContainer", "doubleJumpContainer", "wallJumpContainer", "dashContainer", "climbContainer")]
 script = ExtResource("1_awjve")

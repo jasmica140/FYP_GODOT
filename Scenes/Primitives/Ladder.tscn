@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cy0rf8yqnlqrw"]
 
-[ext_resource type="Script" path="res://Scripts/Primitives/Ladder.cs" id="1_hntlk"]
+[ext_resource type="Script" uid="uid://bmiu1iytb8h41" path="res://Scripts/Primitives/Ladder.cs" id="1_hntlk"]
 [ext_resource type="Texture2D" uid="uid://cda5vrxivq8fy" path="res://Assets/Sprites/Tiles/ladder_mid.png" id="2_i6jb8"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mtvmh"]

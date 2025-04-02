@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://co2e58prkqisy"
-path="res://.godot/imported/p1_spritesheet.png-b6f5e8d79f76331d5dc4386e61577be7.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Assets/Sprites/Player/p1_spritesheet.png"
-dest_files=["res://.godot/imported/p1_spritesheet.png-b6f5e8d79f76331d5dc4386e61577be7.ctex"]
 
 [params]
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=34 format=3 uid="uid://dibmkkw6tox7t"]
 
 [ext_resource type="Texture2D" uid="uid://ciq24lqpig58n" path="res://Assets/Sprites/Player/p3_stand.png" id="1_b21mf"]
-[ext_resource type="Script" path="res://Scripts/PlayerController.cs" id="1_pbawd"]
+[ext_resource type="Script" uid="uid://bsvtii8103kya" path="res://Scripts/PlayerController.cs" id="1_pbawd"]
 [ext_resource type="Texture2D" uid="uid://ccqwdr1vpwhd3" path="res://Assets/Sprites/Player/p3_duck.png" id="3_1hyao"]
 [ext_resource type="Texture2D" uid="uid://m0qrnumbxfwx" path="res://Assets/Sprites/Player/p3_walk/PNG/p3_walk01.png" id="3_q0m8r"]
 [ext_resource type="Texture2D" uid="uid://bfkvh6xcix0e1" path="res://Assets/Sprites/Player/p3_walk/PNG/p3_walk02.png" id="4_bqb22"]
@@ -21,7 +21,7 @@
 [ext_resource type="Texture2D" uid="uid://dogjoofvy3hsx" path="res://Assets/kenney_platformer-art-deluxe/Base pack/HUD/hud_p3Alt.png" id="19_b0g2c"]
 [ext_resource type="Texture2D" uid="uid://ntjgw4c0nioc" path="res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Alien sprites/alienPink_hurt.png" id="19_tqd5w"]
 [ext_resource type="Texture2D" uid="uid://d4fa8lgqmfty3" path="res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Alien sprites/alienPink_swim1.png" id="20_0cu0m"]
-[ext_resource type="Script" path="res://Scripts/HeartContainer.cs" id="20_8qk1u"]
+[ext_resource type="Script" uid="uid://dekkbv0537t3i" path="res://Scripts/HeartContainer.cs" id="20_8qk1u"]
 [ext_resource type="Texture2D" uid="uid://b0aisfv03f1ik" path="res://Assets/kenney_platformer-art-deluxe/Base pack/HUD/hud_heartFull.png" id="21_0a6up"]
 [ext_resource type="Texture2D" uid="uid://tcs43qxghjx8" path="res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Alien sprites/alienPink_swim2.png" id="21_y6ktn"]
 [ext_resource type="Texture2D" uid="uid://bqayh33a7lxja" path="res://Assets/kenney_platformer-art-deluxe/Base pack/HUD/hud_heartHalf.png" id="22_ohphr"]

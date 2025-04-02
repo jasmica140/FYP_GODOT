@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=3 uid="uid://tp0dc17sjsth"]
 
 [ext_resource type="TileSet" uid="uid://c1mvg1jvbs0ty" path="res://new_tile_set.tres" id="1_i5bg7"]
-[ext_resource type="Script" path="res://Scripts/MapGeneration/Room.cs" id="1_sn8br"]
+[ext_resource type="Script" uid="uid://cre6f2dkcmhl4" path="res://Scripts/MapGeneration/Room.cs" id="1_sn8br"]
 [ext_resource type="Texture2D" uid="uid://cda5vrxivq8fy" path="res://Assets/Sprites/Tiles/ladder_mid.png" id="2_c7pec"]
 [ext_resource type="PackedScene" uid="uid://dibmkkw6tox7t" path="res://Scenes/player.tscn" id="2_pfc3c"]
 [ext_resource type="Texture2D" uid="uid://j1uvrge6ugpe" path="res://Assets/Sprites/Tiles/ladder_top.png" id="3_qs1p8"]

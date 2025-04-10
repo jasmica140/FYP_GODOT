@@ -32,7 +32,7 @@ public partial class MushroomAtom : Atom {
 public partial class Mushroom : Primitive
 {
 	public Mushroom() : base(Vector2.Zero) {	
-		Category = PrimitiveCategory.Test;
+		Category = PrimitiveCategory.MovementModifier;
 	}  // Default constructor needed for instantiation
 	
 	public Mushroom(Vector2 position) : base(position) {}

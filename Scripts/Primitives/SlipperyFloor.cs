@@ -6,11 +6,12 @@ using System.Linq;
 public partial class SlipperyFloorTile : Atom {
 	public SlipperyFloorTile() {
 		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/tundraMid.png")); 
+		Size = new Vector2(70, 70); 
 		
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
-		shape.Size = new Vector2(70, 70); 
+		shape.Size = Size; 
 
 		SetCollisionLayerValue(2, true);
 		SetCollisionMaskValue(1, true);
@@ -73,5 +74,30 @@ public partial class SlipperyFloor : Primitive {
 		}
 	}
 	
-	public override void GenerateAnchors() {}
+	public override void GenerateAnchors()
+	{
+		Anchors.Clear();
+
+		List<Atom> tiles = GetAtoms(); // This should return the ladder tiles
+
+		if (tiles.Count == 0)
+			return;
+
+		// Sort by Y to identify top and bottom
+		tiles.Sort((a, b) => a.GlobalPosition.Y.CompareTo(b.GlobalPosition.Y));
+
+		float orbit = 20f; // radius in pixels
+
+		Vector2 offsetUp = new Vector2(0, -tiles.First().Size.Y / 2);
+		Vector2 offsetDown = new Vector2(0, tiles.First().Size.Y / 2);
+		Vector2 offsetSide = new Vector2(tiles.First().Size.X / 2, 0);
+		
+		foreach (Atom tile in tiles) {
+			Vector2 pos = tile.GlobalPosition;
+			Anchors.Add(new Anchor(pos + offsetUp - offsetSide, orbit, "topLeft"));
+			Anchors.Add(new Anchor(pos + offsetUp + offsetSide, orbit, "topRight"));
+			Anchors.Add(new Anchor(pos - offsetSide, orbit, "left")); 
+			Anchors.Add(new Anchor(pos + offsetSide, orbit, "right"));
+		}
+	}
 }

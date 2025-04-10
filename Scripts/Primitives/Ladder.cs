@@ -29,40 +29,52 @@ public partial class LadderTile : Atom {
 
 public partial class Ladder : Primitive {
 
+	public Vector2 position { get; set; }
+	public int length { get; set; }
+
 	public Ladder() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.MovementModifier;
 	}  // Required constructor
 
 	public Ladder(Vector2 position) : base(position) {}
-
-	private void addCollision() {
-		
-	}
 	
 	public override void GenerateInRoom(Room room) {
-		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
-
-		if (validPositions.Count == 0) {
-			GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
-			return;
-		}
 		
-		// Pick a random valid position from the list
-		Random random = new Random();
-		Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-		int numOfTiles = random.Next(2, 10);
-
-		for (int y = 0; y < numOfTiles; y++) {
-			Vector2 position =  chosenPosition - new Vector2(0, y * 70); 
+		for (int y = 0; y < length; y++) {
 			LadderTile tile = new LadderTile();
-			tile.GlobalPosition = position;
+			tile.GlobalPosition = new Vector2(position.X * 70, position.Y * 70) + new Vector2(0, y * 70); 
 			AddAtom(tile);
 			room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 		}
 		
-		this.Position = chosenPosition;
+		this.Position = new Vector2(position.X * 70, position.Y * 70);
 		room.AddPrimitive(this);
 	}
+	
+	//public override void GenerateInRoom(Room room) {
+		//List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
+//
+		//if (validPositions.Count == 0) {
+			//GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
+			//return;
+		//}
+		//
+		//// Pick a random valid position from the list
+		//Random random = new Random();
+		//Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
+		//int numOfTiles = random.Next(2, 10);
+//
+		//for (int y = 0; y < numOfTiles; y++) {
+			//Vector2 position =  chosenPosition - new Vector2(0, y * 70); 
+			//LadderTile tile = new LadderTile();
+			//tile.GlobalPosition = position;
+			//AddAtom(tile);
+			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
+		//}
+		//
+		//this.Position = chosenPosition;
+		//room.AddPrimitive(this);
+	//}
 	
 	public override void GenerateAnchors()
 	{
@@ -79,7 +91,7 @@ public partial class Ladder : Primitive {
 		Vector2 bottomPos = tiles.First().GlobalPosition;
 		Vector2 topPos = tiles.Last().GlobalPosition;
 
-		float orbit = 50f; // radius in pixels
+		float orbit = 10f; // radius in pixels
 
 		Vector2 offsetUp = new Vector2(0, -tiles.First().Size.Y / 2);
 		Vector2 offsetDown = new Vector2(0, tiles.First().Size.Y / 2);

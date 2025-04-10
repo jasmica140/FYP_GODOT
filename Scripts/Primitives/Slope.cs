@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class SlopeTile : Atom {
 	public SlopeTile() {
@@ -44,7 +45,6 @@ public partial class MiddleSlopeTile : Atom {
 }
 
 public partial class Slope : Primitive {
-	//public List<Anchor> anchors = new List<Anchor>();
 	
 	public Slope() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.MovementModifier;
@@ -91,5 +91,35 @@ public partial class Slope : Primitive {
 		room.AddPrimitive(this);
 	}
 	
-	public override void GenerateAnchors() {}
+	public override void GenerateAnchors()
+	{
+		Anchors.Clear();
+		List<Atom> slopeAtoms = GetAtoms();
+
+		if (slopeAtoms.Count == 0)
+			return;
+
+		// Get only slope tiles
+		var slopeTiles = slopeAtoms.FindAll(a => a is SlopeTile);
+
+		if (slopeTiles.Count == 0)
+			return;
+
+		// Sort by X to find the leftmost and rightmost tiles
+		slopeTiles.Sort((a, b) => a.GlobalPosition.X.CompareTo(b.GlobalPosition.X));
+
+		Atom startTile = slopeTiles.First();
+		Atom endTile = slopeTiles.Last();
+		
+		Vector2 size = startTile.Size; // assume consistent size
+		float orbit = 30f;
+
+		// Anchor positions
+		Vector2 bottomLeft = startTile.GlobalPosition + new Vector2(-size.X / 2, size.Y / 2);
+		Vector2 topRight = endTile.GlobalPosition + new Vector2((size.X / 2) + size.X, -size.Y / 2);
+
+		// Add anchors
+		Anchors.Add(new Anchor(bottomLeft, orbit, "slope_start"));
+		Anchors.Add(new Anchor(topRight, orbit, "slope_end"));
+	}
 }

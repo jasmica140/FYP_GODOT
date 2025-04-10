@@ -14,7 +14,9 @@ public static class PrimitiveRegistry {
 			typeof(FloorBlade),
 			typeof(Water),
 			typeof(StickyFloor),
-			typeof(SlipperyFloor)
+			typeof(SlipperyFloor),
+			typeof(Door)
+
 			// Add more primitives here
 		};
 	}
@@ -27,7 +29,7 @@ public abstract partial class Primitive : StaticBody2D
 	public Vector2 Position { get; set; }
 	
 	// Define categories
-	public enum PrimitiveCategory { None, Hazard, Collectible, Platform, Obstacle, Environmental, MovementModifier, Floor, Test }
+	public enum PrimitiveCategory { None, Hazard, Collectible, Platform, Obstacle, Environmental, MovementModifier, Floor, Exit, Test }
 	public PrimitiveCategory Category { get; protected set; } = PrimitiveCategory.None;
 
 	// Each primitive contains a list of atoms

@@ -1,11 +1,13 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class Room : Node2D
 {
 	public int Width { get; private set; }
 	public int Height { get; private set; }
+	public ZoneHandler ZoneHandler { get; private set; }
 	public List<Atom> Atoms { get; private set; } = new List<Atom>();
 	public List<Primitive> Primitives { get; private set; } = new List<Primitive>();
 
@@ -14,19 +16,30 @@ public partial class Room : Node2D
 	public Room(int width, int height) {
 		Width = width;
 		Height = height;
+		ZoneHandler = new ZoneHandler(this);
 	}
 	
 	public void Initialize(RoomTemplate template)
 	{
 		GD.Print($"Initializing {template.Type} room...");
 		
-		foreach (Primitive.PrimitiveCategory category in template.RequiredPrimitiveCategories) {
-			Primitive chosenPrimitive = GetRandomPrimitiveFromCategory(category);
-			if (chosenPrimitive != null) { chosenPrimitive.GenerateInRoom(this); }
-		}
+		//foreach (Primitive.PrimitiveCategory category in template.RequiredPrimitiveCategories) {
+			//Primitive chosenPrimitive = GetRandomPrimitiveFromCategory(category);
+			//if (chosenPrimitive != null) { chosenPrimitive.GenerateInRoom(this); }
+		//}
+		//
+		//// generate anchors AFTER all primitives are placed
+		//foreach (Primitive p in Primitives) { p.GenerateAnchors(); }
+		ZoneHandler.GenerateZones();
+		ZoneHandler.ConnectZonesVertically(this);
+		ZoneHandler.DrawZoneBorders(this);
 		
-		AnchorConnector.ExpandRoomFromAnchors(this, 10);
-		SpawnPlayer(); // spawn the player after generating the room
+		//Anchor startAnchor = this.GetStartDoor()?.Anchors.FirstOrDefault();
+		//Anchor endAnchor = this.GetEndDoor()?.Anchors.FirstOrDefault();
+		////PathBuilder.GeneratePath(startAnchor, endAnchor);  // build path 
+	//
+		//AnchorConnector.ExpandRoomFromAnchors(this, 10);
+		//SpawnPlayer(); // spawn the player after generating the room
 	}
 	
 	private void SpawnPlayer() {
@@ -106,11 +119,11 @@ public partial class Room : Node2D
 	{
 		foreach (Atom atom in primitive.GetAtoms())
 		{
-			if (Primitives.Exists(p => p.GetAtoms().Exists(a => a.GlobalPosition == atom.GlobalPosition)))
-			{
-				GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");
-				return; // Prevent adding overlapping atoms
-			}
+			//if (Primitives.Exists(p => p.GetAtoms().Exists(a => a.GlobalPosition == atom.GlobalPosition)))
+			//{
+				//GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");
+				//return; // Prevent adding overlapping atoms
+			//}
 
 			// Validate placement rules before adding the atom
 			if (!atom.ValidatePlacement(this))
@@ -121,11 +134,24 @@ public partial class Room : Node2D
 		}
 
 		// If all atoms pass validation, add the primitive
-		primitive.GenerateAnchors();
 		Primitives.Add(primitive);		
 		Node2D primitivesContainer = GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
 		primitivesContainer.AddChild(primitive); // Add atoms to the correct container
 		GD.Print($"✅ Added {primitive.GetType().Name} to PrimitivesContainer at {primitive.GlobalPosition}");
+	}
+	
+	public void RemovePrimitive(Primitive primitive)
+	{
+		if (Primitives.Contains(primitive))
+		{
+			Primitives.Remove(primitive);
+			RemoveChild(primitive);
+			GD.Print($"🗑️ Removed {primitive.GetType().Name} from room.");
+		}
+		else
+		{
+			GD.Print($"⚠️ Tried to remove {primitive.GetType().Name} but it was not found.");
+		}
 	}
 	
 	public Primitive GetRandomPrimitiveFromCategory(Primitive.PrimitiveCategory category)

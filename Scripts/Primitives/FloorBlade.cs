@@ -1,10 +1,12 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class FloorBladeAtom : Atom {
 	public FloorBladeAtom() {
 		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Enemy sprites/spinnerHalf.png")); 
+		Size = new Vector2(60, 30);
 		
 		CollisionShape2D collision = new CollisionShape2D();
 		ConvexPolygonShape2D shape = new ConvexPolygonShape2D();
@@ -62,5 +64,5 @@ public partial class FloorBlade : Primitive
 		room.AddPrimitive(this);
 	}
 	
-	public override void GenerateAnchors() {}
+	public override void GenerateAnchors() { }
 }

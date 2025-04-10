@@ -75,5 +75,25 @@ public partial class Water : Primitive {
 		}
 	}
 	
-	public override void GenerateAnchors() {}
+	public override void GenerateAnchors()
+	{
+		Anchors.Clear();
+
+		List<Atom> tiles = GetAtoms(); // This should return the ladder tiles
+
+		if (tiles.Count == 0)
+			return;
+
+		// Sort by Y to identify top and bottom
+		tiles.Sort((a, b) => a.GlobalPosition.Y.CompareTo(b.GlobalPosition.Y));
+
+		float orbit = 20f; // radius in pixels
+
+		Vector2 offsetDown = new Vector2(0, tiles.First().Size.Y / 2);
+		
+		foreach (Atom tile in tiles) {
+			Vector2 pos = tile.GlobalPosition;
+			Anchors.Add(new Anchor(pos + offsetDown, orbit, "bottom"));
+		}
+	}
 }

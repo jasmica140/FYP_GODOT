@@ -1,10 +1,23 @@
-[gd_scene load_steps=3 format=3 uid="uid://uqthmlhlxh6m"]
+[gd_scene load_steps=4 format=3 uid="uid://uqthmlhlxh6m"]
 
 [ext_resource type="Script" uid="uid://bk18dgv5l2wj6" path="res://Scripts/MapGeneration/MapGenerator.cs" id="1_k17ra"]
 [ext_resource type="Script" uid="uid://b853um7gltkht" path="res://Scripts/MainScene.cs" id="1_t0bvj"]
+[ext_resource type="Texture2D" uid="uid://b25gh74kf2410" path="res://Assets/Backgrounds/backgroundCastles.png" id="2_nhkr4"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_t0bvj")
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.2, 0.2)
+motion_mirroring = Vector2(1530, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer"]
+position = Vector2(-1, -173)
+scale = Vector2(1.49414, 1.27148)
+texture = ExtResource("2_nhkr4")
+centered = false
 
 [node name="MapGenerator" type="Node" parent="."]
 script = ExtResource("1_k17ra")

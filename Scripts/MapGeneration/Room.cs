@@ -39,7 +39,7 @@ public partial class Room : Node2D
 		////PathBuilder.GeneratePath(startAnchor, endAnchor);  // build path 
 	//
 		//AnchorConnector.ExpandRoomFromAnchors(this, 10);
-		//SpawnPlayer(); // spawn the player after generating the room
+		SpawnPlayer(); // spawn the player after generating the room
 	}
 	
 	private void SpawnPlayer() {

@@ -48,7 +48,7 @@ public partial class Floor : Primitive {
 			room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 		}
 
-		//this.GlobalPosition = new Vector2(0, 0); 
+		this.Position = new Vector2(zone.X * 70, y * 70); 
 		room.AddPrimitive(this);
 	}
 

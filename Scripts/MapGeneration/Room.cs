@@ -109,7 +109,7 @@ public partial class Room : Node2D
 			Atoms.Add(atom);
 			Node2D primitivesContainer = GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
 			primitivesContainer.AddChild(atom); // Add atoms to the correct container
-			GD.Print($"✅ Added {atom.GetType().Name} to PrimitivesContainer at {atom.GlobalPosition}");
+			//GD.Print($"✅ Added {atom.GetType().Name} to PrimitivesContainer at {atom.GlobalPosition}");
 		} else {
 			GD.Print($"❌ ERROR: Invalid placement for {atom.GetType().Name} at {atom.GlobalPosition}");
 		}
@@ -119,11 +119,11 @@ public partial class Room : Node2D
 	{
 		foreach (Atom atom in primitive.GetAtoms())
 		{
-			//if (Primitives.Exists(p => p.GetAtoms().Exists(a => a.GlobalPosition == atom.GlobalPosition)))
-			//{
-				//GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");
-				//return; // Prevent adding overlapping atoms
-			//}
+			if (Primitives.Exists(p => p.GetAtoms().Exists(a => a.GlobalPosition == atom.GlobalPosition)))
+			{
+				GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");
+				return; // Prevent adding overlapping atoms
+			}
 
 			// Validate placement rules before adding the atom
 			if (!atom.ValidatePlacement(this))
@@ -177,9 +177,13 @@ public partial class Room : Node2D
 	}
 
 	public bool HasPrimitiveBelow(Vector2 position, Type primitiveType) {
-			return Primitives.Exists(p => p.GetType() == primitiveType && p.GlobalPosition == position + new Vector2(0, -70));
+			return Primitives.Exists(p => p.GetType() == primitiveType && p.GlobalPosition == position + new Vector2(0, 70));
 	}
 
+	public bool HasAtomBelow(Vector2 position, Type atomType) {
+			return Atoms.Exists(a => a.GetType() == atomType && a.GlobalPosition == position + new Vector2(0, 70));
+	}
+	
 	public bool HasPlatformNearby(Vector2 position) {
 		return Primitives.Exists(p => 
 			p.GlobalPosition == position + new Vector2(-70, 0) || 

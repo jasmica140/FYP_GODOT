@@ -195,29 +195,36 @@ public class ZoneHandler
 							
 							else if (upper.X == 0 && !zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height))
 							{ 	// Left wall and no floor to the right
-								PlaceLadder(new Vector2(upper.X + upper.Width, upper.Y + upper.Height - 2), verticalGap);
+								if (slopeHasFloorTilesBelow(new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2), verticalGap, false)) { // enough floor space below
+									PlaceSlope(new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2), verticalGap, false);  
+								} else {
+									PlaceLadder(new Vector2(upper.X + upper.Width, upper.Y + upper.Height - 2), verticalGap);
+								}
 							}
 							else if (upper.X + upper.Width == room.Width && !zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height))
 							{ 	// Right wall and no floor to the left
-								if (slopeHasFloorTilesBelow(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap)) { // enough floor space below
-									PlaceSlope(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap); 
+								if (slopeHasFloorTilesBelow(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap, true)) { // enough floor space below
+									PlaceSlope(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap, true); 
 								} else {
-									GD.Print("No Floor Below");
 									PlaceLadder(new Vector2(upper.X - 1, upper.Y + upper.Height - 2), verticalGap); 
 								}
 							}
 							else if (zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height) && upper.X != 0)
 							{ 	// Floor to the right
-								if (slopeHasFloorTilesBelow(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap)) { // enough floor space below
-									PlaceSlope(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap); 
+								if (slopeHasFloorTilesBelow(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap, true)) { // enough floor space below
+									PlaceSlope(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap, true); 
 								} else { // ladder on the left
-									GD.Print("No Floor Below");
 									PlaceLadder(new Vector2(upper.X - 1, upper.Y + upper.Height - 2), verticalGap);
 								}
 							}
 							else if (zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height) && upper.X + upper.Width != room.Width)
 							{ 	// Floor to the left 
-								PlaceLadder(new Vector2(upper.X + upper.Width, upper.Y + upper.Height - 2), verticalGap);
+								if (slopeHasFloorTilesBelow(new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2), verticalGap, false)) { // enough floor space below
+									PlaceSlope(new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2), verticalGap, false); 
+								} else { // ladder on the left
+									PlaceLadder(new Vector2(upper.X + upper.Width, upper.Y + upper.Height - 2), verticalGap);
+								}
+								
 							}
 							else if ( !zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height) 
 									&& !zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height) 
@@ -234,9 +241,12 @@ public class ZoneHandler
 		}
 	}
 	
-	bool slopeHasFloorTilesBelow(Vector2 position, int length) {
+	bool slopeHasFloorTilesBelow(Vector2 position, int length, bool right) {
+		int offset;
+		if (right) { offset = 1; } else { offset = -1; }
+		
 		for (int x = 0; x < length + 1; x++) {
-			if (!room.HasAtomBelow((position + new Vector2(x, 0)) * new Vector2(70, 70), typeof(FloorTile))) { 
+			if (!room.HasAtomBelow((position + new Vector2(x, 0) * new Vector2(offset, 0)) * new Vector2(70, 70), typeof(FloorTile))) { 
 				float Xpos = (position.X + x) * 70;
 				float Ypos = (position.Y + 1) * 70;
 				GD.Print($"No floor tile at ({Xpos}, {Ypos})");
@@ -256,14 +266,27 @@ public class ZoneHandler
 		ladder.GenerateAnchors();
 	}
 	
-	void PlaceSlope(Vector2 position, int verticalGap)
+	void PlaceSlope(Vector2 position, int verticalGap, bool right)
 	{
 		GD.Print("🧗 Use a slope.");
-		Slope slope = new Slope();
-		slope.position = position * new Vector2(70, 70);
-		slope.length = verticalGap;
-		slope.GenerateInRoom(room);
-		slope.GenerateAnchors();
+		Vector2 worldPosition = position * new Vector2(70, 70);
+
+		if (right)
+		{
+			RightSlope slope = new RightSlope();
+			slope.position = worldPosition;
+			slope.length = verticalGap;
+			slope.GenerateInRoom(room);
+			slope.GenerateAnchors();
+		}
+		else
+		{
+			LeftSlope slope = new LeftSlope();
+			slope.position = worldPosition;
+			slope.length = verticalGap;
+			slope.GenerateInRoom(room);
+			slope.GenerateAnchors();
+		}
 	}
 
 	public void DrawZoneBorders(Room room)

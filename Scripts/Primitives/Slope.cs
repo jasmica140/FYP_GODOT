@@ -27,7 +27,7 @@ public partial class LeftSlopeTile : Atom {
 		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/rockHillRight.png")); 
 		
 		CollisionPolygon2D collision = new CollisionPolygon2D();
-		collision.Polygon = new Vector2[] {new Vector2(35, 35), new Vector2(-35, 35), new Vector2(35, -35)};
+		collision.Polygon = new Vector2[] {new Vector2(35, 35), new Vector2(-35, 35), new Vector2(-35, -35)};
 
 		SetCollisionLayerValue(4, true);
 		SetCollisionLayerValue(2, true);

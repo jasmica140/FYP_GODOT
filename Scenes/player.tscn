@@ -203,10 +203,16 @@ position = Vector2(-167.75, -147)
 target_position = Vector2(0, 46)
 collision_mask = 10
 
-[node name="SlopeChecker" type="RayCast2D" parent="."]
+[node name="RightSlopeChecker" type="RayCast2D" parent="."]
 position = Vector2(-167.75, -147)
 rotation = 3.14159
-target_position = Vector2(-32.7499, -35.0001)
+target_position = Vector2(-28.75, -31)
+collision_mask = 8
+
+[node name="LeftSlopeChecker" type="RayCast2D" parent="."]
+position = Vector2(-167.75, -147)
+rotation = -1.5708
+target_position = Vector2(-28.75, -31)
 collision_mask = 8
 
 [node name="WallChecker" type="RayCast2D" parent="."]

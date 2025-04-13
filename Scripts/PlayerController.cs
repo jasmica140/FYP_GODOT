@@ -40,7 +40,8 @@ public partial class PlayerController : CharacterBody2D
 	// player child nodes 
 	public RayCast2D _ceilingChecker;
 	public RayCast2D _floorChecker;
-	public RayCast2D _slopeChecker;
+	public RayCast2D _leftSlopeChecker;
+	public RayCast2D _rightSlopeChecker;
 	public RayCast2D _wallChecker;
 	
 	// Ability instances
@@ -73,7 +74,8 @@ public partial class PlayerController : CharacterBody2D
 
 		pc._ceilingChecker = GetNode<RayCast2D>("CeilingChecker");
 		pc._floorChecker = GetNode<RayCast2D>("FloorChecker");
-		pc._slopeChecker = GetNode<RayCast2D>("SlopeChecker");
+		pc._leftSlopeChecker = GetNode<RayCast2D>("LeftSlopeChecker");
+		pc._rightSlopeChecker = GetNode<RayCast2D>("RightSlopeChecker");
 		pc._wallChecker = GetNode<RayCast2D>("WallChecker");
 		
 		// initialize abilities
@@ -117,8 +119,10 @@ public partial class PlayerController : CharacterBody2D
 					velocity.X = -moveSpeed * 4;
 				} else if (isOnStickyFloor()) { // handle sticky floor
 					velocity.X = -moveSpeed / 2;
-				} else if (isOnSlope()) { // handle slope
+				} else if (isOnRightSlope()) { // handle slope
 					velocity.Y = moveSpeed;
+				} else if (isOnLeftSlope()) { // handle slope
+					velocity.Y = -moveSpeed;
 				}
 			}
 			
@@ -131,8 +135,10 @@ public partial class PlayerController : CharacterBody2D
 					velocity.X = moveSpeed * 4;
 				} else if (isOnStickyFloor()) { // handle sticky floor
 					velocity.X = moveSpeed / 2;
-				} else if (isOnSlope()) { // handle slope
+				} else if (isOnRightSlope()) { // handle slope
 					velocity.Y = -moveSpeed;
+				} else if (isOnLeftSlope()) { // handle slope
+					velocity.Y = moveSpeed;
 				}
 			}
 		}
@@ -162,9 +168,12 @@ public partial class PlayerController : CharacterBody2D
 		}
 
 		// handle slope
-		if (isOnSlope()) {
+		if (isOnRightSlope()) {
 			pc._spriteContainer.RotationDegrees = -45;
 			pc._spriteContainer.Position = new Vector2(30,-154);
+		} else if (isOnLeftSlope()) {
+			pc._spriteContainer.RotationDegrees = 45;
+			pc._spriteContainer.Position = new Vector2(-140, 70);
 		} else { // reset when not on slope
 			pc._spriteContainer.RotationDegrees = 0;
 			pc._spriteContainer.Position = Vector2.Zero;
@@ -228,8 +237,10 @@ public partial class PlayerController : CharacterBody2D
 	public void setDirection() {
 		if (velocity.X > 0) {
 			direction = 1;
+			//pc._slopeChecker.RotationDegrees = 180;
 		} else if (velocity.X < 0){
 			direction = -1;
+			//pc._slopeChecker.RotationDegrees = 270;
 		}
 		pc._wallChecker.RotationDegrees = 90 * -direction;
 	}
@@ -268,9 +279,17 @@ public partial class PlayerController : CharacterBody2D
 	}
 	
 	public bool isOnSlope() { //check if player is on slope
-		return pc._slopeChecker.IsColliding();
+		return pc._leftSlopeChecker.IsColliding() || pc._rightSlopeChecker.IsColliding();
+	}
+	
+	public bool isOnRightSlope() { //check if player is on slope
+		return pc._rightSlopeChecker.IsColliding();
 	}
 		
+	public bool isOnLeftSlope() { //check if player is on slope
+		return pc._leftSlopeChecker.IsColliding();
+	}
+	
 	public bool isOnMushroom() { //check if player is on mushroom
 		if (!pc._floorChecker.IsColliding())
 			return false;
@@ -281,11 +300,13 @@ public partial class PlayerController : CharacterBody2D
 	}
 	
 	public bool isNearBlade() { //check if player is near blade
-		if (!pc._slopeChecker.IsColliding())
+		if (!pc._rightSlopeChecker.IsColliding() && !pc._leftSlopeChecker.IsColliding())
 			return false;
-		if (pc._slopeChecker.GetCollider() is not PhysicsBody2D body)
+		if (pc._rightSlopeChecker.GetCollider() is not PhysicsBody2D body)
 			return false;
-		
+		//if (pc._leftSlopeChecker.GetCollider() is not PhysicsBody2D body)
+			//return false;
+			
 		return body.IsInGroup("FloorBlade");
 	}
 

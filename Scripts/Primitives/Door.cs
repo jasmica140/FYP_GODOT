@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+public enum DoorColour { Red, Blue, Green, Yellow }
+
 public partial class DoorBottomAtom : Atom {
 	public DoorBottomAtom() {
 		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Buildings expansion/Tiles/doorKnobAlt.png")); 
@@ -41,46 +43,62 @@ public partial class DoorTopAtom : Atom {
 
 public partial class Door : Primitive {
 	
+	public int LinkedRoomId = -1;
+	public Vector2 LinkedDoorPosition;
+	public DoorColour Colour;
+	
 	public Door() : base(Vector2.Zero) {	
-		Category = PrimitiveCategory.Test;
+		Category = PrimitiveCategory.Environmental;
 	}  // Default constructor needed for instantiation
 	
 	public Door(Vector2 position) : base(position) { }
 	
-	public override void GenerateInRoom(Room room) {
-		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
-
-		if (validPositions.Count == 0) {
-			GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
-			return;
-		}
-
-		// Pick a random valid position from the list
-		Random random = new Random();
-		Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-
+	public override bool GenerateInRoom(Room room) {
 		DoorBottomAtom bottomAtom = new DoorBottomAtom();
-		bottomAtom.GlobalPosition = chosenPosition;
+		bottomAtom.GlobalPosition = this.Position;
 		AddAtom(bottomAtom);
-		room.AddAtom(bottomAtom); 
 		
 		DoorTopAtom topAtom = new DoorTopAtom();
-		topAtom.GlobalPosition = chosenPosition - new Vector2(0,bottomAtom.Size.Y);
+		topAtom.GlobalPosition = this.Position - new Vector2(0, bottomAtom.Size.Y);
 		AddAtom(topAtom);
-		room.AddAtom(topAtom); 
 		
-		this.Position = chosenPosition;
-		room.AddPrimitive(this);
+		return room.AddPrimitive(this);
 	}
 	
-	public override void GenerateAnchors() {
+	//public override bool GenerateInRoom(Room room) {
+		//List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
+//
+		//if (validPositions.Count == 0) {
+			//GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
+			//return false;
+		//}
+//
+		//// Pick a random valid position from the list
+		//Random random = new Random();
+		//Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
+//
+		//DoorBottomAtom bottomAtom = new DoorBottomAtom();
+		//bottomAtom.GlobalPosition = chosenPosition;
+		//AddAtom(bottomAtom);
+		//room.AddAtom(bottomAtom); 
+		//
+		//DoorTopAtom topAtom = new DoorTopAtom();
+		//topAtom.GlobalPosition = chosenPosition - new Vector2(0,bottomAtom.Size.Y);
+		//AddAtom(topAtom);
+		//room.AddAtom(topAtom); 
+		//
+		//this.Position = chosenPosition;
+		//return room.AddPrimitive(this);
+	//}
+	
+	public override void GenerateAnchors(Room room) {
 		Anchors.Clear();
 
 		Atom tile = GetAtoms().First(); // Assume one atom
 
 		Vector2 basePos = tile.GlobalPosition;
-		float orbit = 10f;
+		float orbit = 40f;
 		
-		Anchors.Add(new Anchor(basePos, orbit, "centre"));
+		Anchors.Add(new Anchor(basePos, orbit, "center"));
 	}
 }

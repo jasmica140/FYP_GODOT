@@ -5,18 +5,19 @@ using System.Collections.Generic;
 public static class PrimitiveRegistry {
 	public static List<Type> GetAllPrimitives() {
 		return new List<Type> {
-			typeof(Floor),
 			typeof(Cactus),
+			typeof(Door),
+			typeof(Floor),
+			typeof(FloorBlade),
 			typeof(Ladder),
+			typeof(LeftSlope),
 			typeof(Mushroom),
 			typeof(Platform),
 			typeof(RightSlope),
-			typeof(LeftSlope),
-			typeof(FloorBlade),
-			typeof(Water),
-			typeof(StickyFloor),
 			typeof(SlipperyFloor),
-			typeof(Door)
+			typeof(StickyFloor),
+			typeof(Wall),
+			typeof(Water)
 
 			// Add more primitives here
 		};
@@ -28,6 +29,7 @@ public abstract partial class Primitive : StaticBody2D
 	protected Sprite2D sprite;
 
 	public Vector2 Position { get; set; }
+	public List<AnchorConnection> InternalPaths { get; private set; } = new List<AnchorConnection>();
 	
 	// Define categories
 	public enum PrimitiveCategory { None, Hazard, Collectible, Platform, Obstacle, Environmental, MovementModifier, Floor, Exit, Test }
@@ -36,6 +38,7 @@ public abstract partial class Primitive : StaticBody2D
 	// Each primitive contains a list of atoms
 	protected List<Atom> atoms = new List<Atom>();
 	public List<Anchor> Anchors { get; protected set; } = new();
+	public List<(Vector2 start, Vector2 end)> ObstructionLines { get; private set; } = new();
 
 	//protected List <Anchor> anochor = new List<anchor>();
 
@@ -89,24 +92,36 @@ public abstract partial class Primitive : StaticBody2D
 	}
 
 	// Every Primitive must define how it generates itself in a Room
-	public abstract void GenerateInRoom(Room room);
-	public abstract void GenerateAnchors();
-	
+	public abstract bool GenerateInRoom(Room room);
+	public abstract void GenerateAnchors(Room room);
+
 	public override void _Draw()
 	{
+		foreach (var line in ObstructionLines)
+		{
+			DrawLine(line.start, line.end, Colors.Red, 5);
+		}
+		
+		//foreach (var conn in InternalPaths)
+		//{
+			//DrawLine(conn.From.Position, conn.To.Position, Colors.Green, 5);
+		//}
+		
 		foreach (Anchor anchor in Anchors)
 		{
 			// Draw orbit
-			DrawCircle(ToLocal(anchor.Position), anchor.Radius, new Color(1, 1, 0, 0.3f)); // yellow transparent
+			DrawCircle(anchor.Position, anchor.Radius, new Color(0, 0, 1, 0.3f)); // blue transparent
 
 			// Draw point
-			DrawCircle(ToLocal(anchor.Position), 4, new Color(1, 0, 0)); // red center
+			DrawCircle(anchor.Position, 4, new Color(1, 0, 1)); // purple center
 		}
+		
 
-		// Optional: Draw lines between your own anchors (for testing)
-		for (int i = 0; i < Anchors.Count - 1; i++)
-		{
-			DrawLine(ToLocal(Anchors[i].Position), ToLocal(Anchors[i + 1].Position), Colors.Green, 2);
-		}
+		//
+		//// Optional: Draw lines between your own anchors (for testing)
+		//for (int i = 0; i < Anchors.Count - 1; i++)
+		//{
+			//DrawLine(ToLocal(Anchors[i].Position), ToLocal(Anchors[i + 1].Position), Colors.Green, 2);
+		//}
 	}
 }

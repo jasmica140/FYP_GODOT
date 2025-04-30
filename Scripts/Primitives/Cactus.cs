@@ -21,12 +21,12 @@ public partial class Cactus : Primitive
 	public Cactus(Vector2 position) : base(position) {}
 
 
-	public override void GenerateInRoom(Room room) {
+	public override bool GenerateInRoom(Room room) {
 		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
 
 		if (validPositions.Count == 0) {
 			GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
-			return;
+			return false;
 		}
 
 		// Pick a random valid position from the list
@@ -39,8 +39,8 @@ public partial class Cactus : Primitive
 		room.AddAtom(atom); 
 		
 		this.Position = chosenPosition;
-		room.AddPrimitive(this);
+		return room.AddPrimitive(this);
 	}
 	
-	public override void GenerateAnchors() {}
+	public override void GenerateAnchors(Room room) {}
 }

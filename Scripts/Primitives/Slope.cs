@@ -87,7 +87,7 @@ public partial class MiddleLeftSlopeTile : Atom {
 
 public partial class RightSlope : Primitive {
 	
-	public Vector2 position { get; set; }
+	public Vector2 position { get; set; } // start position is lower left corner
 	public int length { get; set; }
 	
 	public RightSlope() : base(Vector2.Zero) {
@@ -96,21 +96,21 @@ public partial class RightSlope : Primitive {
 
 	public RightSlope(Vector2 position) : base(position) {}
 
-	public override void GenerateInRoom(Room room) {
+	public override bool GenerateInRoom(Room room) {
 		
 		for (int i = 0; i < length; i++) {
 			Vector2 slopePosition =  position + new Vector2(i * 70, -i * 70); 
 			RightSlopeTile slopeTile = new RightSlopeTile();
 			slopeTile.GlobalPosition = slopePosition;
 			AddAtom(slopeTile); // Add the tile to the primitive
-			room.AddAtom(slopeTile); 
+			//room.AddAtom(slopeTile); 
 			
 			if (i != length - 1)  {
 				Vector2 midSlopePosition =  slopePosition + new Vector2(70, 0); 
 				MiddleRightSlopeTile midSlopeTile = new MiddleRightSlopeTile();
 				midSlopeTile.GlobalPosition = midSlopePosition;
 				AddAtom(midSlopeTile);
-				room.AddAtom(midSlopeTile); 
+				//room.AddAtom(midSlopeTile); 
 			}
 
 			for (int j = 0; j < i; j++) { // maybe i + 1 to add a layer of fillers under slope
@@ -118,12 +118,12 @@ public partial class RightSlope : Primitive {
 				FillerStoneTile fillerStoneTile = new FillerStoneTile();
 				fillerStoneTile.GlobalPosition = fillerTilePosition;
 				AddAtom(fillerStoneTile);
-				room.AddAtom(fillerStoneTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
+				//room.AddAtom(fillerStoneTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 			}
 		}
 		
 		this.Position = position;
-		room.AddPrimitive(this);
+		return room.AddPrimitive(this);
 	}
 	
 	//public override void GenerateInRoom(Room room) {
@@ -165,9 +165,11 @@ public partial class RightSlope : Primitive {
 		//room.AddPrimitive(this);
 	//}
 	
-	public override void GenerateAnchors()
+	public override void GenerateAnchors(Room room)
 	{
 		Anchors.Clear();
+		InternalPaths.Clear();
+
 		List<Atom> slopeAtoms = GetAtoms();
 
 		if (slopeAtoms.Count == 0)
@@ -190,17 +192,55 @@ public partial class RightSlope : Primitive {
 
 		// Anchor positions
 		Vector2 bottomLeft = startTile.GlobalPosition + new Vector2(-size.X / 2, size.Y / 2);
-		Vector2 topRight = endTile.GlobalPosition + new Vector2((size.X / 2) + size.X, -size.Y / 2);
+		Vector2 topRight = endTile.GlobalPosition + new Vector2((size.X / 2) + size.X - 70, -size.Y / 2);
 
 		// Add anchors
-		Anchors.Add(new Anchor(bottomLeft, orbit, "slope_start"));
-		Anchors.Add(new Anchor(topRight, orbit, "slope_end"));
+		Anchor bottomAnchor = new Anchor(bottomLeft, orbit, "slope_start");
+		Anchor topAnchor = new Anchor(topRight, orbit, "slope_end");
+		Anchors.Add(bottomAnchor);
+		Anchors.Add(topAnchor);
+		InternalPaths.Add(new AnchorConnection(bottomAnchor, topAnchor));
+		
+		GenerateObstructionLines();
+	}
+	
+	public void GenerateObstructionLines()
+	{
+		ObstructionLines.Clear();
+		List<Atom> slopeAtoms = GetAtoms();
+
+		if (slopeAtoms.Count == 0)
+			return;
+
+		// Get only slope tiles
+		var slopeTiles = slopeAtoms.FindAll(a => a is RightSlopeTile);
+
+		if (slopeTiles.Count == 0)
+			return;
+
+		// Sort by X to find the leftmost and rightmost tiles
+		slopeTiles.Sort((a, b) => a.GlobalPosition.X.CompareTo(b.GlobalPosition.X));
+
+		Atom startTile = slopeTiles.First();
+		Atom endTile = slopeTiles.Last();
+		
+		Vector2 size = startTile.Size; // assume consistent size
+		
+		// Anchor positions
+		Vector2 slopeTop = endTile.GlobalPosition + new Vector2((size.X / 2) + size.X - 70, -size.Y / 2);
+		Vector2 slopeBottom = startTile.GlobalPosition + new Vector2(-size.X / 2, size.Y / 2);
+		Vector2 edgeBottom = slopeBottom + new Vector2((length + 1) * size.X, 0);
+		Vector2 edgeTop = edgeBottom - new Vector2(0, (length - 1) * size.Y );
+		
+		ObstructionLines.Add((slopeBottom, slopeTop));
+		ObstructionLines.Add((slopeBottom, edgeBottom));
+		ObstructionLines.Add((edgeBottom, edgeTop));
 	}
 }
 
 public partial class LeftSlope : Primitive {
 	
-	public Vector2 position { get; set; }
+	public Vector2 position { get; set; } // start position is lower right corner
 	public int length { get; set; }
 	
 	public LeftSlope() : base(Vector2.Zero) {
@@ -209,21 +249,21 @@ public partial class LeftSlope : Primitive {
 
 	public LeftSlope(Vector2 position) : base(position) {}
 
-	public override void GenerateInRoom(Room room) {
+	public override bool GenerateInRoom(Room room) {
 		
 		for (int i = 0; i < length; i++) {
 			Vector2 slopePosition =  position + new Vector2(-i * 70, -i * 70); 
 			LeftSlopeTile slopeTile = new LeftSlopeTile();
 			slopeTile.GlobalPosition = slopePosition;
 			AddAtom(slopeTile); // Add the tile to the primitive
-			room.AddAtom(slopeTile); 
+			//room.AddAtom(slopeTile); 
 			
 			if (i != length - 1)  {
 				Vector2 midSlopePosition =  slopePosition - new Vector2(70, 0); 
 				MiddleLeftSlopeTile midSlopeTile = new MiddleLeftSlopeTile();
 				midSlopeTile.GlobalPosition = midSlopePosition;
 				AddAtom(midSlopeTile);
-				room.AddAtom(midSlopeTile); 
+				//room.AddAtom(midSlopeTile); 
 			}
 
 			for (int j = 0; j < i; j++) { // maybe i + 1 to add a layer of fillers under slope
@@ -231,17 +271,18 @@ public partial class LeftSlope : Primitive {
 				FillerStoneTile fillerStoneTile = new FillerStoneTile();
 				fillerStoneTile.GlobalPosition = fillerTilePosition;
 				AddAtom(fillerStoneTile);
-				room.AddAtom(fillerStoneTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
+				//room.AddAtom(fillerStoneTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 			}
 		}
 		
 		this.Position = position;
-		room.AddPrimitive(this);
+		return room.AddPrimitive(this);
 	}
 	
-	public override void GenerateAnchors()
+	public override void GenerateAnchors(Room room)
 	{
 		Anchors.Clear();
+		InternalPaths.Clear();
 		List<Atom> slopeAtoms = GetAtoms();
 
 		if (slopeAtoms.Count == 0)
@@ -264,10 +305,48 @@ public partial class LeftSlope : Primitive {
 
 		// Anchor positions
 		Vector2 bottomRight = startTile.GlobalPosition + new Vector2(size.X / 2, size.Y / 2);
-		Vector2 topLeft = endTile.GlobalPosition + new Vector2(-(size.X / 2) - size.X, -size.Y / 2);
+		Vector2 topLeft = endTile.GlobalPosition + new Vector2(-(size.X / 2) - size.X + 70, -size.Y / 2);
 
 		// Add anchors
-		Anchors.Add(new Anchor(bottomRight, orbit, "slope_start"));
-		Anchors.Add(new Anchor(topLeft, orbit, "slope_end"));
+		Anchor bottomAnchor = new Anchor(bottomRight, orbit, "slope_start");
+		Anchor topAnchor = new Anchor(topLeft, orbit, "slope_end");
+		Anchors.Add(bottomAnchor);
+		Anchors.Add(topAnchor);
+		InternalPaths.Add(new AnchorConnection(bottomAnchor, topAnchor));
+
+		GenerateObstructionLines();
+	}
+	
+	public void GenerateObstructionLines()
+	{
+		ObstructionLines.Clear();
+		List<Atom> slopeAtoms = GetAtoms();
+
+		if (slopeAtoms.Count == 0)
+			return;
+
+		// Get only slope tiles
+		var slopeTiles = slopeAtoms.FindAll(a => a is LeftSlopeTile);
+
+		if (slopeTiles.Count == 0)
+			return;
+
+		// Sort by X to find the leftmost and rightmost tiles
+		slopeTiles.Sort((a, b) => a.GlobalPosition.X.CompareTo(b.GlobalPosition.X));
+
+		Atom startTile = slopeTiles.Last();
+		Atom endTile = slopeTiles.First();
+		
+		Vector2 size = startTile.Size; // assume consistent size
+
+		// Anchor positions
+		Vector2 slopeTop = endTile.GlobalPosition + new Vector2(-(size.X / 2) - size.X + 70, -size.Y / 2);
+		Vector2 slopeBottom = startTile.GlobalPosition + new Vector2(size.X / 2, size.Y / 2);
+		Vector2 edgeBottom = slopeBottom - new Vector2((length + 1) * size.X, 0);
+		Vector2 edgeTop = edgeBottom - new Vector2(0, (length - 1) * size.X );
+		
+		ObstructionLines.Add((slopeBottom, slopeTop));
+		ObstructionLines.Add((slopeBottom, edgeBottom));
+		ObstructionLines.Add((edgeBottom, edgeTop));
 	}
 }

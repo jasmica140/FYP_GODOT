@@ -35,7 +35,7 @@ public partial class Water : Primitive {
 
 	public Water(Vector2 position) : base(position) {}
 
-	public override void GenerateInRoom(Room room) {
+	public override bool GenerateInRoom(Room room) {
 		// Look for the Floor primitive in the room
 		Primitive floorPrimitive = room.Primitives.Find(p => p is Floor);
 		List<Atom> tilesToReplace = new List<Atom>();
@@ -68,14 +68,15 @@ public partial class Water : Primitive {
 			}
 			
 			this.Position = tilesToReplace[0].GlobalPosition;
-			room.AddPrimitive(this);
+			return room.AddPrimitive(this);
 			GD.Print("💧 Floor tiles replaced with water tiles.");
 		} else {
 			GD.PrintErr("❌ No Floor primitive found in the room!");
+			return false;
 		}
 	}
 	
-	public override void GenerateAnchors()
+	public override void GenerateAnchors(Room room)
 	{
 		Anchors.Clear();
 

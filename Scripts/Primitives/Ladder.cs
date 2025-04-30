@@ -38,17 +38,23 @@ public partial class Ladder : Primitive {
 
 	public Ladder(Vector2 position) : base(position) {}
 	
-	public override void GenerateInRoom(Room room) {
+	public override bool GenerateInRoom(Room room) {
 		
 		for (int y = 0; y < length; y++) {
 			LadderTile tile = new LadderTile();
 			tile.GlobalPosition = new Vector2(position.X * 70, position.Y * 70) + new Vector2(0, y * 70); 
 			AddAtom(tile);
-			room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
+			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
+		}
+		if (!room.HasAtomBelow(new Vector2(position.X * 70, (position.Y + length - 1) * 70), typeof(FloorTile))) {
+			FloorTile tile = new FloorTile();
+			tile.GlobalPosition = new Vector2(position.X * 70, (position.Y + length) * 70);
+			AddAtom(tile);
+			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 		}
 		
 		this.Position = new Vector2(position.X * 70, position.Y * 70);
-		room.AddPrimitive(this);
+		return room.AddPrimitive(this);
 	}
 	
 	//public override void GenerateInRoom(Room room) {
@@ -76,7 +82,7 @@ public partial class Ladder : Primitive {
 		//room.AddPrimitive(this);
 	//}
 	
-	public override void GenerateAnchors()
+	public override void GenerateAnchors(Room room)
 	{
 		Anchors.Clear();
 
@@ -97,18 +103,35 @@ public partial class Ladder : Primitive {
 		Vector2 offsetDown = new Vector2(0, tiles.First().Size.Y / 2);
 		Vector2 offsetSide = new Vector2(tiles.First().Size.X / 2, 0);
 
-		// Bottom anchor
-		Anchors.Add(new Anchor(bottomPos + offsetDown, orbit, "bottom"));
-
-		// Top anchor
-		Anchors.Add(new Anchor(topPos + offsetUp, orbit, "top"));
+		//// Bottom anchor
+		//Anchors.Add(new Anchor(bottomPos + offsetDown, orbit, "bottom"));
+//
+		//// Top anchor
+		//Anchors.Add(new Anchor(topPos + offsetUp, orbit, "top"));
 
 		// Side anchors
+		Anchor? prevCenter = null; // Use nullable to check if it's the first iteration
+
 		foreach (Atom tile in tiles)
 		{
 			Vector2 pos = tile.GlobalPosition;
-			Anchors.Add(new Anchor(pos - offsetSide, orbit, "left"));
-			Anchors.Add(new Anchor(pos + offsetSide, orbit, "right"));
+			Anchor left = new Anchor(pos - offsetSide + offsetDown, orbit, "left");
+			Anchor right = new Anchor(pos + offsetSide + offsetDown, orbit, "right");
+			Anchor center = new Anchor(pos + offsetDown, orbit, "center");
+
+			Anchors.Add(left);
+			Anchors.Add(right);
+			Anchors.Add(center);
+
+			InternalPaths.Add(new AnchorConnection(left, center));
+			InternalPaths.Add(new AnchorConnection(center, right));
+
+			if (prevCenter != null)
+			{
+				InternalPaths.Add(new AnchorConnection(prevCenter, center));
+			}
+
+			prevCenter = center;
 		}
 	}
 }

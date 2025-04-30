@@ -21,6 +21,7 @@ PlayerController="*res://Scripts/PlayerController.cs"
 
 [display]
 
+window/size/mode=2
 window/subwindows/embed_subwindows=false
 window/per_pixel_transparency/allowed=true
 

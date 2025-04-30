@@ -3,22 +3,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public partial class FloorTile : Atom {
-	public FloorTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneMid.png")); 
-		Size = new Vector2(70, 70);
-
+public partial class WallTile : Atom {
+	public WallTile() {
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneCenter.png")); 
+		
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
-		shape.Size = Size; 
+		shape.Size = new Vector2(70, 70); 
 
 		SetCollisionLayerValue(2, true);
 		SetCollisionMaskValue(1, true);
 		
 		collision.Shape = shape;
 		AddChild(collision);
-		AddToGroup("Floor");
 	}
 	
 	public override bool ValidatePlacement(Room room) {
@@ -26,46 +24,32 @@ public partial class FloorTile : Atom {
 	}
 }
 
-public partial class Floor : Primitive {
+public partial class Wall : Primitive {
 
 	public Zone zone { get; set; }
-	
-	public Floor() : base(Vector2.Zero) {
-		Category = PrimitiveCategory.Floor;
+	public int width { get; set; }
+	public int height { get; set; }
+
+	public Wall() : base(Vector2.Zero) {
+		Category = PrimitiveCategory.Environmental;
 	}  // Required constructor
 
-	public Floor(Vector2 position) : base(position) { }
+	public Wall(Vector2 position) : base(position) { }
 	
 	public override bool GenerateInRoom(Room room) {
 		
-		int y = zone.Y + zone.Height - 1;
-		for (int x = zone.X; x < zone.X + zone.Width; x++) {
-			Vector2 position = new Vector2(x * 70, y * 70); 
-			
-			FloorTile tile = new FloorTile();
-			tile.GlobalPosition = position;
-			AddAtom(tile);
-			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++){
+				WallTile tile = new WallTile();
+				tile.GlobalPosition = this.Position + new Vector2(x * 70, y * 70);
+				AddAtom(tile);
+				//if (!room.AddAtom(tile)) {
+					//return false;
+				//}
+			}
 		}
-
-		this.Position = new Vector2(zone.X * 70, y * 70); 
 		return room.AddPrimitive(this);
 	}
-
-	//public override void GenerateInRoom(Room room) {
-		//
-		//for (int x = 0; x < room.Width; x++) {
-			//Vector2 position = new Vector2(x * 70, 0); 
-			//
-			//FloorTile tile = new FloorTile();
-			//tile.GlobalPosition = position;
-			//AddAtom(tile);
-			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
-		//}
-//
-		////this.GlobalPosition = new Vector2(0, 0); 
-		//room.AddPrimitive(this);
-	//}
 	
 	public override void GenerateAnchors(Room room)
 	{
@@ -117,34 +101,19 @@ public partial class Floor : Primitive {
 	public void GenerateObstructionLines()
 	{
 		ObstructionLines.Clear();
+		
 		List<Atom> tiles = GetAtoms(); // This should return the ladder tiles
 		Atom firstTile = tiles.First();
 		Atom lastTile = tiles.Last();
 		
 		Vector2 topLeft = firstTile.GlobalPosition - firstTile.Size / 2;
-		Vector2 topRight = lastTile.GlobalPosition + new Vector2(lastTile.Size.X / 2, -lastTile.Size.Y / 2);
-		Vector2 bottomLeft = firstTile.GlobalPosition + new Vector2(-firstTile.Size.X / 2, firstTile.Size.Y / 2);
+		Vector2 bottomLeft = topLeft + new Vector2(0, height * 70);
 		Vector2 bottomRight = lastTile.GlobalPosition + lastTile.Size / 2;
+		Vector2 topRight = bottomRight - new Vector2(0, height * 70);
 
 		ObstructionLines.Add((topLeft, topRight));
 		ObstructionLines.Add((topRight, bottomRight));
 		ObstructionLines.Add((bottomRight, bottomLeft));
 		ObstructionLines.Add((bottomLeft, topLeft));
-			
-		//foreach (Atom tile in GetAtoms())
-		//{
-			//Vector2 pos = tile.GlobalPosition;
-			//Vector2 size = tile.Size;
-//
-			//Vector2 topLeft = pos - size / 2;
-			//Vector2 topRight = pos + new Vector2(size.X / 2, -size.Y / 2);
-			//Vector2 bottomLeft = pos + new Vector2(-size.X / 2, size.Y / 2);
-			//Vector2 bottomRight = pos + size / 2;
-//
-			//ObstructionLines.Add((topLeft, topRight));
-			//ObstructionLines.Add((topRight, bottomRight));
-			//ObstructionLines.Add((bottomRight, bottomLeft));
-			//ObstructionLines.Add((bottomLeft, topLeft));
-		//}
 	}
 }

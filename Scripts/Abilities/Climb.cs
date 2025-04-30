@@ -4,7 +4,8 @@ using ImGuiNET;
 
 public partial class Climb : Ability
 {
-	public bool isClimbing = false;
+	public bool isClimbingUp = false;
+	public bool isClimbingDown = false;
 	public float climbSpeed = 400.0f;
 	private bool canJump = true;
 	
@@ -12,18 +13,21 @@ public partial class Climb : Ability
 
 	public override void Activate()
 	{
-		isClimbing = true;
+		isClimbingUp = true;
 	}
 	
 	public void updateClimbing(float delta) {
-		if (isClimbing) {
+		if (isClimbingUp) {
 			player.velocity.Y = -climbSpeed;
+		} else if (isClimbingDown) {
+			player.velocity.Y = climbSpeed;
 		}
 	}
 	
 	// stop climbing when up is released
 	public override void Deactivate() {
-		isClimbing = false;
+		isClimbingUp = false;
+		isClimbingDown = false;
 		player.velocity.Y = 0;
 	}
 	

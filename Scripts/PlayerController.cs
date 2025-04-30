@@ -6,6 +6,7 @@ public partial class PlayerController : CharacterBody2D
 {	
 	
 	public static PlayerController pc { get; private set; }
+	private Door currentDoor = null;
 
 	// Movement-related variables
 	public Vector2 velocity;
@@ -17,12 +18,14 @@ public partial class PlayerController : CharacterBody2D
 	public bool isRecoilingLeft = false;
 	public bool onLadder = false;
 	public bool inWater = false;
+	public bool onDoor = false;
 	public bool onSlope = false;
 	public bool isHurt = false;
 	private int laddersTouched = 0;
 	private int waterTouched = 0;
 	public float moveSpeed = 150.0f;
-
+	public float springJumpSpeed = 1000.0f;
+	
 	public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
 
 	// Sprite variables
@@ -181,7 +184,7 @@ public partial class PlayerController : CharacterBody2D
 		
 		// handle mushroom jump
 		if (isOnMushroom()) {
-			velocity.Y = -1000; 
+			velocity.Y = -springJumpSpeed; 
 		}
 		
 		// handle wall jump
@@ -205,7 +208,9 @@ public partial class PlayerController : CharacterBody2D
 		
 		// handle climb
 		if (onLadder && Input.IsKeyPressed(Key.Up)) {
-			climb.Activate();
+			climb.isClimbingUp = true;
+		} else if (onLadder && Input.IsKeyPressed(Key.Down)) {
+			climb.isClimbingDown = true;
 		} else if (onLadder) {
 			climb.Deactivate();
 		}
@@ -213,6 +218,13 @@ public partial class PlayerController : CharacterBody2D
 		// handle duck
 		if (Input.IsKeyPressed(Key.Down)) {
 			duck = true;
+		}
+		
+		// handle door
+		if (onDoor && Input.IsKeyPressed(Key.Enter))
+		{
+			GD.Print("opening door");
+			//RoomManager.GoToRoomFromDoor(this, currentDoor, this); // assuming 'this' is PlayerController
 		}
 		
 		jump.Deactivate();  // reset jump counter
@@ -327,7 +339,7 @@ public partial class PlayerController : CharacterBody2D
 			
 			if (laddersTouched == 0) {
 				onLadder = false;
-				climb.isClimbing = false;
+				climb.Deactivate();
 			}
 		}
 	}
@@ -353,6 +365,24 @@ public partial class PlayerController : CharacterBody2D
 		}
 	}
 	
+	public void _on_door_checker_body_entered(Node2D body)
+	{
+		if (body.IsInGroup("Door"))
+		{
+			GD.Print("on door");
+			onDoor = true;
+			currentDoor = body as Door;
+		}
+	}
+
+	public void _on_door_checker_body_exited(Node2D body)
+	{
+		if (body.IsInGroup("Door"))
+		{
+			onDoor = false;
+			currentDoor = null;
+		}
+	}
 	
 	
 	private void _UpdateSpriteRenderer(float velX, float velY, bool ducking) {		
@@ -360,10 +390,11 @@ public partial class PlayerController : CharacterBody2D
 		bool jumping = velY != 0;
 		bool dashing = isDashingLeft != isDashingRight;
 
-		pc._duckSprite.Visible = ducking;
+
 		pc._hurtSprite.Visible = isHurt;
+		pc._climbSprite.Visible = (climb.isClimbingUp || climb.isClimbingDown || onLadder && !isOnFloor() && !jumping) && !pc._hurtSprite.Visible;
+		pc._duckSprite.Visible = ducking && !pc._climbSprite.Visible;
 		pc._swimSprite.Visible = inWater;
-		pc._climbSprite.Visible = (climb.isClimbing || onLadder && !isOnFloor() && !jumping) && !ducking && !pc._hurtSprite.Visible;
 		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isOnFloor() || isOnSlope()) && !pc._hurtSprite.Visible && !inWater;
 		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
 		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;

@@ -26,38 +26,51 @@ public partial class PlatformTile : Atom {
 
 public partial class Platform : Primitive
 {
+	public Vector2 position { get; set; }
+	
 	public Platform() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Platform;
 	}  // Required constructor
 
 	public Platform(Vector2 position) : base(position) {}
 
-	public override void GenerateInRoom(Room room)
+	public override bool GenerateInRoom(Room room)
 	{
-		Vector2 position;
-		int attempts = 0;
-		const int maxAttempts = 10;
-
-		do {
-			position = room.GetRandomPosition();
-			attempts++;
-		} while (room.Primitives.Exists(p => p.GlobalPosition == position) && attempts < maxAttempts);
-
-		if (attempts >= maxAttempts) {
-			GD.Print($"⚠️ WARNING: Could not find unique placement for {this.GetType().Name}");
-			return;
-		}
-
 		PlatformTile atom = new PlatformTile();
 		atom.GlobalPosition = position;
 		AddAtom(atom);
 		room.AddAtom(atom); 
 		
 		this.Position = position;
-		room.AddPrimitive(this);
+		return room.AddPrimitive(this);
 	}
 	
-	public override void GenerateAnchors()
+	//public override bool GenerateInRoom(Room room)
+	//{
+		//Vector2 position;
+		//int attempts = 0;
+		//const int maxAttempts = 10;
+//
+		//do {
+			//position = room.GetRandomPosition();
+			//attempts++;
+		//} while (room.Primitives.Exists(p => p.GlobalPosition == position) && attempts < maxAttempts);
+//
+		//if (attempts >= maxAttempts) {
+			//GD.Print($"⚠️ WARNING: Could not find unique placement for {this.GetType().Name}");
+			//return false;
+		//}
+//
+		//PlatformTile atom = new PlatformTile();
+		//atom.GlobalPosition = position;
+		//AddAtom(atom);
+		//room.AddAtom(atom); 
+		//
+		//this.Position = position;
+		//return room.AddPrimitive(this);
+	//}
+	
+	public override void GenerateAnchors(Room room)
 	{
 		Anchors.Clear();
 

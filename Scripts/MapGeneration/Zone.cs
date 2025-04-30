@@ -9,6 +9,7 @@ public class Zone
 	public int Y { get; }
 	public int Width { get; }
 	public int Height { get; }
+	public bool isReachable { get; set; }
 
 	public Zone(int x, int y, int width, int height)
 	{
@@ -88,9 +89,9 @@ public class ZoneHandler
 {
 	private Room room;
 	private List<Zone> zones = new List<Zone>();
-	private int minZoneWidth = 5;
-	private int minZoneHeight = 5;
-	private int splitDepth = 6; 
+	private int minZoneWidth = 1;
+	private int minZoneHeight = 3;
+	private int splitDepth = 20; 
 	
 	public ZoneHandler(Room room)
 	{
@@ -103,9 +104,6 @@ public class ZoneHandler
 	{
 		zones.Clear();
 
-		int minZoneWidth = 3;
-		int minZoneHeight = 3;
-
 		int splitDepth = CalculateSplitDepth(room.Width, room.Height, minZoneWidth, minZoneHeight);
 		BSPNode root = new BSPNode(0, 0, room.Width, room.Height);
 		root.Split(splitDepth);
@@ -115,11 +113,54 @@ public class ZoneHandler
 		{
 			Zone zone = new Zone(leaf.X, leaf.Y, leaf.Width, leaf.Height);
 			zones.Add(zone);
-			GD.Print($"🟦 Generated Zone: X={zone.X}, Y={zone.Y}, W={zone.Width}, H={zone.Height}");
-			GenerateFloorForZone(zone);
+		}
+		
+		if(HasUnreachableZoneCluster()) {
+			zones.Clear();
+			GenerateZones();
+		} else {
+			foreach (Zone zone in zones) {
+				GD.Print($"🟦 Generated Zone: X={zone.X}, Y={zone.Y}, W={zone.Width}, H={zone.Height}");
+				zone.isReachable = false;
+				GenerateFloorForZone(zone);
+			} 
+			CheckHorizontallyReachableZones();
 		}
 	}
 	
+	public bool HasUnreachableZoneCluster()
+	{
+		List<Zone> startingZones = zones.Where(z => z.X == 0 && z.Y != 0).ToList(); // Skip zones at Y == 0
+
+		foreach (Zone startZone in startingZones)
+		{
+			int totalWidth = startZone.Width;
+			int currentX = startZone.X + startZone.Width;
+			int currentY = startZone.Y;
+
+			while (totalWidth < room.Width)
+			{
+				Zone nextZone = zones.FirstOrDefault(z => z.X == currentX &&
+					(z.Y == currentY || z.Y == currentY + 1 || z.Y == currentY - 1));
+
+				if (nextZone == null)
+					break;
+
+				totalWidth += nextZone.Width;
+				currentX += nextZone.Width;
+				currentY = nextZone.Y;
+
+				if (totalWidth == room.Width)
+				{
+					GD.Print("⚠️ Unreachable zone cluster detected. Suggest regenerating zones.");
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	private int CalculateSplitDepth(int width, int height, int minZoneWidth, int minZoneHeight)
 	{
 		int horizontalSplits = (int)Math.Floor(Math.Log2(width / (float)minZoneWidth));
@@ -132,7 +173,23 @@ public class ZoneHandler
 		Floor floor = new Floor();
 		floor.zone = zone;
 		floor.GenerateInRoom(room);
-		floor.GenerateAnchors();
+		//floor.GenerateAnchors();
+	}
+	
+	public void CheckHorizontallyReachableZones()
+	{
+		foreach (Zone zone in zones)
+		{
+			// if zone floor is between two zone floors ±1y or between wall and floor
+			if ((zones.Any(z => z.X + z.Width == zone.X && Math.Abs(z.Y + z.Height - zone.Y - zone.Height) <= 1) // there is a zone floor to the left ±1y
+			|| zone.X == 0) // or a wall to the left 
+			&& (zones.Any(z => z.X == zone.X + zone.Width && Math.Abs(z.Y + z.Height - zone.Y - zone.Height) <= 1) // and floor to the right
+			|| zone.X + zone.Width == room.Width) // or wall to the right
+			) { 
+				GD.Print($"zone at ({zone.X},{zone.Y}) is reachable.");
+				zone.isReachable = true; // zone must be reachable ✅
+			} 
+		}
 	}
 	
 	public List<(Zone from, Zone to)> GetVerticallyAdjacentZones()
@@ -160,18 +217,25 @@ public class ZoneHandler
 		return connections;
 	}
 	
+	public void placePlatforms() {
+		// add logic for situations when to add platforms 
+	}
+	
 	public void ConnectZonesVertically(Room room)
-	{
-		foreach (Zone lower in zones)
+	{ 		
+		placePlatforms();
+		
+		foreach (Zone upper in zones)
 		{
-			foreach (Zone upper in zones)
+			foreach (Zone lower in zones)
 			{
 				// Skip if it's the same zone
-				if (lower == upper) continue;
+				if (lower == upper || upper.isReachable) continue;
 
 				// Only check zones where the second one is higher up
 				if (upper.Y + upper.Height <= lower.Y + lower.Height)
 				{
+					
 					// Check if there's any horizontal overlap
 					int left = Math.Max(lower.X, upper.X);
 					int right = Math.Min(lower.X + lower.Width, upper.X + upper.Width);
@@ -181,56 +245,54 @@ public class ZoneHandler
 					|| upper.X == lower.X + lower.Width || upper.X + upper.Width == lower.X) // Ensure there’s at least 1 tile of overlap
 					{
 						int verticalGap = lower.Y + lower.Height - (upper.Y + upper.Height);
-						if (verticalGap > 0){
+						if (verticalGap > 2){
 							GD.Print($"🔍 Vertical connection possible from Zone at ({lower.X},{lower.Y}) to ({upper.X},{upper.Y})");
 							GD.Print($"➡️ Overlap Width: {overlapWidth}, Vertical Gap: {verticalGap}");
 
 							// Decision logic — for now, just print which primitive would make sense
 							if (verticalGap <= 0) {
 								GD.Print("📦 Use a platform.");
-							}
-							else if (verticalGap <= 0) {
-								GD.Print("🪜 Use a spring.");
-							}
+							}							
 							
-							else if (upper.X == 0 && !zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height))
-							{ 	// Left wall and no floor to the right
-								if (slopeHasFloorTilesBelow(new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2), verticalGap, false)) { // enough floor space below
-									PlaceSlope(new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2), verticalGap, false);  
-								} else {
-									PlaceLadder(new Vector2(upper.X + upper.Width, upper.Y + upper.Height - 2), verticalGap);
-								}
-							}
-							else if (upper.X + upper.Width == room.Width && !zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height))
-							{ 	// Right wall and no floor to the left
-								if (slopeHasFloorTilesBelow(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap, true)) { // enough floor space below
-									PlaceSlope(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap, true); 
-								} else {
-									PlaceLadder(new Vector2(upper.X - 1, upper.Y + upper.Height - 2), verticalGap); 
-								}
-							}
-							else if (zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height) && upper.X != 0)
-							{ 	// Floor to the right
-								if (slopeHasFloorTilesBelow(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap, true)) { // enough floor space below
-									PlaceSlope(new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2), verticalGap, true); 
-								} else { // ladder on the left
-									PlaceLadder(new Vector2(upper.X - 1, upper.Y + upper.Height - 2), verticalGap);
-								}
-							}
-							else if (zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height) && upper.X + upper.Width != room.Width)
-							{ 	// Floor to the left 
-								if (slopeHasFloorTilesBelow(new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2), verticalGap, false)) { // enough floor space below
-									PlaceSlope(new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2), verticalGap, false); 
-								} else { // ladder on the left
-									PlaceLadder(new Vector2(upper.X + upper.Width, upper.Y + upper.Height - 2), verticalGap);
+							if (upper.X + upper.Width == lower.X) { // if lower is on right - place on right
+								//if (canPlacePlatformPath(upper, verticalGap, true)) {
+									//PlacePlatformPath(upper, verticalGap, true);
+									//GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
+									//upper.isReachable = true;
+								//} else 
+								
+								if (canPlaceSpring(upper, verticalGap, true)) { // on left or right and no obstacles withing jumping area
+									upper.isReachable = PlaceSpring(upper, verticalGap, true);
+									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
+								} 
+								if (canPlaceSlope(upper, verticalGap, true) && !upper.isReachable) { // enough floor space below
+									upper.isReachable = PlaceSlope(upper, verticalGap, true); 
+									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
+								} 
+								if (!upper.isReachable) { // ladder on the right
+									upper.isReachable = PlaceLadder(upper, verticalGap, true);
+									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
 								}
 								
-							}
-							else if ( !zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height) 
-									&& !zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height) 
-									&& upper.X != 0 && upper.X + upper.Width != room.Width)
-							{ 	// No wall or floor adjacent 
-								PlaceLadder(new Vector2(upper.X + upper.Width, upper.Y + upper.Height - 2), verticalGap);
+							} else if (lower.X + lower.Width == upper.X) { // if lower is on left - place on left
+								//if (canPlacePlatformPath(upper, verticalGap, false)) {
+									//PlacePlatformPath(upper, verticalGap, false);
+									//GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
+									//upper.isReachable = true;
+								//} else 
+								
+								if (canPlaceSpring(upper, verticalGap, false) ) { // on left or right and no obstacles withing jumping area
+									upper.isReachable = PlaceSpring(upper, verticalGap, false);
+									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
+								} 
+								if (canPlaceSlope(upper, verticalGap, false) && !upper.isReachable) { // enough floor space below
+									upper.isReachable = PlaceSlope(upper, verticalGap, false); 
+									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
+								} 
+								if (!upper.isReachable) { // ladder on the left
+									upper.isReachable = PlaceLadder(upper, verticalGap, false);
+									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
+								}
 							}
 						} else {
 								GD.Print("❌ No vertical connection possible.");
@@ -239,55 +301,136 @@ public class ZoneHandler
 				}
 			}
 		}
+		
+		foreach (Zone zone in zones)
+		{ 
+			if (!zone.isReachable) {
+				GD.Print($"zone at ({zone.X},{zone.Y}) is not reachable!");
+			}
+		}
 	}
 	
-	bool slopeHasFloorTilesBelow(Vector2 position, int length, bool right) {
-		int offset;
-		if (right) { offset = 1; } else { offset = -1; }
+	bool canPlaceSpring(Zone upper, int verticalGap, bool right) {
+		Vector2 position; 
+		if (right) {
+			position = new Vector2(upper.X + upper.Width, upper.Y + upper.Height + verticalGap - 2);
+		} else {
+			position = new Vector2(upper.X - 1, upper.Y + upper.Height + verticalGap - 2);
+		}
 		
-		for (int x = 0; x < length + 1; x++) {
-			if (!room.HasAtomBelow((position + new Vector2(x, 0) * new Vector2(offset, 0)) * new Vector2(70, 70), typeof(FloorTile))) { 
-				float Xpos = (position.X + x) * 70;
-				float Ypos = (position.Y + 1) * 70;
-				GD.Print($"No floor tile at ({Xpos}, {Ypos})");
-				return false; 
+		int springJumpHeight = 5;
+		
+		for (int y = 1; y < springJumpHeight + 1; y++) {
+			if (room.HasAtomAt((position - new Vector2(0, y)) * new Vector2(70, 70))) { // if obstruction in airspace above spring
+				return false;
 			}
+		}
+			
+		return verticalGap <= springJumpHeight && room.HasAtomBelow(position * new Vector2(70, 70), typeof(FloorTile));
+	}
+	
+	bool canPlaceSlope(Zone upper, int length, bool right) {
+		
+		Vector2 position; 
+		if (right) {
+			position = new Vector2(upper.X + upper.Width + length - 1, upper.Y + upper.Height + length - 2);
+		} else {
+			position = new Vector2(upper.X - length, upper.Y + upper.Height + length - 2);
+		}
+		
+		int offset;
+		if (right) { offset = -1; } else { offset = 1; }
+				
+		for (int x = 0; x < length + 1; x++) {
+			if (!room.HasAtomBelow((position + new Vector2(x * offset, 0)) * new Vector2(70, 70), typeof(FloorTile)) 
+			|| room.HasAtomAt((position + new Vector2(x * offset, -x-1)) * new Vector2(70, 70))) { // if tile above slope or no floor tile under slope base
+				return false; 
+			} 
 		}
 		return true;
 	}
 	
-	void PlaceLadder(Vector2 position, int verticalGap)
+	bool canPlacePlatformPath(Zone upper, int verticalGap, bool right) {
+		return verticalGap >= 3;
+	}
+	
+	bool PlaceLadder(Zone upper, int verticalGap, bool right)
 	{
-		GD.Print("🧗 Use a ladder.");
+		GD.Print("🪜 Use a ladder.");
+		
+		Vector2 position; 
+		if (right) {
+			position = new Vector2(upper.X + upper.Width, upper.Y + upper.Height - 2);
+		} else {
+			position = new Vector2(upper.X - 1, upper.Y + upper.Height - 2);
+		}
+		
 		Ladder ladder = new Ladder();
 		ladder.position = position;
 		ladder.length = verticalGap + 1;
-		ladder.GenerateInRoom(room);
-		ladder.GenerateAnchors();
+		return ladder.GenerateInRoom(room);
+		//ladder.GenerateAnchors();
 	}
 	
-	void PlaceSlope(Vector2 position, int verticalGap, bool right)
+	bool PlaceSlope(Zone upper, int verticalGap, bool right)
 	{
 		GD.Print("🧗 Use a slope.");
-		Vector2 worldPosition = position * new Vector2(70, 70);
-
-		if (right)
-		{
-			RightSlope slope = new RightSlope();
-			slope.position = worldPosition;
-			slope.length = verticalGap;
-			slope.GenerateInRoom(room);
-			slope.GenerateAnchors();
+		
+		Vector2 position; 
+		if (right) {
+			position = new Vector2(upper.X + upper.Width + verticalGap - 1, upper.Y + upper.Height + verticalGap - 2);
+		} else {
+			position = new Vector2(upper.X - verticalGap, upper.Y + upper.Height + verticalGap - 2);
 		}
-		else
-		{
+		
+		Vector2 worldPosition = position * new Vector2(70, 70);
+		bool placedSlope = false;
+				
+		if (right) {
 			LeftSlope slope = new LeftSlope();
 			slope.position = worldPosition;
 			slope.length = verticalGap;
-			slope.GenerateInRoom(room);
-			slope.GenerateAnchors();
+			placedSlope = slope.GenerateInRoom(room);
+			//slope.GenerateAnchors();
+		} else {
+			RightSlope slope = new RightSlope();
+			slope.position = worldPosition;
+			slope.length = verticalGap;
+			placedSlope = slope.GenerateInRoom(room);
+			//slope.GenerateAnchors();
 		}
+		 return placedSlope;
 	}
+	
+	bool PlaceSpring(Zone upper, int verticalGap, bool right) {
+		Vector2 position; 
+		if (right) {
+			position = new Vector2(upper.X + upper.Width + 1, upper.Y + upper.Height + verticalGap - 2);
+		} else {
+			position = new Vector2(upper.X - 2, upper.Y + upper.Height + verticalGap - 2);
+		}
+		
+		GD.Print("🍄 Use a spring.");
+		Mushroom spring = new Mushroom();
+		spring.position = position * new Vector2(70, 70);
+		return spring.GenerateInRoom(room);
+		//spring.GenerateAnchors();
+	}
+	
+	void PlacePlatformPath(Zone upper, int verticalGap, bool right) {
+		Vector2 position; 
+		if (right) {
+			position = new Vector2(upper.X + upper.Width + 2, upper.Y + upper.Height);
+		} else {
+			position = new Vector2(upper.X - 2, upper.Y + upper.Height);
+		}
+		
+		GD.Print("🧗 Use a platform.");
+		Platform platform = new Platform();
+		platform.position = position * new Vector2(70, 70);
+		platform.GenerateInRoom(room);
+	}
+
 
 	public void DrawZoneBorders(Room room)
 	{
@@ -296,13 +439,13 @@ public class ZoneHandler
 		foreach (Zone zone in zones)
 		{
 			Line2D border = new Line2D();
-			border.DefaultColor = new Color(1, 0, 0); // Red
+			border.DefaultColor = new Color(1, 0, 1); // Red
 			border.Width = 2;
 
-			Vector2 topLeft = new Vector2(zone.X, zone.Y) * tileSize;
-			Vector2 topRight = new Vector2(zone.X + zone.Width, zone.Y) * tileSize;
-			Vector2 bottomRight = new Vector2(zone.X + zone.Width, zone.Y + zone.Height) * tileSize;
-			Vector2 bottomLeft = new Vector2(zone.X, zone.Y + zone.Height) * tileSize;
+			Vector2 topLeft = new Vector2(zone.X, zone.Y) * tileSize + new Vector2(5,35);
+			Vector2 topRight = new Vector2(zone.X + zone.Width, zone.Y) * tileSize + new Vector2(5, 35);
+			Vector2 bottomRight = new Vector2(zone.X + zone.Width, zone.Y + zone.Height) * tileSize + new Vector2(5, 35);
+			Vector2 bottomLeft = new Vector2(zone.X, zone.Y + zone.Height) * tileSize + new Vector2(5, 35);
 
 			border.AddPoint(topLeft);
 			border.AddPoint(topRight);
@@ -314,3 +457,72 @@ public class ZoneHandler
 		}
 	}
 }
+
+//else if (upper.X == 0 && !zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height))
+							//{ 	// Left wall and no floor to the right - place on right
+								//if (canPlaceSpring(upper, verticalGap, true)) { // on left or right and no obstacles withing jumping area
+									//PlaceSpring(upper, verticalGap, true);
+								//} else if (canPlaceSlope(upper, verticalGap, true)) { // enough floor space below
+									//placedConnection = PlaceSlope(upper, verticalGap, true);  
+								//} 
+								//if (!placedConnection) {
+									//PlaceLadder(upper, verticalGap, true);
+								//}
+							//}
+							//else if (upper.X + upper.Width == room.Width && !zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height))
+							//{ 	// Right wall and no floor to the left - place on left
+								//if (canPlaceSpring(upper, verticalGap, false)) { // on left or right and no obstacles withing jumping area
+									//PlaceSpring(upper, verticalGap, false);
+								//} else if (canPlaceSlope(upper, verticalGap, false)) { // enough floor space below
+									//placedConnection = PlaceSlope(upper, verticalGap, false); 
+								//} 
+								//if (!placedConnection) {
+									//PlaceLadder(upper, verticalGap, false); 
+								//}
+							//}
+							//else if (zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height) && upper.X != 0)
+							//{ 	// Floor to the right and no wall to the left - place on left
+								//if (canPlaceSpring(upper, verticalGap, false)) { // on left or right and no obstacles withing jumping area
+									//PlaceSpring(upper, verticalGap, false);
+								//} else if (canPlaceSlope(upper, verticalGap, false)) { // enough floor space below
+									//placedConnection = PlaceSlope(upper, verticalGap, false); 
+								//} 
+								//if (!placedConnection) { // ladder on the left
+									//PlaceLadder(upper, verticalGap, false);
+								//}
+							//}
+							//else if (zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height) && upper.X + upper.Width != room.Width)
+							//{ 	// Floor to the left and no wall to the right - place on right
+								//if (canPlaceSpring(upper, verticalGap, true)) { // on left or right and no obstacles withing jumping area
+									//PlaceSpring(upper, verticalGap, true);
+								//} else if (canPlaceSlope(upper, verticalGap, true)) { // enough floor space below
+									//placedConnection = PlaceSlope(upper, verticalGap, true); 
+								//} 
+								//if (!placedConnection) { // ladder on the right
+									//PlaceLadder(upper, verticalGap, true);
+								//}
+							//}
+							//else if ( !zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height) 
+									//&& !zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height) 
+									//&& upper.X != 0 && upper.X + upper.Width != room.Width)
+							//{ 	// No wall or floor adjacent 
+								//if (upper.X + upper.Width == lower.X) { // if lower is on right - place on right
+									//if (canPlaceSpring(upper, verticalGap, true)) { // on left or right and no obstacles withing jumping area
+									//PlaceSpring(upper, verticalGap, true);
+									//} else if (canPlaceSlope(upper, verticalGap, true)) { // enough floor space below
+										//placedConnection = PlaceSlope(upper, verticalGap, true); 
+									//} 
+									//if (!placedConnection) { // ladder on the right
+										//PlaceLadder(upper, verticalGap, true);
+									//}
+								//} else if (lower.X + lower.Width == upper.X) { // if lower is on left - place on left
+									//if (canPlaceSpring(upper, verticalGap, false)) { // on left or right and no obstacles withing jumping area
+									//PlaceSpring(upper, verticalGap, false);
+									//} else if (canPlaceSlope(upper, verticalGap, false)) { // enough floor space below
+										//placedConnection = PlaceSlope(upper, verticalGap, false); 
+									//} 
+									//if (!placedConnection) { // ladder on the left
+										//PlaceLadder(upper, verticalGap, false);
+									//}
+								//}
+							//}

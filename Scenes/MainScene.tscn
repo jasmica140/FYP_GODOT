@@ -30,4 +30,5 @@ script = ExtResource("1_k17ra")
 [node name="PlayerSpawn" type="Node2D" parent="."]
 
 [node name="Camera2D" type="Camera2D" parent="."]
+enabled = false
 script = ExtResource("4_7rqgy")

@@ -127,7 +127,7 @@ animations = [{
 }]
 
 [node name="Player" type="CharacterBody2D"]
-position = Vector2(168, 144)
+position = Vector2(287, 164)
 collision_mask = 0
 script = ExtResource("1_pbawd")
 
@@ -136,32 +136,29 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+metadata/_edit_use_anchors_ = true
 
 [node name="IdleSprite" type="Sprite2D" parent="SpriteContainer"]
-position = Vector2(-167.75, -147)
+position = Vector2(1.52588e-05, -1.25005)
 scale = Vector2(1.03788, 0.934783)
 texture = ExtResource("1_b21mf")
 
 [node name="DuckSprite" type="Sprite2D" parent="SpriteContainer"]
 visible = false
-position = Vector2(-168, -136)
 texture = ExtResource("3_1hyao")
 
 [node name="JumpSprite" type="Sprite2D" parent="SpriteContainer"]
 visible = false
-position = Vector2(-168, -144)
 texture = ExtResource("4_rlnli")
 
 [node name="WalkSprite" type="AnimatedSprite2D" parent="SpriteContainer"]
 visible = false
-position = Vector2(-168, -144)
 sprite_frames = SubResource("SpriteFrames_84kpl")
 frame = 10
 frame_progress = 0.409716
 
 [node name="DashSprite" type="AnimatedSprite2D" parent="SpriteContainer"]
 visible = false
-position = Vector2(-168, -144)
 sprite_frames = SubResource("SpriteFrames_84kpl")
 frame = 10
 frame_progress = 0.409716
@@ -169,7 +166,6 @@ speed_scale = 1.5
 
 [node name="ClimbSprite" type="AnimatedSprite2D" parent="SpriteContainer"]
 visible = false
-position = Vector2(-168, -144)
 sprite_frames = SubResource("SpriteFrames_1utg3")
 frame = 1
 frame_progress = 0.0484785
@@ -177,63 +173,60 @@ speed_scale = 0.5
 
 [node name="RollSprite" type="Sprite2D" parent="SpriteContainer"]
 visible = false
-position = Vector2(-168, -120)
 texture = ExtResource("18_yhg4d")
 
 [node name="HurtSprite" type="Sprite2D" parent="SpriteContainer"]
 visible = false
-position = Vector2(-168, -147)
 texture = ExtResource("19_tqd5w")
 
 [node name="SwimSprite" type="AnimatedSprite2D" parent="SpriteContainer"]
 visible = false
-position = Vector2(-168, -147)
 sprite_frames = SubResource("SpriteFrames_q6bsi")
 
 [node name="IconSprite" type="Sprite2D" parent="."]
-position = Vector2(-439, -290)
+position = Vector2(-685.25, -420.25)
 scale = Vector2(0.5, 0.457447)
 texture = ExtResource("19_b0g2c")
 
 [node name="CeilingChecker" type="RayCast2D" parent="."]
-position = Vector2(-167.75, -147)
+position = Vector2(0, -1.25006)
 rotation = 3.14159
 target_position = Vector2(-0.000335963, 46)
 collision_mask = 2
 
 [node name="FloorChecker" type="RayCast2D" parent="."]
-position = Vector2(-167.75, -147)
+position = Vector2(0, -1.25006)
 target_position = Vector2(-0.25, 46)
 collision_mask = 10
 
 [node name="RightSlopeChecker" type="RayCast2D" parent="."]
-position = Vector2(-167.75, -147)
+position = Vector2(0, -1.25006)
 rotation = 3.14159
 target_position = Vector2(-28.75, -31)
 collision_mask = 8
 
 [node name="LeftSlopeChecker" type="RayCast2D" parent="."]
-position = Vector2(-167.75, -147)
+position = Vector2(0, -1.25006)
 rotation = -1.5708
 target_position = Vector2(-28.75, -31)
 collision_mask = 8
 
 [node name="WallChecker" type="RayCast2D" parent="."]
-position = Vector2(-167.75, -147)
+position = Vector2(0, -1.25006)
 rotation = -1.5708
 target_position = Vector2(-0.000133038, 36.75)
 collision_mask = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-167.75, -147)
+position = Vector2(0, -1.25006)
 shape = SubResource("CapsuleShape2D_aqetx")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(-167.75, -147)
+position = Vector2(0, -1.25006)
 zoom = Vector2(2, 2)
 
 [node name="LadderChecker" type="Area2D" parent="."]
-position = Vector2(-167.75, -163)
+position = Vector2(0, -17.2501)
 collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="LadderChecker"]
@@ -241,7 +234,7 @@ position = Vector2(0.25, -17.5)
 shape = SubResource("RectangleShape2D_dinqd")
 
 [node name="DoorChecker" type="Area2D" parent="."]
-position = Vector2(-167.75, -163)
+position = Vector2(0, -17.2501)
 collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DoorChecker"]
@@ -249,7 +242,7 @@ position = Vector2(-0.25, 17)
 shape = SubResource("RectangleShape2D_0gysh")
 
 [node name="WaterChecker" type="Area2D" parent="."]
-position = Vector2(-167.75, -163)
+position = Vector2(0, -17.2501)
 collision_mask = 16
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="WaterChecker"]
@@ -257,7 +250,7 @@ position = Vector2(-0.25, 5.75)
 shape = SubResource("RectangleShape2D_qqenc")
 
 [node name="HeartContainer" type="Node2D" parent="."]
-position = Vector2(-167.75, -147)
+position = Vector2(-410.25, -275.25)
 script = ExtResource("20_8qk1u")
 
 [node name="HeartSprite1" type="AnimatedSprite2D" parent="HeartContainer"]
@@ -286,6 +279,9 @@ scale = Vector2(0.429245, 0.438889)
 sprite_frames = SubResource("SpriteFrames_qugw6")
 
 [node name="PlayerInfo" type="CanvasLayer" parent="."]
+
+[node name="CollectiblesContainer" type="Node2D" parent="."]
+position = Vector2(-655, -388)
 
 [connection signal="body_entered" from="LadderChecker" to="." method="_on_ladder_checker_body_entered"]
 [connection signal="body_exited" from="LadderChecker" to="." method="_on_ladder_checker_body_exited"]

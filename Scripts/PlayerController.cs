@@ -1,12 +1,15 @@
 using Godot;
 using System;
 using ImGuiNET;
+using System.Linq;
 
 public partial class PlayerController : CharacterBody2D
 {	
 	
 	public static PlayerController pc { get; private set; }
+	public Room CurrentRoom { get; set; }
 	private Door currentDoor = null;
+	private DoorLock currentLock = null;
 
 	// Movement-related variables
 	public Vector2 velocity;
@@ -18,7 +21,6 @@ public partial class PlayerController : CharacterBody2D
 	public bool isRecoilingLeft = false;
 	public bool onLadder = false;
 	public bool inWater = false;
-	public bool onDoor = false;
 	public bool onSlope = false;
 	public bool isHurt = false;
 	private int laddersTouched = 0;
@@ -28,8 +30,11 @@ public partial class PlayerController : CharacterBody2D
 	
 	public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
 
-	// Sprite variables
+	// containers
+	private Node2D _collectiblesContainer;
 	private Control _spriteContainer;
+
+	// Sprite variables
 	private Sprite2D _idleSprite;
 	private Sprite2D _jumpSprite;
 	private Sprite2D _duckSprite;
@@ -63,8 +68,11 @@ public partial class PlayerController : CharacterBody2D
 		Viewport root = GetTree().Root;
 		CurrentScene = root.GetChild(root.GetChildCount() - 1);
 		
-		// get sprite resources
+		// get containers
+		pc._collectiblesContainer = GetNode<Node2D>("CollectiblesContainer");
 		pc._spriteContainer = GetNode<Control>("SpriteContainer");
+				
+		// get sprite resources
 		pc._idleSprite = GetNode<Sprite2D>("SpriteContainer/IdleSprite");
 		pc._jumpSprite = GetNode<Sprite2D>("SpriteContainer/JumpSprite");
 		pc._duckSprite = GetNode<Sprite2D>("SpriteContainer/DuckSprite");
@@ -75,6 +83,7 @@ public partial class PlayerController : CharacterBody2D
 		pc._dashSprite = GetNode<AnimatedSprite2D>("SpriteContainer/DashSprite");
 		pc._climbSprite = GetNode<AnimatedSprite2D>("SpriteContainer/ClimbSprite");
 
+		// get collision checkers
 		pc._ceilingChecker = GetNode<RayCast2D>("CeilingChecker");
 		pc._floorChecker = GetNode<RayCast2D>("FloorChecker");
 		pc._leftSlopeChecker = GetNode<RayCast2D>("LeftSlopeChecker");
@@ -173,13 +182,10 @@ public partial class PlayerController : CharacterBody2D
 		// handle slope
 		if (isOnRightSlope()) {
 			pc._spriteContainer.RotationDegrees = -45;
-			pc._spriteContainer.Position = new Vector2(30,-154);
 		} else if (isOnLeftSlope()) {
 			pc._spriteContainer.RotationDegrees = 45;
-			pc._spriteContainer.Position = new Vector2(-140, 70);
 		} else { // reset when not on slope
 			pc._spriteContainer.RotationDegrees = 0;
-			pc._spriteContainer.Position = Vector2.Zero;
 		}
 		
 		// handle mushroom jump
@@ -221,10 +227,13 @@ public partial class PlayerController : CharacterBody2D
 		}
 		
 		// handle door
-		if (onDoor && Input.IsKeyPressed(Key.Enter))
-		{
+		if (currentDoor != null && currentDoor.isOpen && Input.IsActionJustPressed("ui_accept")) {
 			GD.Print("opening door");
 			//RoomManager.GoToRoomFromDoor(this, currentDoor, this); // assuming 'this' is PlayerController
+		} 
+		
+		if (currentLock != null && Input.IsActionJustPressed("ui_accept")) {
+			HandleDoorUnlock();
 		}
 		
 		jump.Deactivate();  // reset jump counter
@@ -369,18 +378,77 @@ public partial class PlayerController : CharacterBody2D
 	{
 		if (body.IsInGroup("Door"))
 		{
-			GD.Print("on door");
-			onDoor = true;
-			currentDoor = body as Door;
+			Primitive doorPrimitive = CurrentRoom.Primitives.FirstOrDefault(p => p.GetAtoms().Contains(body));
+			if (doorPrimitive is Door)
+			{
+				currentDoor = (Door)doorPrimitive;
+				GD.Print($"✅ Found door: {currentDoor.Colour}");
+			}
+			
+		} else if (body.IsInGroup("Key")) {
+			GD.Print("🔑 Picked up key!");
+			Node2D primitivesContainer = CurrentRoom.GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
+			Primitive keyPrimitive = CurrentRoom.Primitives.FirstOrDefault(p => p.GetAtoms().Contains(body));
+			primitivesContainer.RemoveChild(keyPrimitive); // Remove key primitive from PrimitivesContainer
+			pc._collectiblesContainer.AddChild(keyPrimitive); // Add the key to CollectiblesContainer
+			body.Position = new Vector2(0, 30*pc._collectiblesContainer.GetChildCount());
+			Atom atom = keyPrimitive.GetAtoms().First(); 
+			atom.Scale = new Vector2(0.4f, 0.4f); // Scale down the key
+			keyPrimitive.Anchors.Clear(); // remove anchor
+			
+		} else if (body.IsInGroup("Lock")) {
+			Primitive lockPrimitive = CurrentRoom.Primitives.FirstOrDefault(p => p.GetAtoms().Contains(body));
+			if (lockPrimitive is DoorLock)
+			{
+				currentLock = (DoorLock)lockPrimitive;
+				GD.Print($"✅ Found lock: {currentLock.Colour}");
+			}
 		}
 	}
 
 	public void _on_door_checker_body_exited(Node2D body)
 	{
-		if (body.IsInGroup("Door"))
-		{
-			onDoor = false;
+		if (body.IsInGroup("Door")) {
 			currentDoor = null;
+		} else if (body.IsInGroup("Lock")) {
+			currentLock = null;
+		}
+	}
+	
+	private void HandleDoorUnlock() {
+		DoorColour lockColour = currentLock.Colour; // Get color of lock
+
+		bool hasKey = pc._collectiblesContainer.GetChildren()
+			.OfType<DoorKey>()
+			.Any(key => key.Colour == lockColour);
+
+		if (hasKey) {
+			GD.Print($"🔓 Unlocked {lockColour} door!");
+
+			// Remove key from container 
+			var keyNode = pc._collectiblesContainer.GetChildren()
+				.OfType<DoorKey>()
+				.First(key => key.Colour == lockColour);
+			keyNode.QueueFree();
+
+			// Remove lock from room
+			if (currentLock != null) {
+				CurrentRoom.Primitives.Remove(currentLock);
+				currentLock.QueueFree();
+			}
+
+			// Open the corresponding door
+			var doorToOpen = CurrentRoom.Primitives
+				.OfType<Door>()
+				.FirstOrDefault(door => door.Colour == lockColour);
+
+			if (doorToOpen != null) {
+				doorToOpen.OpenDoor(CurrentRoom);
+			} else {
+				GD.PrintErr($"⚠️ No matching door found for color {lockColour}");
+			}
+		} else {
+			GD.Print($"🔒 You don't have the {lockColour} key!");
 		}
 	}
 	

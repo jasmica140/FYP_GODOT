@@ -48,21 +48,27 @@ public partial class Room : Node2D
 
 	}
 	
-	private void SpawnPlayer() {
+	private void SpawnPlayer()
+	{
 		PackedScene playerScene = GD.Load<PackedScene>("res://Scenes/player.tscn");
 		PlayerController player = (PlayerController)playerScene.Instantiate();
 
-		// Find the player spawn point (e.g., first floor tile)
 		Atom spawnAtom = Atoms.Find(p => p is FloorTile);
-		if (spawnAtom != null) {
-			player.GlobalPosition = spawnAtom.GlobalPosition + new Vector2(200,-140); // Offset above the floor
-		} else {
-			GD.Print("⚠️ WARNING: No valid floor found for player spawn. Defaulting to (0,0)");
-			player.GlobalPosition = new Vector2(0, 0);
+		if (spawnAtom != null)
+		{
+			player.GlobalPosition = spawnAtom.GlobalPosition + new Vector2(200, -140);
 		}
-		
+		else
+		{
+			player.GlobalPosition = new Vector2(0, 0);
+			GD.Print("⚠️ WARNING: No valid floor found for player spawn.");
+		}
+
 		Node2D playerSpawn = GetTree().Root.FindChild("PlayerSpawn", true, false) as Node2D;
-		playerSpawn.AddChild(player); // Add atoms to the correct container
+		playerSpawn.AddChild(player);
+
+		player.CurrentRoom = this; // 👈 Pass the room reference here
+
 		GD.Print($"✅ Player spawned at {player.GlobalPosition}");
 	}
 	

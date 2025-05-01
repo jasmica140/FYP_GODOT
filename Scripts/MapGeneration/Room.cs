@@ -328,7 +328,7 @@ public partial class Room : Node2D
 			while (!keyPlaced && validPositions.Count > 0)
 			{
 				int keyIndex = random.Next(validPositions.Count);
-				Vector2 keyPosition = validPositions[keyIndex] - new Vector2(0, 70);
+				Vector2 keyPosition = validPositions[keyIndex];
 				validPositions.RemoveAt(keyIndex);
 
 				DoorKey key = new DoorKey
@@ -518,7 +518,7 @@ public partial class Room : Node2D
 	{
 		foreach (var (start, end) in DebugPathLines)
 		{
-			DrawLine(start + new Vector2(35, 60), end + new Vector2(35, 60), Colors.Blue, 6f);
+			DrawLine(start + new Vector2(40, 60), end + new Vector2(40, 60), Colors.Blue, 6f);
 		}
 	}
 }

@@ -115,9 +115,9 @@ public partial class Ladder : Primitive {
 		foreach (Atom tile in tiles)
 		{
 			Vector2 pos = tile.GlobalPosition;
-			Anchor left = new Anchor(pos - offsetSide + offsetDown, orbit, "left");
-			Anchor right = new Anchor(pos + offsetSide + offsetDown, orbit, "right");
-			Anchor center = new Anchor(pos + offsetDown, orbit, "center");
+			Anchor left = new Anchor(pos - offsetSide + offsetDown, orbit, "left", this);
+			Anchor right = new Anchor(pos + offsetSide + offsetDown, orbit, "right", this);
+			Anchor center = new Anchor(pos + offsetDown, orbit, "center", this);
 
 			Anchors.Add(left);
 			Anchors.Add(right);

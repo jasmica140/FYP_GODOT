@@ -195,8 +195,8 @@ public partial class RightSlope : Primitive {
 		Vector2 topRight = endTile.GlobalPosition + new Vector2((size.X / 2) + size.X - 70, -size.Y / 2);
 
 		// Add anchors
-		Anchor bottomAnchor = new Anchor(bottomLeft, orbit, "slope_start");
-		Anchor topAnchor = new Anchor(topRight, orbit, "slope_end");
+		Anchor bottomAnchor = new Anchor(bottomLeft, orbit, "slope_start", this);
+		Anchor topAnchor = new Anchor(topRight, orbit, "slope_end", this);
 		Anchors.Add(bottomAnchor);
 		Anchors.Add(topAnchor);
 		InternalPaths.Add(new AnchorConnection(bottomAnchor, topAnchor));
@@ -307,9 +307,12 @@ public partial class LeftSlope : Primitive {
 		Vector2 bottomRight = startTile.GlobalPosition + new Vector2(size.X / 2, size.Y / 2);
 		Vector2 topLeft = endTile.GlobalPosition + new Vector2(-(size.X / 2) - size.X + 70, -size.Y / 2);
 
+		Vector2 slopeTop = endTile.GlobalPosition + new Vector2(-(size.X / 2) - size.X + 70, -size.Y / 2);
+		Vector2 slopeBottom = startTile.GlobalPosition + new Vector2(size.X / 2, (size.Y / 2));
+		
 		// Add anchors
-		Anchor bottomAnchor = new Anchor(bottomRight, orbit, "slope_start");
-		Anchor topAnchor = new Anchor(topLeft, orbit, "slope_end");
+		Anchor bottomAnchor = new Anchor(bottomRight, orbit, "slope_start", this);
+		Anchor topAnchor = new Anchor(topLeft, orbit, "slope_end", this);
 		Anchors.Add(bottomAnchor);
 		Anchors.Add(topAnchor);
 		InternalPaths.Add(new AnchorConnection(bottomAnchor, topAnchor));
@@ -341,10 +344,10 @@ public partial class LeftSlope : Primitive {
 
 		// Anchor positions
 		Vector2 slopeTop = endTile.GlobalPosition + new Vector2(-(size.X / 2) - size.X + 70, -size.Y / 2);
-		Vector2 slopeBottom = startTile.GlobalPosition + new Vector2(size.X / 2, size.Y / 2);
+		Vector2 slopeBottom = startTile.GlobalPosition + new Vector2(size.X / 2, (size.Y / 2));
 		Vector2 edgeBottom = slopeBottom - new Vector2((length + 1) * size.X, 0);
 		Vector2 edgeTop = edgeBottom - new Vector2(0, (length - 1) * size.X );
-		
+
 		ObstructionLines.Add((slopeBottom, slopeTop));
 		ObstructionLines.Add((slopeBottom, edgeBottom));
 		ObstructionLines.Add((edgeBottom, edgeTop));

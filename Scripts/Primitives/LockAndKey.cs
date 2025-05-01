@@ -27,12 +27,13 @@ public partial class KeyAtom : Atom {
 				break;
 		}
 		
-		Size = new Vector2(70, 70);
+		this.Scale = new Vector2(0.7f, 0.7f); // Scale down the key
+		Size = new Vector2(55, 35);
 		
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
-		shape.Size = new Vector2(Size.X-20, Size.Y); 
+		shape.Size = new Vector2(Size.X, Size.Y); 
 		
 		SetCollisionLayerValue(3, true);
 		SetCollisionMaskValue(1, true);
@@ -112,7 +113,14 @@ public partial class DoorKey : Primitive {
 	}
 
 	public override void GenerateAnchors(Room room) {
+		Anchors.Clear();
 
+		Atom tile = GetAtoms().First(); // Assume one atom
+
+		Vector2 basePos = tile.GlobalPosition;
+		float orbit = 40f;
+		
+		Anchors.Add(new Anchor(basePos, orbit, "center", this));
 	}
 }
 

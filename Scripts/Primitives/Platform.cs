@@ -89,8 +89,8 @@ public partial class Platform : Primitive
 
 		foreach (Atom tile in tiles) {
 			Vector2 pos = tile.GlobalPosition;
-			Anchors.Add(new Anchor(pos + offsetUp - offsetSide, orbit, "topLeft"));
-			Anchors.Add(new Anchor(pos + offsetUp + offsetSide, orbit, "topRight"));
+			Anchors.Add(new Anchor(pos + offsetUp - offsetSide, orbit, "topLeft", this));
+			Anchors.Add(new Anchor(pos + offsetUp + offsetSide, orbit, "topRight", this));
 		}
 	}
 }

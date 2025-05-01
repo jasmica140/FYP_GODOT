@@ -102,10 +102,10 @@ public abstract partial class Primitive : StaticBody2D
 			DrawLine(line.start, line.end, Colors.Red, 5);
 		}
 		
-		//foreach (var conn in InternalPaths)
-		//{
-			//DrawLine(conn.From.Position, conn.To.Position, Colors.Green, 5);
-		//}
+		foreach (var conn in InternalPaths)
+		{
+			DrawLine(conn.From.Position, conn.To.Position, Colors.Green, 5);
+		}
 		
 		foreach (Anchor anchor in Anchors)
 		{

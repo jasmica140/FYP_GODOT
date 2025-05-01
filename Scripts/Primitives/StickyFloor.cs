@@ -95,10 +95,10 @@ public partial class StickyFloor : Primitive {
 		
 		foreach (Atom tile in tiles) {
 			Vector2 pos = tile.GlobalPosition;
-			Anchors.Add(new Anchor(pos + offsetUp - offsetSide, orbit, "topLeft"));
-			Anchors.Add(new Anchor(pos + offsetUp + offsetSide, orbit, "topRight"));
-			Anchors.Add(new Anchor(pos - offsetSide, orbit, "left")); 
-			Anchors.Add(new Anchor(pos + offsetSide, orbit, "right"));
+			Anchors.Add(new Anchor(pos + offsetUp - offsetSide, orbit, "topLeft", this));
+			Anchors.Add(new Anchor(pos + offsetUp + offsetSide, orbit, "topRight", this));
+			Anchors.Add(new Anchor(pos - offsetSide, orbit, "left", this)); 
+			Anchors.Add(new Anchor(pos + offsetSide, orbit, "right", this));
 		}
 	}
 }

@@ -99,7 +99,7 @@ public partial class FloorBlade : Primitive
 		Vector2 topPosition = atom.GlobalPosition - new Vector2(0, atom.Size.Y / 2 + 5); // 10 pixels above the top
 		float orbit = 40f; // orbit radius around the anchor
 
-		Anchor topAnchor = new Anchor(topPosition, orbit, "over_blade");
+		Anchor topAnchor = new Anchor(topPosition, orbit, "over_blade", this);
 		Anchors.Add(topAnchor);
 		
 		GenerateObstructionLines();

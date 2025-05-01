@@ -99,6 +99,6 @@ public partial class Door : Primitive {
 		Vector2 basePos = tile.GlobalPosition;
 		float orbit = 40f;
 		
-		Anchors.Add(new Anchor(basePos, orbit, "center"));
+		Anchors.Add(new Anchor(basePos, orbit, "center", this));
 	}
 }

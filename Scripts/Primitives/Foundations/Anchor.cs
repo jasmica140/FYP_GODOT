@@ -206,7 +206,42 @@ public static class AnchorConnector
 	
 	public static bool DoLinesIntersect(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2)
 	{
-		float ccw(Vector2 A, Vector2 B, Vector2 C) => (C.Y - A.Y) * (B.X - A.X) - (B.Y - A.Y) * (C.X - A.X);
-		return (ccw(a1, b1, b2) * ccw(a2, b1, b2) < 0) && (ccw(b1, a1, a2) * ccw(b2, a1, a2) < 0);
+		// If either endpoint of anchor connection lies on the obstruction line → allow it
+		if (PointOnSegment(b1, b2, a1) || PointOnSegment(b1, b2, a2))
+			return false;
+
+		// Orientation helper
+		int Orientation(Vector2 p, Vector2 q, Vector2 r)
+		{
+			float val = (q.Y - p.Y) * (r.X - q.X) - 
+						(q.X - p.X) * (r.Y - q.Y);
+			if (Mathf.Abs(val) < 0.00001f) return 0; // collinear
+			return (val > 0) ? 1 : 2;
+		}
+
+		// Checks if q lies on line segment pr
+		bool PointOnSegment(Vector2 p, Vector2 r, Vector2 q)
+		{
+			return q.X <= Mathf.Max(p.X, r.X) && q.X >= Mathf.Min(p.X, r.X) &&
+				   q.Y <= Mathf.Max(p.Y, r.Y) && q.Y >= Mathf.Min(p.Y, r.Y) &&
+				   Orientation(p, r, q) == 0;
+		}
+
+		int o1 = Orientation(a1, a2, b1);
+		int o2 = Orientation(a1, a2, b2);
+		int o3 = Orientation(b1, b2, a1);
+		int o4 = Orientation(b1, b2, a2);
+
+		// General case
+		if (o1 != o2 && o3 != o4)
+			return true;
+
+		// Special case: collinear and overlapping
+		if (o1 == 0 && PointOnSegment(a1, a2, b1)) return true;
+		if (o2 == 0 && PointOnSegment(a1, a2, b2)) return true;
+		if (o3 == 0 && PointOnSegment(b1, b2, a1)) return true;
+		if (o4 == 0 && PointOnSegment(b1, b2, a2)) return true;
+
+		return false;
 	}
 }

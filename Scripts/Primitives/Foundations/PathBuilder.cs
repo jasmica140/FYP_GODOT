@@ -55,46 +55,61 @@ public class PathBuilder
 	{
 		GD.Print("🔗 Building anchor graph...");
 		BuildGraph(room.Primitives); // Build the full anchor graph
-		
-		foreach (var anchor in graph.Keys)
-		{
-			if (anchor.Owner is Door)
-			{
-				GD.Print($"🚪 Door anchor at {anchor.Position} has {graph[anchor].Count} connections.");
-				foreach (var connected in graph[anchor])
-					GD.Print($"     ↳ Connected to {connected.Position} ({connected.Owner.GetType().Name})");
-			}
-		}
-		
-		// Get bottom-center anchors from doors
-		List<Anchor> doorAnchors = room.Primitives
+
+		var doorAnchors = room.Primitives
 			.Where(p => p is Door)
 			.SelectMany(p => p.Anchors)
-			.Where(a => a.Type == "center") // or whatever you named it
+			.Where(a => a.Type == "center")
+			.ToList();
+
+		var collectibleAnchors = room.Primitives
+			.Where(p => p.Category == Primitive.PrimitiveCategory.Collectible)
+			.SelectMany(p => p.Anchors)
+			.Where(a => a.Type == "center")
 			.ToList();
 
 		GD.Print($"🚪 Found {doorAnchors.Count} door anchors");
+		GD.Print($"🎁 Found {collectibleAnchors.Count} collectible anchors");
 
-		// Loop through all unique pairs
+		// Log connections for debug
+		foreach (var anchor in graph.Keys.Where(a => a.Owner is Door))
+		{
+			GD.Print($"🚪 Door anchor at {anchor.Position} has {graph[anchor].Count} connections.");
+			foreach (var connected in graph[anchor])
+				GD.Print($"     ↳ Connected to {connected.Position} ({connected.Owner?.GetType().Name})");
+		}
+
 		for (int i = 0; i < doorAnchors.Count; i++)
 		{
+			Anchor doorAnchor = doorAnchors[i];
+
+			// 1. Check path to other doors
 			for (int j = i + 1; j < doorAnchors.Count; j++)
 			{
-				Anchor start = doorAnchors[i];
-				Anchor end = doorAnchors[j];
-
-				List<Anchor> path = FindPath(start, end);
-
-				if (path.Count > 0)
+				List<Anchor> path = FindPath(doorAnchor, doorAnchors[j]);
+				if (path?.Count > 0)
 				{
 					GD.Print($"✅ Path found between Door {i} and Door {j}");
-					DrawPath(path, room); // Optional for visualization
+					DrawPath(path, room);
 				}
-				else
-				{
-					GD.Print($"❌ No path found between Door {i} and Door {j}");
-				}
+				else GD.PrintErr($"❌ No path found between Door {i} and Door {j}");
 			}
+
+			// 2. Check path to any collectible
+			bool foundKey = collectibleAnchors.Any(keyAnchor =>
+			{
+				var path = FindPath(doorAnchor, keyAnchor);
+				if (path?.Count > 0)
+				{
+					GD.Print($"✅ Path from Door {i} to collectible at {keyAnchor.Position}");
+					DrawPath(path, room);
+					return true;
+				}
+				return false;
+			});
+
+			if (!foundKey)
+				GD.PrintErr($"❌ No path from Door {i} to ANY collectible!");
 		}
 	}
 	
@@ -137,6 +152,9 @@ public void BuildGraph(List<Primitive> primitives)
 			Anchor a = allAnchors[i];
 			Anchor b = allAnchors[j];
 
+			//if (a.Owner == b.Owner)
+				//continue; // only allow internal connections from InternalPaths
+				//
 			if ((a.Position - b.Position).Length() <= (a.Radius + b.Radius))
 			{
 				graph[a].Add(b);
@@ -200,17 +218,17 @@ public void BuildGraph(List<Primitive> primitives)
 		return null;
 	}
 
-private void DrawPath(List<Anchor> path, Room room)
-{
-	for (int i = 0; i < path.Count - 1; i++)
+	private void DrawPath(List<Anchor> path, Room room)
 	{
-		Vector2 from = path[i].Position;
-		Vector2 to = path[i + 1].Position;
+		for (int i = 0; i < path.Count - 1; i++)
+		{
+			Vector2 from = path[i].Position;
+			Vector2 to = path[i + 1].Position;
 
-		room.DebugPathLines.Add((from, to));
+			room.DebugPathLines.Add((from, to));
+		}
+		room.QueueRedraw();
 	}
-	room.QueueRedraw();
-}
 
 	public bool GeneratePath(Anchor start, Anchor end)
 	{

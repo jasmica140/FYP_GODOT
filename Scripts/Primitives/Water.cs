@@ -94,7 +94,7 @@ public partial class Water : Primitive {
 		
 		foreach (Atom tile in tiles) {
 			Vector2 pos = tile.GlobalPosition;
-			Anchors.Add(new Anchor(pos + offsetDown, orbit, "bottom"));
+			Anchors.Add(new Anchor(pos + offsetDown, orbit, "bottom", this));
 		}
 	}
 }

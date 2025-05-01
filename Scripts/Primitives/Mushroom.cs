@@ -80,7 +80,7 @@ public partial class Mushroom : Primitive
 		float orbit = 40f;
 
 		// Add base anchor
-		Anchor center = new Anchor(basePos, orbit, "mushroom_base");
+		Anchor center = new Anchor(basePos, orbit, "mushroom_base", this);
 		Anchors.Add(center);
 
 		// Arc settings
@@ -106,7 +106,7 @@ public partial class Mushroom : Primitive
 				float dy = -4 * verticalPeak * t * (1 - t); // parabolic curve
 
 				Vector2 pos = basePos + new Vector2(dx, dy);
-				Anchor arcAnchor = new Anchor(pos, orbit, "jump_arc");
+				Anchor arcAnchor = new Anchor(pos, orbit, "jump_arc", this);
 				
 				AnchorConnection anchorConnection = new AnchorConnection(prev, arcAnchor, false);
 				if(!anchorConnection.IsConnectionObstructed(room)) {

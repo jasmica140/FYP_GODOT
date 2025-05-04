@@ -281,7 +281,7 @@ sprite_frames = SubResource("SpriteFrames_qugw6")
 [node name="PlayerInfo" type="CanvasLayer" parent="."]
 
 [node name="CollectiblesContainer" type="Node2D" parent="."]
-position = Vector2(-655, -388)
+position = Vector2(-685, -420)
 
 [connection signal="body_entered" from="LadderChecker" to="." method="_on_ladder_checker_body_entered"]
 [connection signal="body_exited" from="LadderChecker" to="." method="_on_ladder_checker_body_exited"]

@@ -18,38 +18,123 @@ public class PathBuilder
 	
 	public void GenerateHazards()
 	{
+		List<Type> hazardTypes = new List<Type> { typeof(FloorBlade), typeof(Pit), typeof(HorizontalFish) };
 		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
+
+		// Scale min and max with difficulty
 		Random random = new Random();
-		int noOfHazards = random.Next(2, 10); // random number of hazards to place
+		int minHazards = (int)MathF.Floor(15 * room.DifficultyPercent);
+		int maxHazards = (int)MathF.Ceiling(20 * room.DifficultyPercent);
+		int noOfHazards = random.Next(minHazards, maxHazards);
 
-		// Manually list available hazard types
-		List<Type> hazardTypes = new List<Type> { typeof(FloorBlade) }; // Add more hazard types here
+		for (int i = 0; i < noOfHazards; i++) {
+			if (hazardTypes.Count == 0) {
+				GD.Print("⚠️ No hazard types remaining.");
+				break;
+			}
 
-		for (int i = 0; i < noOfHazards; i++)
-		{
-			if (validPositions.Count == 0)
-			{
+			if (validPositions.Count == 0) {
 				GD.Print("⚠️ No more valid positions left for hazards.");
 				break;
 			}
 
+			// Pick a hazard type
+			Type hazardType = hazardTypes[random.Next(hazardTypes.Count)];
+
+			if (hazardType == typeof(Pit)) {
+				Pit pit = new Pit();
+				if ( pit.GenerateInRoom(room)) { // Recompute valid floor tile positions after modifying the room
+					validPositions = room.GetPositionsAboveFloorTiles();
+				} else {
+					GD.Print("🚫 No valid spot for pit. Removing it from hazard list.");
+					hazardTypes.Remove(hazardType);
+					i--; // Retry the current iteration
+				}
+				continue; // Skip the rest of the loop for pit
+			} else if (hazardType == typeof(HorizontalFish)) {
+				HorizontalFish fish = new HorizontalFish();
+				if (!fish.GenerateInRoom(room)) { 
+					validPositions = room.GetPositionsAboveFloorTiles();
+					GD.Print("🚫 No valid spot for pit. Removing it from hazard list.");
+					hazardTypes.Remove(hazardType);
+					i--; // Retry the current iteration
+				} 
+				continue; // Skip the rest of the loop for fish
+			}
+
+			// For non-pit hazards
 			int index = random.Next(validPositions.Count);
 			Vector2 chosenPosition = validPositions[index];
-			validPositions.RemoveAt(index); // remove the position immediately
+			validPositions.RemoveAt(index);
 
-			// Pick a random hazard type
-			Type hazardType = hazardTypes[random.Next(hazardTypes.Count)];
 			Primitive hazard = (Primitive)Activator.CreateInstance(hazardType);
 			hazard.Position = chosenPosition;
 
-			// Try to place it
-			if (!hazard.GenerateInRoom(room))
-			{
+			if (!hazard.GenerateInRoom(room)) {
 				GD.Print($"❌ Failed to place {hazardType.Name} at {chosenPosition}. Trying another...");
-				i--; // Try again (retry this iteration)
+				i--; // Retry
 			}
 		}
 	}
+	
+	public void GenerateEnvironmentals()
+	{
+		List<Type> environmentalTypes = new List<Type> { typeof(Water) };
+		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
+
+		// Scale min and max with difficulty
+		Random random = new Random();
+		//int minHazards = (int)MathF.Floor(15 * room.DifficultyPercent);
+		//int maxHazards = (int)MathF.Ceiling(20 * room.DifficultyPercent);
+		int noOfEnv = random.Next(1, 3);
+
+		for (int i = 0; i < noOfEnv; i++) {
+			if (environmentalTypes.Count == 0) {
+				GD.Print("⚠️ No hazard types remaining.");
+				break;
+			}
+
+			if (validPositions.Count == 0) {
+				GD.Print("⚠️ No more valid positions left for hazards.");
+				break;
+			}
+
+			// Pick a hazard type
+			Type environmentalType = environmentalTypes[random.Next(environmentalTypes.Count)];
+
+			if (environmentalType == typeof(Water)) {
+				Water water = new Water();
+
+				// Let Pit find its own valid placement
+				bool success = water.GenerateInRoom(room);
+
+				if (success) {
+					// Recompute valid floor tile positions after modifying the room
+					validPositions = room.GetPositionsAboveFloorTiles();
+				} else {
+					GD.Print("🚫 No valid spot for water. Removing it from env list.");
+					environmentalTypes.Remove(environmentalType);
+					i--; // Retry the current iteration
+				}
+
+				continue; // Skip the rest of the loop for pit
+			}
+
+			// For non-pit hazards
+			int index = random.Next(validPositions.Count);
+			Vector2 chosenPosition = validPositions[index];
+			validPositions.RemoveAt(index);
+
+			Primitive environmental = (Primitive)Activator.CreateInstance(environmentalType);
+			environmental.Position = chosenPosition;
+
+			if (!environmental.GenerateInRoom(room)) {
+				GD.Print($"❌ Failed to place {environmentalType.Name} at {chosenPosition}. Trying another...");
+				i--; // Retry
+			}
+		}
+	}
+	
 	
 	public void BuildPathsBetweenDoors(Room room)
 	{

@@ -3,10 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public partial class WaterTile : Atom {
-	public WaterTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/liquidWaterTop_mid.png")); 
+public partial class TopWaterTile : Atom {
+	public TopWaterTile() {
 		
+		var animSprite = new AnimatedSprite2D();
+		var frames = new SpriteFrames();
+		
+		frames.AddAnimation("waterWave");
+		frames.SetAnimationSpeed("waterWave", 3); // 4 FPS
+		frames.SetAnimationLoop("waterWave", true);
+		
+		frames.AddFrame("waterWave", GD.Load<Texture2D>("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/iceWaterMid.png"));
+		frames.AddFrame("waterWave", GD.Load<Texture2D>("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/iceWaterMidAlt.png"));
+
+		animSprite.SpriteFrames = frames;
+		animSprite.Play("waterWave");
+
+		AddChild(animSprite);
+			
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
@@ -27,54 +41,213 @@ public partial class WaterTile : Atom {
 	}
 }
 
+public partial class FillerWaterTile : Atom {
+	public FillerWaterTile() {
+		
+		var animSprite = new AnimatedSprite2D();
+		var frames = new SpriteFrames();
+		
+		frames.AddAnimation("waterMove");
+		frames.SetAnimationSpeed("waterMove", 3); // 4 FPS
+		frames.SetAnimationLoop("waterMove", true);
+		
+		frames.AddFrame("waterMove", GD.Load<Texture2D>("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/iceWaterDeepStars.png"));
+		frames.AddFrame("waterMove", GD.Load<Texture2D>("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/iceWaterDeepStarsAlt.png"));
+
+		animSprite.SpriteFrames = frames;
+		animSprite.Play("waterMove");
+
+		AddChild(animSprite);
+				
+		// Add a collision shape
+		CollisionShape2D collision = new CollisionShape2D();
+		RectangleShape2D shape = new RectangleShape2D();
+		shape.Size = new Vector2(70, 70); 
+		
+		collision.Shape = shape;
+		
+		SetCollisionLayerValue(5, true);
+		SetCollisionMaskValue(1, true);
+		
+		AddChild(collision);
+		AddToGroup("Water");
+	}
+	
+	public override bool ValidatePlacement(Room room) {
+		return true;
+	}
+}
+
 public partial class Water : Primitive {
 
+	public int Width;
+	public int Depth;
+	public bool hasFish = false;
+	
 	public Water() : base(Vector2.Zero) {
-		Category = PrimitiveCategory.MovementModifier;
+		Category = PrimitiveCategory.Environmental;
 	}  // Required constructor
 
 	public Water(Vector2 position) : base(position) {}
 
 	public override bool GenerateInRoom(Room room) {
-		// Look for the Floor primitive in the room
-		Primitive floorPrimitive = room.Primitives.Find(p => p is Floor);
-		List<Atom> tilesToReplace = new List<Atom>();
-		List<Atom> floorTiles = floorPrimitive.GetAtoms();
-		
-		float minX = floorTiles.Min(a => a.GlobalPosition.X);
-		float maxX = floorTiles.Max(a => a.GlobalPosition.X);
+		Random random = new Random();
 
-		Random rng = new Random();
-		float x1 = (float)rng.NextDouble() * (maxX - minX) + minX;
-		float x2 = (float)rng.NextDouble() * (maxX - minX) + minX;
+		int maxWidth = 20;
 		
-		float lower = Mathf.Min(x1, x2);
-		float upper = Mathf.Max(x1, x2);
-	
-		if (floorPrimitive != null) {
-			foreach (Atom atom in floorTiles) {
-				if (atom is FloorTile && atom.GlobalPosition.X > lower && atom.GlobalPosition.X < upper) {
-					
-					WaterTile tile = new WaterTile(); // Create new water tile
-					tile.GlobalPosition = atom.GlobalPosition;
-					AddAtom(tile); 
-					room.AddAtom(tile);
-					tilesToReplace.Add(atom);
-				} 
+		int minWidth = 2;
+		int minDepth = 2;
+		int maxDepth = 20;
+
+		foreach (Primitive floorPrimitive in room.Primitives.Where(p => p is Floor).OrderBy(_ => random.Next())) {
+			foreach (Atom floorAtom in floorPrimitive.GetAtoms()) {
+				Vector2 basePos = floorAtom.GlobalPosition;
+				int tileX = (int)(basePos.X / 70);
+				int tileY = (int)(basePos.Y / 70);
+
+				bool hasMinWidth = true;
+				for (int dx = 0; dx < minWidth && hasMinWidth; dx++) {
+					if (!room.HasAtomBelow(new Vector2((tileX + dx) * 70, (tileY) * 70), typeof(FillerStoneTile))) {
+						hasMinWidth = false;
+					}
+				}
+				if (!hasMinWidth)
+					continue;
+
+				int availableWidth = 0;
+				for (int dx = 0; dx <= maxWidth; dx++) {
+					Vector2 check = new Vector2((tileX + dx) * 70, (tileY + 1) * 70);
+					if (room.HasAtomOfTypeAt(check, typeof(FillerStoneTile)))
+						availableWidth++;
+					else
+						break;
+				}
+				maxWidth = Math.Min(maxWidth, availableWidth);
+				Width = random.Next(minWidth, maxWidth);
+				
+				if (Width < minWidth) { continue; }
+
+				int availableDepth = 0;
+				for (int dy = 1; dy <= maxDepth; dy++) {
+					bool allClear = true;
+					for (int dx = 0; dx < Width; dx++) {
+						Vector2 check = new Vector2((tileX + dx) * 70, (tileY + dy) * 70);
+						if (!room.HasAtomOfTypeAt(check, typeof(FillerStoneTile))) { allClear = false; }
+					}
+					if (!allClear) break;
+					availableDepth++;
+				}
+				maxDepth = Math.Min(maxDepth, availableDepth);
+				Depth = random.Next(minDepth, maxDepth);
+				
+				if (Depth < minDepth) { continue; }
+
+				bool hasOverheadClearance = true;
+				for (int dx = 0; dx < Width && hasOverheadClearance; dx++) {
+					Vector2 above = new Vector2((tileX + dx) * 70, (tileY - 1) * 70);
+					if (room.Atoms.Any(a => a.GlobalPosition == above)) {
+						hasOverheadClearance = false;
+					}
+				}
+				if (!hasOverheadClearance)
+					continue;
+
+				bool hasSideWalls = true;
+				for (int dy = 0; dy < Depth && hasSideWalls; dy++) {
+					Vector2 left = new Vector2((tileX - 1) * 70, (tileY + dy) * 70);
+					Vector2 right = new Vector2((tileX + Width) * 70, (tileY + dy) * 70);
+					if (!room.HasAtomOfTypeAt(left, typeof(FillerStoneTile)) && !room.HasAtomOfTypeAt(left, typeof(FloorTile))) {
+						hasSideWalls = false;
+					}
+					if (!room.HasAtomOfTypeAt(right, typeof(FillerStoneTile)) && !room.HasAtomOfTypeAt(right, typeof(FloorTile))) {
+						hasSideWalls = false;
+					}
+				}
+
+				bool hasBottomWall = true;
+				for (int dx = 0; dx < Width; dx++) {
+					Vector2 bottom = new Vector2((tileX + dx) * 70, (tileY + Depth) * 70);
+					if (!room.HasAtomOfTypeAt(bottom, typeof(FillerStoneTile))) {
+						hasBottomWall = false;
+					}
+				}
+
+				if (!hasSideWalls || !hasBottomWall)
+					continue;
+
+				for (int dx = 0; dx < Width; dx++) {
+					for (int dy = 0; dy < Depth; dy++) {
+						Vector2 pos = new Vector2((tileX + dx) * 70, (tileY + dy) * 70);
+						Atom atom = room.Atoms.FirstOrDefault(a => (a is FloorTile || a is FillerStoneTile) && a.GlobalPosition == pos);
+
+						if (atom != null) {
+							Primitive owner = room.Primitives.FirstOrDefault(p => p.GetAtoms().Contains(atom));
+							if (owner != null) {
+								owner.RemoveAtom(atom);
+								room.RemoveAnchorsAt(atom.GlobalPosition); // remove anchors from affected area
+							}
+							room.Atoms.Remove(atom); // remove from global atom list
+							if (atom is FloorTile) {
+								TopWaterTile tile = new TopWaterTile(); // Create new water tile
+								tile.GlobalPosition = atom.GlobalPosition;
+								AddAtom(tile); 
+							} else if (atom is FillerStoneTile) {
+								FillerWaterTile tile = new FillerWaterTile(); // Create new water tile
+								tile.GlobalPosition = atom.GlobalPosition;
+								AddAtom(tile); 
+							}
+						}
+					}
+				}
+				this.Position = new Vector2(tileX * 70, tileY * 70);
+				return room.AddPrimitive(this);
 			}
-			
-			foreach (var tile in tilesToReplace) {
-				floorPrimitive.RemoveAtom(tile);
-			}
-			
-			this.Position = tilesToReplace[0].GlobalPosition;
-			return room.AddPrimitive(this);
-			GD.Print("💧 Floor tiles replaced with water tiles.");
-		} else {
-			GD.PrintErr("❌ No Floor primitive found in the room!");
-			return false;
 		}
+
+		GD.PrintErr("❌ No valid location found for pit.");
+		return false;
 	}
+	
+	//public override bool GenerateInRoom(Room room) {
+		//// Look for the Floor primitive in the room
+		//Primitive floorPrimitive = room.Primitives.Find(p => p is Floor);
+		//List<Atom> tilesToReplace = new List<Atom>();
+		//List<Atom> floorTiles = floorPrimitive.GetAtoms();
+		//
+		//float minX = floorTiles.Min(a => a.GlobalPosition.X);
+		//float maxX = floorTiles.Max(a => a.GlobalPosition.X);
+//
+		//Random rng = new Random();
+		//float x1 = (float)rng.NextDouble() * (maxX - minX) + minX;
+		//float x2 = (float)rng.NextDouble() * (maxX - minX) + minX;
+		//
+		//float lower = Mathf.Min(x1, x2);
+		//float upper = Mathf.Max(x1, x2);
+	//
+		//if (floorPrimitive != null) {
+			//foreach (Atom atom in floorTiles) {
+				//if (atom is FloorTile && atom.GlobalPosition.X > lower && atom.GlobalPosition.X < upper) {
+					//
+					//WaterTile tile = new WaterTile(); // Create new water tile
+					//tile.GlobalPosition = atom.GlobalPosition;
+					//AddAtom(tile); 
+					//room.AddAtom(tile);
+					//tilesToReplace.Add(atom);
+				//} 
+			//}
+			//
+			//foreach (var tile in tilesToReplace) {
+				//floorPrimitive.RemoveAtom(tile);
+			//}
+			//
+			//this.Position = tilesToReplace[0].GlobalPosition;
+			//return room.AddPrimitive(this);
+			//GD.Print("💧 Floor tiles replaced with water tiles.");
+		//} else {
+			//GD.PrintErr("❌ No Floor primitive found in the room!");
+			//return false;
+		//}
+	//}
 	
 	public override void GenerateAnchors(Room room)
 	{

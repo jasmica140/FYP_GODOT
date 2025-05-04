@@ -71,7 +71,7 @@ public partial class ParamaterEditor : Node2D
 	}
 	
 	public void _on_wall_jump_height_slider_value_changed(float value) {
-		PlayerController.pc.wallJump.height = value;
+		PlayerController.pc.wallJump.airAcceleration = value;
 	}
 	
 	public void _on_wall_jump_distance_slider_value_changed(float value) {

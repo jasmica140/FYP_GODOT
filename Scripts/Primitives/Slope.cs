@@ -89,7 +89,8 @@ public partial class RightSlope : Primitive {
 	
 	public Vector2 position { get; set; } // start position is lower left corner
 	public int length { get; set; }
-	
+	public Zone zone { get; set; }
+
 	public RightSlope() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.MovementModifier;
 	}  // Required constructor
@@ -112,7 +113,7 @@ public partial class RightSlope : Primitive {
 				AddAtom(midSlopeTile);
 				//room.AddAtom(midSlopeTile); 
 			}
-
+			
 			for (int j = 0; j < i; j++) { // maybe i + 1 to add a layer of fillers under slope
 				Vector2 fillerTilePosition =  slopePosition + new Vector2(70, (j+1)*70); 
 				FillerStoneTile fillerStoneTile = new FillerStoneTile();
@@ -120,50 +121,26 @@ public partial class RightSlope : Primitive {
 				AddAtom(fillerStoneTile);
 				//room.AddAtom(fillerStoneTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 			}
+				
 		}
 		
 		this.Position = position;
-		return room.AddPrimitive(this);
+
+		if (room.AddPrimitive(this)) {
+			attemptPlaceFillersUnderZoneFloor(room);
+			return true;
+		}
+
+		return false;
 	}
 	
-	//public override void GenerateInRoom(Room room) {
-		//List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
-//
-		//if (validPositions.Count == 0) {
-			//GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
-			//return;
-		//}
-		//
-		//// Pick a random valid position from the list
-		//Random random = new Random();
-		//Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-		//int numOfTiles = random.Next(2, 10);
-//
-		//for (int i = 0; i < numOfTiles; i++) {
-			//Vector2 slopePosition =  chosenPosition + new Vector2(i * 70, -i * 70); 
-			//SlopeTile slopeTile = new SlopeTile();
-			//slopeTile.GlobalPosition = slopePosition;
-			//AddAtom(slopeTile); // Add the tile to the Floor primitive
-			//room.AddAtom(slopeTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
-			//
-			//Vector2 midSlopePosition =  slopePosition + new Vector2(70, 0); 
-			//MiddleSlopeTile midSlopeTile = new MiddleSlopeTile();
-			//midSlopeTile.GlobalPosition = midSlopePosition;
-			//AddAtom(midSlopeTile);
-			//room.AddAtom(midSlopeTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
-			//
-			//for (int j = 0; j < i; j++) { // maybe i + 1 to add a layer of fillers under slope
-				//Vector2 fillerTilePosition =  slopePosition + new Vector2(70, (j+1)*70); 
-				//FillerStoneTile fillerStoneTile = new FillerStoneTile();
-				//fillerStoneTile.GlobalPosition = fillerTilePosition;
-				//AddAtom(fillerStoneTile);
-				//room.AddAtom(fillerStoneTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
-			//}
-		//}
-		//
-		//this.Position = chosenPosition;
-		//room.AddPrimitive(this);
-	//}
+	private void attemptPlaceFillersUnderZoneFloor(Room room) {
+		Wall wall = new Wall();
+		wall.Position = new Vector2((zone.X + 1)* 70, (zone.Y + zone.Height) * 70);
+		wall.width = zone.Width - 1;
+		wall.height = length - 1;
+		wall.GenerateInRoom(room);
+	}
 	
 	public override void GenerateAnchors(Room room)
 	{
@@ -229,7 +206,7 @@ public partial class RightSlope : Primitive {
 		// Anchor positions
 		Vector2 slopeTop = endTile.GlobalPosition + new Vector2((size.X / 2) + size.X - 70, -size.Y / 2);
 		Vector2 slopeBottom = startTile.GlobalPosition + new Vector2(-size.X / 2, size.Y / 2);
-		Vector2 edgeBottom = slopeBottom + new Vector2((length + 1) * size.X, 0);
+		Vector2 edgeBottom = slopeBottom + new Vector2((length + 1)* size.X, 0);
 		Vector2 edgeTop = edgeBottom - new Vector2(0, (length - 1) * size.Y );
 		
 		ObstructionLines.Add((slopeBottom, slopeTop));
@@ -242,7 +219,8 @@ public partial class LeftSlope : Primitive {
 	
 	public Vector2 position { get; set; } // start position is lower right corner
 	public int length { get; set; }
-	
+	public Zone zone { get; set; }
+
 	public LeftSlope() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.MovementModifier;
 	}  // Required constructor
@@ -273,10 +251,25 @@ public partial class LeftSlope : Primitive {
 				AddAtom(fillerStoneTile);
 				//room.AddAtom(fillerStoneTile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 			}
+			
 		}
 		
 		this.Position = position;
-		return room.AddPrimitive(this);
+
+		if (room.AddPrimitive(this)) {
+			attemptPlaceFillersUnderZoneFloor(room);
+			return true;
+		}
+
+		return false;
+	}
+	
+	private void attemptPlaceFillersUnderZoneFloor(Room room) {
+		Wall wall = new Wall();
+		wall.Position = new Vector2(zone.X * 70, (zone.Y + zone.Height) * 70);
+		wall.width = zone.Width - 1;
+		wall.height = length - 1;
+		wall.GenerateInRoom(room);
 	}
 	
 	public override void GenerateAnchors(Room room)

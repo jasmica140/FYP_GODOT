@@ -9,9 +9,11 @@ public static class PrimitiveRegistry {
 			typeof(Door),
 			typeof(Floor),
 			typeof(FloorBlade),
+			typeof(HorizontalFish),
 			typeof(Ladder),
 			typeof(LeftSlope),
 			typeof(Mushroom),
+			typeof(Pit),
 			typeof(Platform),
 			typeof(RightSlope),
 			typeof(SlipperyFloor),
@@ -64,11 +66,9 @@ public abstract partial class Primitive : StaticBody2D
 	public void RemoveAtom(Atom atom) {
 		if (atoms.Contains(atom)) {
 			atoms.Remove(atom);         // Remove from the list
+			RemoveChild(atom);			// remove child
 			atom.QueueFree();           // Remove from the scene
-			GD.Print($"❌ Removed {atom.GetType().Name} at {atom.GlobalPosition} from {GetType().Name}");
-		} else {
-			GD.Print($"⚠️ Atom not found in {GetType().Name}'s atom list.");
-		}
+		} 
 	}
 	
 	public void ReplaceAtom(Atom oldAtom, Atom newAtom) {

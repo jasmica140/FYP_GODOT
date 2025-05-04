@@ -49,27 +49,6 @@ public partial class Mushroom : Primitive
 		return room.AddPrimitive(this);
 	}
 	
-	//public override void GenerateInRoom(Room room) {
-		//List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
-//
-		//if (validPositions.Count == 0) {
-			//GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
-			//return;
-		//}
-//
-		//// Pick a random valid position from the list
-		//Random random = new Random();
-		//Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-//
-		//MushroomAtom atom = new MushroomAtom();
-		//atom.GlobalPosition = chosenPosition;
-		//AddAtom(atom);
-		//room.AddAtom(atom); 
-		//
-		//this.Position = chosenPosition;
-		//room.AddPrimitive(this);
-	//}
-	
 	public override void GenerateAnchors(Room room)
 	{
 		Anchors.Clear();
@@ -87,9 +66,10 @@ public partial class Mushroom : Primitive
 		int arcSteps = 20;
 		int arcSlices = 9; // Total arcs (e.g., 5 = far left, mid-left, center, mid-right, far right)
 		float tileSize = 70f;
-		float maxHorizontal = tileSize * 5;
-		float verticalPeak = tileSize * 8;
 
+		float verticalPeak = (room.Player.springJumpSpeed * room.Player.springJumpSpeed) / (2f * room.Player.gravity);
+		float maxHorizontal = room.Player.moveSpeed * (2f * room.Player.springJumpSpeed / room.Player.gravity);
+		
 		// Loop through arc slices (-1 to 1 range)
 		for (int s = 0; s < arcSlices; s++)
 		{

@@ -4,10 +4,10 @@ using ImGuiNET;
 
 public class WallJump : Ability
 {
-	public float height = 800.0f; 
+	public float airAcceleration = 800.0f; 
 	public float distance = 150.0f;
 	public float gripTime = 1.0f;
-	private float gripTimer = 1.0f;
+	public float gripTimer = 1.0f;
 	
 	public bool canWallJump = true;
 	public bool wallFriction = true;
@@ -16,20 +16,12 @@ public class WallJump : Ability
 
 	public override void Activate()
 	{		
-		if (player.direction == -1 && Input.IsKeyPressed(Key.Right) && canWallJump) { // jump to the right
-			
-			player.velocity.X = distance;
-			player.velocity.Y = -height; // First jump
+		if (canWallJump) { 
+			player.velocity.X = -distance*player.direction; // doesnt work bc its before handle walk in physics process
+			player.velocity.Y = -airAcceleration; 
 			resetGrip();
-			GD.Print("jumping right");
-			
-		} else if (player.direction == 1 && Input.IsKeyPressed(Key.Left) && canWallJump) { // jump to the left
-			
-			player.velocity.X = -distance;
-			player.velocity.Y = -height; // First jump
-			resetGrip();
-			GD.Print("jumping left");
-		}
+			GD.Print("activating wall jumping");
+		} 
 	}
 	
 	public void updateGripTimer (float delta) {
@@ -53,7 +45,7 @@ public class WallJump : Ability
 		
 	// Display wall jump paramaters
 	public void displayStats () {
-		ImGui.DragFloat("jump height", ref height);
+		ImGui.DragFloat("jump height", ref airAcceleration);
 		ImGui.DragFloat("jump dist", ref distance);
 		ImGui.DragFloat("grip time", ref gripTime);
 

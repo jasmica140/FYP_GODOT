@@ -318,7 +318,7 @@ public class ZoneHandler
 			position = new Vector2(upper.X - 1, upper.Y + upper.Height + verticalGap - 2);
 		}
 		
-		int springJumpHeight = 5;
+		int springJumpHeight = Mathf.FloorToInt((room.Player.springJumpSpeed * room.Player.springJumpSpeed) / (2f * room.Player.gravity * 70f));
 		
 		for (int y = 1; y < springJumpHeight + 1; y++) {
 			if (room.HasAtomAt((position - new Vector2(0, y)) * new Vector2(70, 70))) { // if obstruction in airspace above spring
@@ -343,7 +343,8 @@ public class ZoneHandler
 				
 		for (int x = 0; x < length + 1; x++) {
 			if (!room.HasAtomBelow((position + new Vector2(x * offset, 0)) * new Vector2(70, 70), typeof(FloorTile)) 
-			|| room.HasAtomAt((position + new Vector2(x * offset, -x-1)) * new Vector2(70, 70))) { // if tile above slope or no floor tile under slope base
+			|| room.HasAtomAt((position + new Vector2(x * offset, -x-1)) * new Vector2(70, 70))
+			|| room.HasAtomAt((position + new Vector2(x * offset, -x-2)) * new Vector2(70, 70))) { // if tile above slope or no floor tile under slope base
 				return false; 
 			} 
 		}
@@ -369,7 +370,6 @@ public class ZoneHandler
 		ladder.position = position;
 		ladder.length = verticalGap + 1;
 		return ladder.GenerateInRoom(room);
-		//ladder.GenerateAnchors();
 	}
 	
 	bool PlaceSlope(Zone upper, int verticalGap, bool right)
@@ -390,12 +390,14 @@ public class ZoneHandler
 			LeftSlope slope = new LeftSlope();
 			slope.position = worldPosition;
 			slope.length = verticalGap;
+			slope.zone = upper;
 			placedSlope = slope.GenerateInRoom(room);
 			//slope.GenerateAnchors();
 		} else {
 			RightSlope slope = new RightSlope();
 			slope.position = worldPosition;
 			slope.length = verticalGap;
+			slope.zone = upper;
 			placedSlope = slope.GenerateInRoom(room);
 			//slope.GenerateAnchors();
 		}

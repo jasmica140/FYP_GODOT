@@ -31,7 +31,7 @@ public partial class MapGenerator : Node
 		Node2D roomsContainer = GetNode<Node2D>("../RoomsContainer"); // Get container
 		
 		//Room room = (Room)GD.Load<PackedScene>("res://Scenes/Rooms/Room.tscn").Instantiate();
-		Room room = new Room(100, 40); // Set Width = 41, Height = 25
+		Room room = new Room(100, 40, 5); // Set Width = 41, Height = 25
 		//Room room = new Room(35, 15); // Set Width = 41, Height = 25
 		roomsContainer.AddChild(room); // Adds the room dynamically
 		room.GlobalPosition = new Vector2(0,0);  // Adjust for centering

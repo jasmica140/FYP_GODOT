@@ -3,10 +3,13 @@ using System;
 using ImGuiNET;
 using System.Linq;
 
+public enum PlayerAbility { Walk, Dash, Jump, DoubleJump, WallJump, Swim }
+
 public partial class PlayerController : CharacterBody2D
 {	
 	
 	public static PlayerController pc { get; private set; }
+	public Node CurrentScene { get; set; }
 	public Room CurrentRoom { get; set; }
 	private Door currentDoor = null;
 	private DoorLock currentLock = null;
@@ -59,8 +62,15 @@ public partial class PlayerController : CharacterBody2D
 	public WallJump wallJump;
 	public Recoil recoil;
 	
-	public Node CurrentScene { get; set; }
-
+	public PlayerController()
+	{
+		jump = new Jump(this);
+		dash = new Dash(this);
+		climb = new Climb(this);
+		wallJump = new WallJump(this);
+		recoil = new Recoil(this);
+	}
+	
 	public override void _Ready()
 	{
 		pc = this;
@@ -119,6 +129,13 @@ public partial class PlayerController : CharacterBody2D
 		if (inWater) {
 			velocity.Y = 0;
 		}
+		
+		// handle wall jump
+		if (!isOnFloor() && isNearWall() && Input.IsKeyPressed(Key.Space) 
+			&& ((direction == -1 && Input.IsKeyPressed(Key.Right)) ||(direction == 1 && Input.IsKeyPressed(Key.Left)))) {
+				GD.Print("wall jumping");
+			wallJump.Activate();
+		} 
 		
 		// handle walk
 		velocity.X = 0;
@@ -193,23 +210,21 @@ public partial class PlayerController : CharacterBody2D
 			velocity.Y = -springJumpSpeed; 
 		}
 		
-		// handle wall jump
-		if (!isOnFloor() && isNearWall() && Input.IsKeyPressed(Key.Space) 
-			&& (Input.IsKeyPressed(Key.Right) || Input.IsKeyPressed(Key.Left))) {
-			wallJump.Activate();
-		}
-		
 		// handle jump
-		if (!jump.variableHeight && Input.IsActionJustPressed("jump")) {
-			jump.Activate();
-		} else if (jump.variableHeight && Input.IsKeyPressed(Key.Space)) {
-			jump.Activate();
-			if (jump.isJumping) {
-				jump.jumpVariableHeight((float)delta);
+		if (wallJump.gripTimer == wallJump.gripTime){
+			if (!jump.variableHeight && Input.IsActionJustPressed("jump")) { // handle jump
+				jump.Activate();
+				GD.Print("jumping");
+			} else if (jump.variableHeight && Input.IsKeyPressed(Key.Space)) {
+				jump.Activate();
+				GD.Print("jumping");
+				if (jump.isJumping) {
+					jump.jumpVariableHeight((float)delta);
+				}
+			} else if (jump.variableHeight && jump.isJumping) { //space was pressed and released
+				jump.jumped = true;
+				jump.spaceReleased = true;
 			}
-		} else if (jump.variableHeight && jump.isJumping) { //space was pressed and released
-			jump.jumped = true;
-			jump.spaceReleased = true;
 		}
 		
 		// handle climb

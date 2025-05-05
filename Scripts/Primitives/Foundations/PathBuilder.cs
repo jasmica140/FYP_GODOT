@@ -18,7 +18,7 @@ public class PathBuilder
 	
 	public void GenerateHazards()
 	{
-		List<Type> hazardTypes = new List<Type> { typeof(FloorBlade), typeof(Pit), typeof(HorizontalFish) };
+		List<Type> hazardTypes = new List<Type> { typeof(FloorBlade), typeof(Pit), typeof(Fish) };
 		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
 
 		// Scale min and max with difficulty
@@ -51,8 +51,8 @@ public class PathBuilder
 					i--; // Retry the current iteration
 				}
 				continue; // Skip the rest of the loop for pit
-			} else if (hazardType == typeof(HorizontalFish)) {
-				HorizontalFish fish = new HorizontalFish();
+			} else if (hazardType == typeof(Fish)) {
+				Fish fish = new Fish();
 				if (!fish.GenerateInRoom(room)) { 
 					validPositions = room.GetPositionsAboveFloorTiles();
 					GD.Print("🚫 No valid spot for pit. Removing it from hazard list.");

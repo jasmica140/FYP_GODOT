@@ -30,6 +30,7 @@ script = ExtResource("1_k17ra")
 [node name="PlayerSpawn" type="Node2D" parent="."]
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(1390, 639)
+position = Vector2(1697, 829)
+enabled = false
 zoom = Vector2(0.5, 0.5)
 script = ExtResource("4_7rqgy")

@@ -82,13 +82,68 @@ public partial class Water : Primitive {
 
 	public int Width;
 	public int Depth;
-	public bool hasFish = false;
-	
+	public List<float> availableFishPositions = new();
+	public const int minFishSpacing = 70; // tile height
+		
 	public Water() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Environmental;
 	}  // Required constructor
 
 	public Water(Vector2 position) : base(position) {}
+	
+	public void GenerateAvailableFishPositions() {
+		availableFishPositions.Clear();
+		
+		if (Width < 5 && Depth > 5) {
+			if (Width <= 3) {
+				availableFishPositions.Add((float)Position.X - 35 + ((Width * 70) / 2));
+			} else {
+				availableFishPositions.Add((float)Position.X - 70 + ((Width * 70) / 2));
+				availableFishPositions.Add((float)Position.X + 35 + ((Width * 70) / 2));
+			}
+		} else if (Width >= 5){
+			float topY = Position.Y + 35;
+			float bottomY = Position.Y + Depth * 70;
+			float heightAvailable = bottomY - topY;
+
+			int fishCount = Mathf.FloorToInt(heightAvailable / minFishSpacing);
+			if (fishCount <= 0) return;
+
+			// Step 1: Build evenly spaced positions (raw)
+			List<float> rawPositions = new();
+			for (int i = 0; i < fishCount; i++) {
+				rawPositions.Add(topY + i * minFishSpacing);
+			}
+
+			// Step 2: Sort them into your desired order
+			List<float> orderedPositions = new();
+
+			// Always start with the top position
+			if (rawPositions.Count > 0)
+				orderedPositions.Add(rawPositions[0]);
+
+			// Add middle position (closest to center)
+			if (rawPositions.Count > 2) {
+				int midIndex = rawPositions.Count / 2;
+				if (!orderedPositions.Contains(rawPositions[midIndex]))
+					orderedPositions.Add(rawPositions[midIndex]);
+			}
+
+			// Add bottom position (last one)
+			if (rawPositions.Count > 1)
+				orderedPositions.Add(rawPositions[^1]); // ^1 = last
+
+			// Add remaining in-between positions
+			for (int i = 0; i < rawPositions.Count; i++) {
+				float y = rawPositions[i];
+				if (!orderedPositions.Contains(y))
+					orderedPositions.Add(y);
+			}
+
+			availableFishPositions = orderedPositions;
+		}
+		
+	}
 
 	public override bool GenerateInRoom(Room room) {
 		Random random = new Random();
@@ -200,7 +255,13 @@ public partial class Water : Primitive {
 					}
 				}
 				this.Position = new Vector2(tileX * 70, tileY * 70);
-				return room.AddPrimitive(this);
+				
+				if (room.AddPrimitive(this)) {
+					GenerateAvailableFishPositions();
+					return true;
+				} else {
+					return false;
+				}
 			}
 		}
 

@@ -17,11 +17,13 @@ public partial class PlayerController : CharacterBody2D
 	// Movement-related variables
 	public Vector2 velocity;
 	public int direction = 1;
-	
+	private float currentHealth = 5.0f; // start with 5 full hearts
+
 	public bool isDashingRight = false;
 	public bool isDashingLeft = false;
 	public bool isRecoilingRight = false;
 	public bool isRecoilingLeft = false;
+	public bool touchedHazard = false;
 	public bool onLadder = false;
 	public bool inWater = false;
 	public bool onSlope = false;
@@ -36,6 +38,7 @@ public partial class PlayerController : CharacterBody2D
 	// containers
 	private Node2D _collectiblesContainer;
 	private Control _spriteContainer;
+	private Node2D _heartContainer;
 
 	// Sprite variables
 	private Sprite2D _idleSprite;
@@ -81,7 +84,8 @@ public partial class PlayerController : CharacterBody2D
 		// get containers
 		pc._collectiblesContainer = GetNode<Node2D>("CollectiblesContainer");
 		pc._spriteContainer = GetNode<Control>("SpriteContainer");
-				
+		pc._heartContainer = GetNode<Node2D>("HeartContainer");
+
 		// get sprite resources
 		pc._idleSprite = GetNode<Sprite2D>("SpriteContainer/IdleSprite");
 		pc._jumpSprite = GetNode<Sprite2D>("SpriteContainer/JumpSprite");
@@ -128,6 +132,11 @@ public partial class PlayerController : CharacterBody2D
 		// handle swim 
 		if (inWater) {
 			velocity.Y = 0;
+			if (Input.IsKeyPressed(Key.Down) && !isOnFloor()) {
+				velocity.Y = moveSpeed;
+			} else if (Input.IsKeyPressed(Key.Up)) {
+				velocity.Y = -moveSpeed;
+			}
 		}
 		
 		// handle wall jump
@@ -186,7 +195,7 @@ public partial class PlayerController : CharacterBody2D
 		}
 		
 		// handle hurt
-		if (isNearBlade()) {
+		if (touchedHazard) {
 			recoil.Activate();
 			isHurt = true;
 			if (direction == 1) {
@@ -279,6 +288,24 @@ public partial class PlayerController : CharacterBody2D
 			//pc._slopeChecker.RotationDegrees = 270;
 		}
 		pc._wallChecker.RotationDegrees = 90 * -direction;
+	}
+	
+	public void DecreaseLife(float amount = 0.5f) {
+		currentHealth = Mathf.Max(currentHealth - amount, 0); // Clamp at 0
+
+		for (int i = 0; i < 5; i++) {
+			AnimatedSprite2D heart = pc._heartContainer.GetChild<AnimatedSprite2D>(i);
+
+			float heartThreshold = currentHealth - i;
+
+			if (heartThreshold >= 1f) {
+				heart.Frame = 0; // full
+			} else if (heartThreshold >= 0.5f) {
+				heart.Frame = 1; // half
+			} else {
+				heart.Frame = 2; // empty
+			}
+		}
 	}
 	
 
@@ -389,6 +416,23 @@ public partial class PlayerController : CharacterBody2D
 		}
 	}
 	
+	private bool IsEnemy(Node2D body) {
+		return body.IsInGroup("Fish") || body.IsInGroup("FloorBlade");
+	}
+	
+	public void _on_enemy_checker_body_entered(Node2D body) {
+		if (IsEnemy(body)) {
+			DecreaseLife();
+			if (body.IsInGroup("FloorBlade")) {
+				touchedHazard = true;
+			}
+		}
+	}
+
+	public void _on_enemy_checker_body_exited(Node2D body) {
+		touchedHazard = false;
+	}
+	
 	public void _on_door_checker_body_entered(Node2D body)
 	{
 		if (body.IsInGroup("Door"))
@@ -476,14 +520,18 @@ public partial class PlayerController : CharacterBody2D
 
 		pc._hurtSprite.Visible = isHurt;
 		pc._climbSprite.Visible = (climb.isClimbingUp || climb.isClimbingDown || onLadder && !isOnFloor() && !jumping) && !pc._hurtSprite.Visible;
-		pc._duckSprite.Visible = ducking && !pc._climbSprite.Visible;
+		pc._duckSprite.Visible = ducking && !inWater && !pc._climbSprite.Visible;
 		pc._swimSprite.Visible = inWater;
 		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isOnFloor() || isOnSlope()) && !pc._hurtSprite.Visible && !inWater;
 		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
 		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
 		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible;
 
-		if (pc._swimSprite.Visible)
+		if (pc._hurtSprite.Visible)
+		{
+			pc._hurtSprite.FlipH = direction == 1;
+		} 
+		else if (pc._swimSprite.Visible)
 		{
 			pc._swimSprite.Play();
 			pc._swimSprite.FlipH = direction == -1;

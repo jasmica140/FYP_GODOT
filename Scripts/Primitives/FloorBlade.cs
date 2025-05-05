@@ -41,7 +41,7 @@ public partial class FloorBladeAtom : Atom {
 
 		AddToGroup("FloorBlade");
 
-		SetCollisionLayerValue(4, true);
+		SetCollisionLayerValue(6, true);
 		SetCollisionMaskValue(1, true);
 	}
 	

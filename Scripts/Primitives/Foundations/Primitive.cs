@@ -7,9 +7,9 @@ public static class PrimitiveRegistry {
 		return new List<Type> {
 			typeof(Cactus),
 			typeof(Door),
+			typeof(Fish),
 			typeof(Floor),
 			typeof(FloorBlade),
-			typeof(HorizontalFish),
 			typeof(Ladder),
 			typeof(LeftSlope),
 			typeof(Mushroom),

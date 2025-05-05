@@ -422,9 +422,7 @@ public partial class Room : Node2D
 	public bool AddPrimitive(Primitive primitive)
 	{
 		foreach (Atom atom in primitive.GetAtoms())
-		{ 		// Prevent duplicate placement of atoms
-			//if (atom is HorizontalFishAtom) { continue; }
-			
+		{ 		// Prevent duplicate placement of atoms			
 			if (Primitives.Exists(p => p.GetAtoms().Exists(a => a.GlobalPosition == atom.GlobalPosition)))
 			{
 				GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");

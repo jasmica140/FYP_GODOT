@@ -43,14 +43,23 @@ public partial class Ladder : Primitive {
 		for (int y = 0; y < length; y++) {
 			LadderTile tile = new LadderTile();
 			tile.GlobalPosition = new Vector2(position.X * 70, position.Y * 70) + new Vector2(0, y * 70); 
+			if (y == 0) { // change sprite for top tile
+				tile.SetTexture((Texture2D)GD.Load("res://Assets/Sprites/Tiles/ladder_top.png")); // Replace with actual path
+			} else if (y == length - 1) { // remove collision from bottom tile
+				foreach (Node child in tile.GetChildren()) {
+					if (child is CollisionShape2D) {
+						tile.RemoveChild(child);
+						child.QueueFree();
+						break;
+					}
+				}
+			}
 			AddAtom(tile);
-			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 		}
 		if (!room.HasAtomBelow(new Vector2(position.X * 70, (position.Y + length - 1) * 70), typeof(FloorTile))) {
 			FloorTile tile = new FloorTile();
 			tile.GlobalPosition = new Vector2(position.X * 70, (position.Y + length) * 70);
 			AddAtom(tile);
-			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
 		}
 		
 		this.Position = new Vector2(position.X * 70, position.Y * 70);

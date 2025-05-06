@@ -13,8 +13,8 @@ public partial class TopWaterTile : Atom {
 		frames.SetAnimationSpeed("waterWave", 3); // 4 FPS
 		frames.SetAnimationLoop("waterWave", true);
 		
-		frames.AddFrame("waterWave", GD.Load<Texture2D>("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/iceWaterMid.png"));
 		frames.AddFrame("waterWave", GD.Load<Texture2D>("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/iceWaterMidAlt.png"));
+		//frames.AddFrame("waterWave", GD.Load<Texture2D>("res://Assets/kenney_platformer-art-deluxe/Ice expansion/Tiles/iceWaterMidAlt.png"));
 
 		animSprite.SpriteFrames = frames;
 		animSprite.Play("waterWave");
@@ -83,7 +83,7 @@ public partial class Water : Primitive {
 	public int Width;
 	public int Depth;
 	public List<float> availableFishPositions = new();
-	public const int minFishSpacing = 70; // tile height
+	public float minFishSpacing = 350f; // 5 tiles at difficulty 1, 1 tile at difficulty 5
 		
 	public Water() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Environmental;
@@ -149,7 +149,6 @@ public partial class Water : Primitive {
 		Random random = new Random();
 
 		int maxWidth = 20;
-		
 		int minWidth = 2;
 		int minDepth = 2;
 		int maxDepth = 20;
@@ -257,6 +256,7 @@ public partial class Water : Primitive {
 				this.Position = new Vector2(tileX * 70, tileY * 70);
 				
 				if (room.AddPrimitive(this)) {
+					minFishSpacing *= (1.2f - room.DifficultyPercent);
 					GenerateAvailableFishPositions();
 					return true;
 				} else {

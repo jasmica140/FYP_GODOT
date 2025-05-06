@@ -61,6 +61,9 @@ public partial class FloorBlade : Primitive
 	
 	
 	public override bool GenerateInRoom(Room room) {
+		if (room.HasAtomAt(this.Position)) {
+			return false;
+		}
 		FloorBladeAtom atom = new FloorBladeAtom();
 		atom.GlobalPosition = this.Position;
 		AddAtom(atom);

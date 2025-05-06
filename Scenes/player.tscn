@@ -149,6 +149,7 @@ texture = ExtResource("1_b21mf")
 
 [node name="DuckSprite" type="Sprite2D" parent="SpriteContainer"]
 visible = false
+position = Vector2(0, 6)
 texture = ExtResource("3_1hyao")
 
 [node name="JumpSprite" type="Sprite2D" parent="SpriteContainer"]
@@ -259,6 +260,7 @@ collision_mask = 32
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyChecker"]
 position = Vector2(0, -1)
 shape = SubResource("CapsuleShape2D_0gysh")
+debug_color = Color(0.901264, 0.115236, 0.703427, 0.42)
 
 [node name="HeartContainer" type="Node2D" parent="."]
 position = Vector2(-410.25, -275.25)

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bk18dgv5l2wj6" path="res://Scripts/MapGeneration/MapGenerator.cs" id="1_k17ra"]
 [ext_resource type="Script" uid="uid://b853um7gltkht" path="res://Scripts/MainScene.cs" id="1_t0bvj"]
-[ext_resource type="Texture2D" uid="uid://b25gh74kf2410" path="res://Assets/Backgrounds/backgroundCastles.png" id="2_nhkr4"]
+[ext_resource type="Texture2D" uid="uid://bbidcdt8k0qtg" path="res://Assets/Backgrounds/backgroundColorGrass.png" id="2_7rqgy"]
 [ext_resource type="Script" uid="uid://td2vtfc23j2s" path="res://Scenes/RoomCamera.cs" id="4_7rqgy"]
 
 [node name="Main" type="Node2D"]
@@ -12,12 +12,12 @@ script = ExtResource("1_t0bvj")
 
 [node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
 motion_scale = Vector2(0.2, 0.2)
-motion_mirroring = Vector2(1530, 0)
+motion_mirroring = Vector2(1620, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer"]
-position = Vector2(-1, -173)
-scale = Vector2(1.49414, 1.27148)
-texture = ExtResource("2_nhkr4")
+position = Vector2(-1, 3)
+scale = Vector2(1.58887, 1.32715)
+texture = ExtResource("2_7rqgy")
 centered = false
 
 [node name="MapGenerator" type="Node" parent="."]
@@ -31,6 +31,5 @@ script = ExtResource("1_k17ra")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(1697, 829)
-enabled = false
 zoom = Vector2(0.5, 0.5)
 script = ExtResource("4_7rqgy")

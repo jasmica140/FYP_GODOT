@@ -5,7 +5,7 @@ using System.Linq;
 
 public partial class RightSlopeTile : Atom {
 	public RightSlopeTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/rockHillLeft.png")); 
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grassHillLeft.png")); 
 		
 		CollisionPolygon2D collision = new CollisionPolygon2D();
 		collision.Polygon = new Vector2[] {new Vector2(35, 35), new Vector2(-35, 35), new Vector2(35, -35)};
@@ -13,6 +13,7 @@ public partial class RightSlopeTile : Atom {
 		SetCollisionLayerValue(4, true);
 		SetCollisionLayerValue(2, true);
 		SetCollisionMaskValue(1, true);
+		SetCollisionMaskValue(6, true);
 		
 		AddChild(collision);
 	}
@@ -24,7 +25,7 @@ public partial class RightSlopeTile : Atom {
 
 public partial class LeftSlopeTile : Atom {
 	public LeftSlopeTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/rockHillRight.png")); 
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grassHillRight.png")); 
 		
 		CollisionPolygon2D collision = new CollisionPolygon2D();
 		collision.Polygon = new Vector2[] {new Vector2(35, 35), new Vector2(-35, 35), new Vector2(-35, -35)};
@@ -32,6 +33,7 @@ public partial class LeftSlopeTile : Atom {
 		SetCollisionLayerValue(4, true);
 		SetCollisionLayerValue(2, true);
 		SetCollisionMaskValue(1, true);
+		SetCollisionMaskValue(6, true);
 		
 		AddChild(collision);
 	}
@@ -43,7 +45,7 @@ public partial class LeftSlopeTile : Atom {
 
 public partial class MiddleRightSlopeTile : Atom {
 	public MiddleRightSlopeTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneHillLeft2.png")); 
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grassHillLeft2.png")); 
 		
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();
@@ -53,6 +55,7 @@ public partial class MiddleRightSlopeTile : Atom {
 		SetCollisionLayerValue(4, true);
 		//SetCollisionLayerValue(2, true);
 		SetCollisionMaskValue(1, true);
+		SetCollisionMaskValue(6, true);
 		
 		collision.Shape = shape;
 		AddChild(collision);
@@ -65,7 +68,7 @@ public partial class MiddleRightSlopeTile : Atom {
 
 public partial class MiddleLeftSlopeTile : Atom {
 	public MiddleLeftSlopeTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneHillRight2.png")); 
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grassHillRight2.png")); 
 		
 		// Add a collision shape
 		CollisionShape2D collision = new CollisionShape2D();
@@ -75,6 +78,7 @@ public partial class MiddleLeftSlopeTile : Atom {
 		SetCollisionLayerValue(4, true);
 		//SetCollisionLayerValue(2, true);
 		SetCollisionMaskValue(1, true);
+		SetCollisionMaskValue(6, true);
 		
 		collision.Shape = shape;
 		AddChild(collision);

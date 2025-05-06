@@ -9,7 +9,7 @@ public partial class Pit : Primitive
 	public int Depth;
 
 	public Pit() : base(Vector2.Zero) {	
-		Category = PrimitiveCategory.Hazard;
+		Category = PrimitiveCategory.Environmental;
 	}  // Default constructor needed for instantiation
 	
 	public Pit(Vector2 position) : base(position) {}

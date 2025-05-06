@@ -58,6 +58,9 @@ public partial class PlayerController : CharacterBody2D
 	public RayCast2D _rightSlopeChecker;
 	public RayCast2D _wallChecker;
 	
+	// collsion shapes
+	public CollisionShape2D _hazardsCollisionShape;
+	
 	// Ability instances
 	public Jump jump;
 	public Dash dash;
@@ -103,6 +106,10 @@ public partial class PlayerController : CharacterBody2D
 		pc._leftSlopeChecker = GetNode<RayCast2D>("LeftSlopeChecker");
 		pc._rightSlopeChecker = GetNode<RayCast2D>("RightSlopeChecker");
 		pc._wallChecker = GetNode<RayCast2D>("WallChecker");
+		
+		// collision shapes
+		pc._hazardsCollisionShape = GetNode<CollisionShape2D>("EnemyChecker/CollisionShape2D");
+
 		
 		// initialize abilities
 		jump = new Jump(this);
@@ -246,8 +253,20 @@ public partial class PlayerController : CharacterBody2D
 		}
 
 		// handle duck
-		if (Input.IsKeyPressed(Key.Down)) {
+		if (Input.IsKeyPressed(Key.Down) && isOnFloor() && !inWater) {
 			duck = true;
+			CapsuleShape2D shape = new CapsuleShape2D();
+			shape.Radius = 32;
+			shape.Height = 74; 
+			pc._hazardsCollisionShape.Shape = shape;
+			pc._hazardsCollisionShape.Position = new Vector2(0, 6);
+		} else {
+			duck = false;
+			CapsuleShape2D shape = new CapsuleShape2D();
+			shape.Radius = 32;
+			shape.Height = 88; 
+			pc._hazardsCollisionShape.Shape = shape;
+			pc._hazardsCollisionShape.Position = new Vector2(0, -1);
 		}
 		
 		// handle door
@@ -417,13 +436,13 @@ public partial class PlayerController : CharacterBody2D
 	}
 	
 	private bool IsEnemy(Node2D body) {
-		return body.IsInGroup("Fish") || body.IsInGroup("FloorBlade");
+		return body.IsInGroup("Fish") || body.IsInGroup("FloorBlade") || body.IsInGroup("FullBlade");
 	}
 	
 	public void _on_enemy_checker_body_entered(Node2D body) {
 		if (IsEnemy(body)) {
 			DecreaseLife();
-			if (body.IsInGroup("FloorBlade")) {
+			if (body.IsInGroup("FloorBlade") || body.IsInGroup("FullBlade")) {
 				touchedHazard = true;
 			}
 		}
@@ -525,7 +544,7 @@ public partial class PlayerController : CharacterBody2D
 		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isOnFloor() || isOnSlope()) && !pc._hurtSprite.Visible && !inWater;
 		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
 		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
-		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible;
+		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
 
 		if (pc._hurtSprite.Visible)
 		{

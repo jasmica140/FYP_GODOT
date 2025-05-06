@@ -5,7 +5,7 @@ using System.Linq;
 
 public partial class FloorTile : Atom {
 	public FloorTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/stoneMid.png")); 
+		SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grassMid.png")); 
 		Size = new Vector2(70, 70);
 
 		// Add a collision shape
@@ -29,6 +29,7 @@ public partial class FloorTile : Atom {
 public partial class Floor : Primitive {
 
 	public Zone zone { get; set; }
+	public bool hasEnemy = false;
 	
 	public Floor() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Floor;

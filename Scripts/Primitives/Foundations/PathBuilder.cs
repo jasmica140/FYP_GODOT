@@ -18,7 +18,7 @@ public class PathBuilder
 	
 	public void GenerateHazards()
 	{
-		List<Type> hazardTypes = new List<Type> { typeof(FloorBlade), typeof(Pit), typeof(Fish) };
+		List<Type> hazardTypes = new List<Type> { typeof(FloorBlade), typeof(FullBlade), typeof(Fish), typeof(Slug) };
 		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
 
 		// Scale min and max with difficulty
@@ -41,17 +41,7 @@ public class PathBuilder
 			// Pick a hazard type
 			Type hazardType = hazardTypes[random.Next(hazardTypes.Count)];
 
-			if (hazardType == typeof(Pit)) {
-				Pit pit = new Pit();
-				if ( pit.GenerateInRoom(room)) { // Recompute valid floor tile positions after modifying the room
-					validPositions = room.GetPositionsAboveFloorTiles();
-				} else {
-					GD.Print("🚫 No valid spot for pit. Removing it from hazard list.");
-					hazardTypes.Remove(hazardType);
-					i--; // Retry the current iteration
-				}
-				continue; // Skip the rest of the loop for pit
-			} else if (hazardType == typeof(Fish)) {
+			if (hazardType == typeof(Fish)) {
 				Fish fish = new Fish();
 				if (!fish.GenerateInRoom(room)) { 
 					validPositions = room.GetPositionsAboveFloorTiles();
@@ -60,7 +50,7 @@ public class PathBuilder
 					i--; // Retry the current iteration
 				} 
 				continue; // Skip the rest of the loop for fish
-			}
+			} 
 
 			// For non-pit hazards
 			int index = random.Next(validPositions.Count);
@@ -79,14 +69,14 @@ public class PathBuilder
 	
 	public void GenerateEnvironmentals()
 	{
-		List<Type> environmentalTypes = new List<Type> { typeof(Water) };
+		List<Type> environmentalTypes = new List<Type> { typeof(Water), typeof(Pit) };
 		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
 
 		// Scale min and max with difficulty
 		Random random = new Random();
 		//int minHazards = (int)MathF.Floor(15 * room.DifficultyPercent);
 		//int maxHazards = (int)MathF.Ceiling(20 * room.DifficultyPercent);
-		int noOfEnv = random.Next(1, 3);
+		int noOfEnv = random.Next(1, 5);
 
 		for (int i = 0; i < noOfEnv; i++) {
 			if (environmentalTypes.Count == 0) {
@@ -113,6 +103,18 @@ public class PathBuilder
 					validPositions = room.GetPositionsAboveFloorTiles();
 				} else {
 					GD.Print("🚫 No valid spot for water. Removing it from env list.");
+					environmentalTypes.Remove(environmentalType);
+					i--; // Retry the current iteration
+				}
+
+				continue; // Skip the rest of the loop for pit
+			} else if (environmentalType == typeof(Pit)) {
+				Pit pit = new Pit();
+
+				if (pit.GenerateInRoom(room)) { // Recompute valid floor tile positions after modifying the room
+					validPositions = room.GetPositionsAboveFloorTiles();
+				} else {
+					GD.Print("🚫 No valid spot for pit. Removing it from env list.");
 					environmentalTypes.Remove(environmentalType);
 					i--; // Retry the current iteration
 				}

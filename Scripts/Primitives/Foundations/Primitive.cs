@@ -10,6 +10,7 @@ public static class PrimitiveRegistry {
 			typeof(Fish),
 			typeof(Floor),
 			typeof(FloorBlade),
+			typeof(FullBlade),
 			typeof(Ladder),
 			typeof(LeftSlope),
 			typeof(Mushroom),
@@ -17,6 +18,7 @@ public static class PrimitiveRegistry {
 			typeof(Platform),
 			typeof(RightSlope),
 			typeof(SlipperyFloor),
+			typeof(Slug),
 			typeof(StickyFloor),
 			typeof(Wall),
 			typeof(Water)
@@ -97,24 +99,24 @@ public abstract partial class Primitive : StaticBody2D
 
 	public override void _Draw()
 	{
-		foreach (var line in ObstructionLines)
-		{
-			DrawLine(line.start, line.end, Colors.Red, 5);
-		}
-		
-		foreach (var conn in InternalPaths)
-		{
-			DrawLine(conn.From.Position, conn.To.Position, Colors.Green, 5);
-		}
-		
-		foreach (Anchor anchor in Anchors)
-		{
-			// Draw orbit
-			DrawCircle(anchor.Position, anchor.Radius, new Color(0, 0, 1, 0.3f)); // blue transparent
-
-			// Draw point
-			DrawCircle(anchor.Position, 4, new Color(1, 0, 1)); // purple center
-		}
+		//foreach (var line in ObstructionLines)
+		//{
+			//DrawLine(line.start, line.end, Colors.Red, 5);
+		//}
+		//
+		//foreach (var conn in InternalPaths)
+		//{
+			//DrawLine(conn.From.Position, conn.To.Position, Colors.Green, 5);
+		//}
+		//
+		//foreach (Anchor anchor in Anchors)
+		//{
+			//// Draw orbit
+			//DrawCircle(anchor.Position, anchor.Radius, new Color(0, 0, 1, 0.3f)); // blue transparent
+//
+			//// Draw point
+			//DrawCircle(anchor.Position, 4, new Color(1, 0, 1)); // purple center
+		//}
 		
 
 		//

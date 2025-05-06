@@ -49,6 +49,7 @@ public partial class Room : Node2D
 		DetectAndFillEnclosedAreas();
 		GenerateDoors();
 		PathBuilder.GenerateEnvironmentals();
+		replaceFloorTilesWithTilesAbove();
 		PathBuilder.GenerateHazards();
 		AnchorConnector.RemoveIntersectingAnchorConnections(this);
 		PathBuilder.BuildPathsBetweenDoors(this);
@@ -83,6 +84,31 @@ public partial class Room : Node2D
 		this.Player = player; // ← Set reference here
 
 		GD.Print($"✅ Player spawned at {player.GlobalPosition}");
+	}
+	
+	private void replaceFloorTilesWithTilesAbove() {
+		
+		foreach (Primitive floor in Primitives.Where(p => p.GetType() == typeof(Floor))) {
+			List<Atom> tiles  = floor.GetAtoms();
+			tiles.Sort((a, b) => a.GlobalPosition.X.CompareTo(b.GlobalPosition.X));
+			foreach (Atom tile in tiles) {
+				if (!HasAtomAt(tile.GlobalPosition - new Vector2(70, 0))
+					|| HasAtomOfTypeAt(tile.GlobalPosition - new Vector2(70, 0), typeof(TopWaterTile))) { // no tile on left
+					if (!HasAtomAt(tile.GlobalPosition + new Vector2(70, 0))
+						|| HasAtomOfTypeAt(tile.GlobalPosition + new Vector2(70, 0), typeof(TopWaterTile))) {
+						// middle tile
+						tile.SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grass.png")); 
+					} else {
+						// left tile
+						tile.SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grassLeft.png")); 
+					}
+				} else if (!HasAtomAt(tile.GlobalPosition + new Vector2(70, 0))
+					|| HasAtomOfTypeAt(tile.GlobalPosition + new Vector2(70, 0), typeof(TopWaterTile))) { // no tile on right
+					// right tile
+					tile.SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grassRight.png")); 
+				}
+			}
+		}
 	}
 	
 	public void GenerateBorder() {
@@ -274,25 +300,6 @@ public partial class Room : Node2D
 			GD.Print($"✅ Placing Wall at {wall.Position} with size {wall.width}x{wall.height}");
 			if (wall.GenerateInRoom(this)) {
 				return true;
-				//bool foundGap = false;
-				//Vector2 GapWallStart = new Vector2(0, 0);
-				//Vector2 GapWallEnd = new Vector2(0, 0);
-//
-				//for (int x = 0; x < wall.width; x++) {
-					//if (!foundGap && !HasAtomOfTypeAt(wall.Position + new Vector2(x * 70, -70), typeof(FloorTile))) {
-						//GapWallStart = wall.Position + new Vector2(x * 70, -70);
-						//foundGap = true;
-					//} else if (foundGap && HasAtomOfTypeAt(wall.Position + new Vector2(x * 70, -70), typeof(FloorTile))) {
-						//GapWallEnd = wall.Position + new Vector2(x * 70, -70);
-						//Wall gapWall = new Wall();
-						//gapWall.Position = GapWallStart;
-						//gapWall.width = (int)(GapWallEnd.X - GapWallStart.X) / 70; 
-						//gapWall.height = 1;
-						//GD.Print($"🧱 Filling top gap at {gapWall.Position} with width {gapWall.width}");
-						//gapWall.GenerateInRoom(this);
-						//foundGap = false;
-					//}
-				//}
 			}
 		}
 		return false;
@@ -366,31 +373,6 @@ public partial class Room : Node2D
 			}
 		}
 	}
-	
-	public Vector2 GetRandomPosition() {
-		Random rng = new Random();
-		Vector2 position;
-		int attempts = 0;
-		const int maxAttempts = 10;  // Prevent infinite loops
-
-		do {
-			int x = rng.Next(1, Width - 1);
-			int y = rng.Next(-Height + 1, 0);
-			
-			position = new Vector2(x * 70, y * 70); // Ensure spacing
-			
-			attempts++;
-		} while (Primitives.Exists(p => p.GlobalPosition == position) && attempts < maxAttempts);
-
-		if (attempts >= maxAttempts) {
-			GD.Print($"⚠️ WARNING: Could not find unique placement, skipping.");
-			return Vector2.Zero;  // Fail gracefully
-		}
-
-		GD.Print($"📍 Unique Position Generated: {position}");
-		
-		return position;
-	}
 
 	public List<Anchor> GetAllAnchors()
 	{
@@ -444,9 +426,9 @@ public partial class Room : Node2D
 		} 
 		
 		foreach (Atom atom in primitive.GetAtoms()) {
-			if (atom is FloorBladeAtom) {
+			if (atom is FloorBladeAtom || atom is SlugAtom) {
 				atom.GlobalPosition += new Vector2(0, 20);
-			}
+			} 
 			this.AddAtom(atom);
 		}
 

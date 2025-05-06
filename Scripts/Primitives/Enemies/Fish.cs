@@ -5,7 +5,7 @@ using System.Linq;
 
 public partial class HorizontalFishAtom : Atom {
 	
-	private float speed = 40f;
+	public float speed = 200f;
 	private int direction;
 	public float leftBound;
 	public float rightBound;
@@ -77,7 +77,7 @@ public partial class HorizontalFishAtom : Atom {
 
 public partial class VerticalFishAtom : Atom {
 	
-	private float speed = 40f;
+	public float speed = 200f;
 	private int direction;
 	public float upperBound;
 	public float lowerBound;
@@ -158,7 +158,8 @@ public partial class Fish : Primitive {
 			if (water.Width < 5 && water.Depth > 5) {
 				VerticalFishAtom atom = new VerticalFishAtom();
 				atom.upperBound = water.Position.Y + 105;
-				atom.lowerBound = water.Position.Y + ((water.Depth - 1) * 70);
+				atom.lowerBound = water.Position.Y + ((water.Depth) * 70);
+				atom.speed *= room.DifficultyPercent;
 				
 				float y = (float)GD.RandRange((int)atom.upperBound + 35, (int)atom.lowerBound - 70);
 				float x = water.availableFishPositions[0];
@@ -174,7 +175,8 @@ public partial class Fish : Primitive {
 				HorizontalFishAtom atom = new HorizontalFishAtom();
 				atom.leftBound = water.Position.X + 70;
 				atom.rightBound = water.Position.X + ((water.Width - 1) * 70);
-				
+				atom.speed *= room.DifficultyPercent;
+
 				float y = water.availableFishPositions[0];
 				water.availableFishPositions.RemoveAt(0);
 				

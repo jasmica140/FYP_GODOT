@@ -115,9 +115,10 @@ public partial class DoorKey : Primitive {
 	public override void GenerateAnchors(Room room) {
 		Anchors.Clear();
 
-		Atom tile = GetAtoms().First(); // Assume one atom
+		//Atom tile = GetAtoms().First(); // Assume one atom
 
-		Vector2 basePos = tile.GlobalPosition;
+		//Vector2 basePos = tile.GlobalPosition;
+		Vector2 basePos = this.Position;
 		float orbit = 40f;
 		
 		Anchors.Add(new Anchor(basePos, orbit, "center", this));
@@ -135,8 +136,10 @@ public partial class DoorLock : Primitive {
 	public DoorLock(Vector2 position) : base(position) { }
 	
 	public override bool GenerateInRoom(Room room) {
+		if (!room.HasAtomOfTypeAt(this.Position + new Vector2(0, 70), typeof(FloorTile))) { return false; }
+		
 		LockAtom atom = new LockAtom(Colour);
-		atom.GlobalPosition = this.Position;
+		atom.GlobalPosition = this.Position - new Vector2(40, 70);
 		AddAtom(atom);
 		
 		return room.AddPrimitive(this);

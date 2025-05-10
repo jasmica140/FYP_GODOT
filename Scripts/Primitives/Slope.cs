@@ -143,7 +143,19 @@ public partial class RightSlope : Primitive {
 		wall.Position = new Vector2((zone.X + 1)* 70, (zone.Y + zone.Height) * 70);
 		wall.width = zone.Width - 1;
 		wall.height = length - 1;
-		wall.GenerateInRoom(room);
+		
+		while (wall.GenerateInRoom(room)) {
+			Floor floor = room.Primitives.FirstOrDefault(p => p.GetType() == typeof(Floor) && p.Position == wall.Position + new Vector2(wall.width, -70)) as Floor;
+			if (floor != null) {
+				GD.Print("attempting new wall");
+				wall = new Wall();
+				wall.Position = new Vector2((floor.zone.X + 1)* 70, (floor.zone.Y + floor.zone.Height) * 70);
+				wall.width = floor.zone.Width - 1;
+				wall.height = length - 1;
+			} else {
+				break;
+			}
+		}
 	}
 	
 	public override void GenerateAnchors(Room room)
@@ -216,6 +228,8 @@ public partial class RightSlope : Primitive {
 		ObstructionLines.Add((slopeBottom, slopeTop));
 		ObstructionLines.Add((slopeBottom, edgeBottom));
 		ObstructionLines.Add((edgeBottom, edgeTop));
+		ObstructionLines.Add((startTile.GlobalPosition, startTile.GlobalPosition + new Vector2(0, 70)));
+		ObstructionLines.Add((startTile.GlobalPosition + new Vector2(length * size.X, 0), startTile.GlobalPosition + new Vector2(length * size.X, 70)));
 	}
 }
 
@@ -341,12 +355,14 @@ public partial class LeftSlope : Primitive {
 
 		// Anchor positions
 		Vector2 slopeTop = endTile.GlobalPosition + new Vector2(-(size.X / 2) - size.X + 70, -size.Y / 2);
-		Vector2 slopeBottom = startTile.GlobalPosition + new Vector2(size.X / 2, (size.Y / 2));
+		Vector2 slopeBottom = startTile.GlobalPosition + new Vector2(size.X / 2, size.Y / 2);
 		Vector2 edgeBottom = slopeBottom - new Vector2((length + 1) * size.X, 0);
 		Vector2 edgeTop = edgeBottom - new Vector2(0, (length - 1) * size.X );
-
+		
 		ObstructionLines.Add((slopeBottom, slopeTop));
 		ObstructionLines.Add((slopeBottom, edgeBottom));
 		ObstructionLines.Add((edgeBottom, edgeTop));
+		ObstructionLines.Add((startTile.GlobalPosition, startTile.GlobalPosition + new Vector2(0, 70)));
+		ObstructionLines.Add((startTile.GlobalPosition - new Vector2(length * size.X, 0), startTile.GlobalPosition + new Vector2(-length * size.X, 70)));
 	}
 }

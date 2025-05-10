@@ -19,7 +19,7 @@ public partial class Climb : Ability
 	public void updateClimbing(float delta) {
 		if (isClimbingUp) {
 			player.velocity.Y = -climbSpeed;
-		} else if (isClimbingDown) {
+		} else if (isClimbingDown && !player.isOnFloor()) {
 			player.velocity.Y = climbSpeed;
 		}
 	}

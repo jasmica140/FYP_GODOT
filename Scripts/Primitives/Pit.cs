@@ -123,8 +123,8 @@ public partial class Pit : Primitive
 				}
 
 				this.Position = new Vector2(tileX * 70, tileY * 70);
+				Difficulty = Mathf.RoundToInt(5 * ((Depth / (float)maxDepth) + (Width / (float)maxWidth)) / 2f);
 				room.AddPrimitive(this);
-				GD.Print($"✅ Pit placed at ({tileX}, {tileY}) with size {Width}x{Depth}");
 				return true;
 			}
 		}
@@ -139,27 +139,35 @@ public partial class Pit : Primitive
 		ObstructionLines.Clear();
 
 		float tileSize = 70f;
-		Vector2 topLeft = Position;
+		Vector2 topLeft = Position - new Vector2(0, tileSize / 2);
 
 		// === TOP ANCHOR ===
-		Vector2 topAnchorPos = topLeft + new Vector2((Width * tileSize) / 2f, -tileSize / 2f);
-		Anchor topAnchor = new Anchor(topAnchorPos, 40f, "top");
+		Vector2 topAnchorPos = topLeft + new Vector2(((Width - 1) * tileSize) / 2f, 0);
+		Anchor topAnchor = new Anchor(topAnchorPos, 40f, "top", this);
+		Anchor topLeftAnchor = new Anchor(topAnchorPos - new Vector2(Width * tileSize / 2, 0), 40f, "topLeft", this);
+		Anchor topRightAnchor = new Anchor(topAnchorPos + new Vector2(Width * tileSize / 2, 0), 40f, "topRight", this);
+		
 		Anchors.Add(topAnchor);
+		Anchors.Add(topLeftAnchor);
+		Anchors.Add(topRightAnchor);
+
+		InternalPaths.Add(new AnchorConnection(topLeftAnchor, topAnchor, false));
+		InternalPaths.Add(new AnchorConnection(topRightAnchor, topAnchor, false));
 
 		List<Anchor> leftAnchors = new();
 		List<Anchor> rightAnchors = new();
 		List<Anchor> bottomAnchors = new();
 
 		// === SIDE ANCHORS ===
-		for (int dy = 0; dy < Depth; dy++)
+		for (int dy = 0; dy < Depth / 2; dy++)
 		{
-			float y = topLeft.Y + dy * tileSize;
+			float y = topLeft.Y + dy * tileSize * 2;
 
 			Vector2 leftPos = new Vector2(topLeft.X - tileSize / 2f, y);
 			Vector2 rightPos = new Vector2(topLeft.X + Width * tileSize - tileSize / 2f, y); // shifted left
 
-			Anchor leftAnchor = new Anchor(leftPos, 40f, "left");
-			Anchor rightAnchor = new Anchor(rightPos, 40f, "right");
+			Anchor leftAnchor = new Anchor(leftPos, 40f, "left", this);
+			Anchor rightAnchor = new Anchor(rightPos, 40f, "right", this);
 
 			leftAnchors.Add(leftAnchor);
 			rightAnchors.Add(rightAnchor);
@@ -174,7 +182,7 @@ public partial class Pit : Primitive
 			float y = topLeft.Y + Depth * tileSize - tileSize / 2f;
 
 			Vector2 pos = new Vector2(x, y);
-			Anchor anchor = new Anchor(pos, 40f, "bottom");
+			Anchor anchor = new Anchor(pos, 40f, "bottom", this);
 			bottomAnchors.Add(anchor);
 			Anchors.Add(anchor);
 		}
@@ -182,25 +190,34 @@ public partial class Pit : Primitive
 		// === INTERNAL CONNECTIONS ===
 
 		// ⬆️ Left → Right (only upward)
-		foreach (var left in leftAnchors)
+		foreach (var right in rightAnchors)
 		{
-			foreach (var right in rightAnchors)
+			foreach (var left in leftAnchors)
 			{
 				if (right.Position.Y < left.Position.Y)
 				{
 					InternalPaths.Add(new AnchorConnection(left, right, false));
+					break;
+				}
+			}
+		}
+		
+		// ⬆️ Right → Left (only upward)
+		foreach (var left in leftAnchors)
+		{
+			foreach (var right in rightAnchors)
+			{
+				if (left.Position.Y < right.Position.Y)
+				{
+					InternalPaths.Add(new AnchorConnection(right, left, false));
+					break;
 				}
 			}
 		}
 
-		// ⬆️ Bottom → first 3 left/right
-		foreach (var bottom in bottomAnchors)
-		{
-			foreach (var left in leftAnchors.Take(3))
-				InternalPaths.Add(new AnchorConnection(bottom, left, false));
-			foreach (var right in rightAnchors.Take(3))
-				InternalPaths.Add(new AnchorConnection(bottom, right, false));
-		}
+		// ⬆️ Bottom → first left/right
+		InternalPaths.Add(new AnchorConnection(bottomAnchors.First(), leftAnchors.Last(), false));
+		InternalPaths.Add(new AnchorConnection(bottomAnchors.Last(), rightAnchors.Last(), false));
 
 		// ↔️ Bottom ↔ Bottom (bidirectional)
 		for (int i = 0; i < bottomAnchors.Count - 1; i++)
@@ -218,8 +235,8 @@ public partial class Pit : Primitive
 		}
 
 		// === OBSTRUCTION LINE (centered horizontally at top of pit) ===
-		Vector2 leftEdge = topLeft + new Vector2(-tileSize / 2f, -tileSize / 2f);
-		Vector2 rightEdge = topLeft + new Vector2(Width * tileSize - tileSize / 2f, -tileSize / 2f);
+		Vector2 leftEdge = topLeft + new Vector2(-tileSize / 2f, 0);
+		Vector2 rightEdge = topLeft + new Vector2(Width * tileSize - tileSize / 2f, 0);
 		ObstructionLines.Add((leftEdge, rightEdge));
 	}
 }

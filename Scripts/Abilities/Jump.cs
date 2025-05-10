@@ -37,7 +37,7 @@ public class Jump : Ability
 				jumpCount++;
 				isJumping = true;
 			}
-			else if (doubleJump && !player.isOnFloor() && jumpCount == 1 && spaceReleased) // If we are in the air and jump is pressed again
+			else if (doubleJump && !player.isOnFloor() && !player.inWater && jumpCount == 1 && spaceReleased) // If we are in the air and jump is pressed again
 			{
 				GD.Print("started double jump");
 				startSecondJumpYPos = player.Position.Y;
@@ -52,7 +52,7 @@ public class Jump : Ability
 				jumpCount++; // First jump is executed, set count to 1
 				jumped = true;
 			}
-			else if (doubleJump && (!player.isOnFloor() || !player.inWater) && jumpCount == 1) // If we are in the air and jump is pressed again
+			else if (doubleJump && (!player.isOnFloor() && !player.inWater) && jumpCount == 1) // If we are in the air and jump is pressed again
 			{
 				player.velocity.Y = -djAirAcceleration; // Double jump 
 				jumpCount++; // Second jump is executed, set count to 2

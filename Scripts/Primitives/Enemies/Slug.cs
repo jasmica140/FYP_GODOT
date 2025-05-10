@@ -113,6 +113,7 @@ public partial class Slug : Primitive {
 	
 	public Slug() : base(Vector2.Zero) {	
 		Category = PrimitiveCategory.Hazard;
+		Difficulty = 3;
 	}  // Default constructor needed for instantiation
 	
 	public Slug(Vector2 position) : base(position) {}
@@ -122,7 +123,20 @@ public partial class Slug : Primitive {
 		atom.speed *= room.DifficultyPercent;
 		atom.GlobalPosition = this.Position;
 		AddAtom(atom);
-		return room.AddPrimitive(this);
+		
+		if(room.AddPrimitive(this)) {
+			Floor floor = room.Primitives.FirstOrDefault(p => p.GetType() == typeof(Floor) 
+			&& p.Position.Y == this.Position.Y + 70 
+			&& p.Position.X <= this.Position.X && p.GetAtoms().OrderBy(a => a.GlobalPosition.X).Last().GlobalPosition.X >= this.Position.X) as Floor;
+			
+			if (floor != null) {
+				floor.Difficulty += this.Difficulty;
+			}
+			
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public override void GenerateAnchors(Room room) { } 

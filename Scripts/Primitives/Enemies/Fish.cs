@@ -143,6 +143,7 @@ public partial class Fish : Primitive {
 	
 	public Fish() : base(Vector2.Zero) {	
 		Category = PrimitiveCategory.Hazard;
+		Difficulty = 3;
 	}  // Default constructor needed for instantiation
 	
 	public Fish(Vector2 position) : base(position) {}
@@ -169,7 +170,6 @@ public partial class Fish : Primitive {
 
 				AddAtom(atom);
 				this.Position = atom.GlobalPosition;
-				return room.AddPrimitive(this);
 				
 			} else if (water.Width >= 5) {
 				HorizontalFishAtom atom = new HorizontalFishAtom();
@@ -181,12 +181,15 @@ public partial class Fish : Primitive {
 				water.availableFishPositions.RemoveAt(0);
 				
 				float x = (float)GD.RandRange((int)atom.leftBound + 35, (int)atom.rightBound - 35);
-
 				atom.GlobalPosition = new Vector2(x , y);			
-
 				AddAtom(atom);
 				this.Position = atom.GlobalPosition;
-				return room.AddPrimitive(this);
+			} 
+
+			if (room.AddPrimitive(this)) {
+				water.Difficulty += this.Difficulty;
+			} else {
+				return false;
 			}
 		}
 

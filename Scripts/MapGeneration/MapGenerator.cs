@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class MapGenerator : Node
 {
@@ -54,6 +55,9 @@ public partial class MapGenerator : Node
 		GD.Print("Generated Room:");
 		foreach (var primitive in room.Primitives)
 		{
+			if (primitive is DoorLock) {
+				GD.Print($"Placed {primitive.GetAtoms().First().GetType().Name} at {primitive.GetAtoms().First().GlobalPosition}");
+			}
 			GD.Print($"Placed {primitive.GetType().Name} at {primitive.Position}");
 		}
 	}

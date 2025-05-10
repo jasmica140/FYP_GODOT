@@ -13,246 +13,114 @@ public class PathBuilder
 	public PathBuilder(Room room)
 	{
 		this.room = room;
-		//BuildGraph();
 	}
 	
-	public void GenerateHazards()
+	// Step 1: Generate ideal anchors based on pits, water, and furthest floor tiles
+	public List<Primitive> GenerateKeysAtIdealPositions(Door targetDoor)
 	{
-		List<Type> hazardTypes = new List<Type> { typeof(FloorBlade), typeof(FullBlade), typeof(Fish), typeof(Slug) };
-		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
+		List<Primitive> idealKeys = new();
+		List<Vector2> candidatePositions = new();
+	
+		int tileWidth = 70;
 
-		// Scale min and max with difficulty
-		Random random = new Random();
-		int minHazards = (int)MathF.Floor(15 * room.DifficultyPercent);
-		int maxHazards = (int)MathF.Ceiling(20 * room.DifficultyPercent);
-		int noOfHazards = random.Next(minHazards, maxHazards);
-
-		for (int i = 0; i < noOfHazards; i++) {
-			if (hazardTypes.Count == 0) {
-				GD.Print("⚠️ No hazard types remaining.");
-				break;
-			}
-
-			if (validPositions.Count == 0) {
-				GD.Print("⚠️ No more valid positions left for hazards.");
-				break;
-			}
-
-			// Pick a hazard type
-			Type hazardType = hazardTypes[random.Next(hazardTypes.Count)];
-
-			if (hazardType == typeof(Fish)) {
-				Fish fish = new Fish();
-				if (!fish.GenerateInRoom(room)) { 
-					validPositions = room.GetPositionsAboveFloorTiles();
-					GD.Print("🚫 No valid spot for pit. Removing it from hazard list.");
-					hazardTypes.Remove(hazardType);
-					i--; // Retry the current iteration
-				} 
-				continue; // Skip the rest of the loop for fish
-			} 
-
-			// For non-pit hazards
-			int index = random.Next(validPositions.Count);
-			Vector2 chosenPosition = validPositions[index];
-			validPositions.RemoveAt(index);
-
-			Primitive hazard = (Primitive)Activator.CreateInstance(hazardType);
-			hazard.Position = chosenPosition;
-
-			if (!hazard.GenerateInRoom(room)) {
-				GD.Print($"❌ Failed to place {hazardType.Name} at {chosenPosition}. Trying another...");
-				i--; // Retry
+		// 1. Add bottoms of pits
+		foreach (Pit pit in room.Primitives.Where(p => p is Pit).Cast<Pit>().ToList()) {
+			float x = pit.Position.X + ((pit.Width - 1) * tileWidth / 2) + 1; 
+			float y = pit.Position.Y + ((pit.Depth - 1) * tileWidth);
+			Vector2 pos = new Vector2(x, y);
+			if (!room.HasAtomAt(pos)) {
+				candidatePositions.Add(pos);
 			}
 		}
-	}
 	
-	public void GenerateEnvironmentals()
-	{
-		List<Type> environmentalTypes = new List<Type> { typeof(Water), typeof(Pit) };
-		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
-
-		// Scale min and max with difficulty
-		Random random = new Random();
-		//int minHazards = (int)MathF.Floor(15 * room.DifficultyPercent);
-		//int maxHazards = (int)MathF.Ceiling(20 * room.DifficultyPercent);
-		int noOfEnv = random.Next(1, 5);
-
-		for (int i = 0; i < noOfEnv; i++) {
-			if (environmentalTypes.Count == 0) {
-				GD.Print("⚠️ No hazard types remaining.");
-				break;
-			}
-
-			if (validPositions.Count == 0) {
-				GD.Print("⚠️ No more valid positions left for hazards.");
-				break;
-			}
-
-			// Pick a hazard type
-			Type environmentalType = environmentalTypes[random.Next(environmentalTypes.Count)];
-
-			if (environmentalType == typeof(Water)) {
-				Water water = new Water();
-
-				// Let Pit find its own valid placement
-				bool success = water.GenerateInRoom(room);
-
-				if (success) {
-					// Recompute valid floor tile positions after modifying the room
-					validPositions = room.GetPositionsAboveFloorTiles();
-				} else {
-					GD.Print("🚫 No valid spot for water. Removing it from env list.");
-					environmentalTypes.Remove(environmentalType);
-					i--; // Retry the current iteration
-				}
-
-				continue; // Skip the rest of the loop for pit
-			} else if (environmentalType == typeof(Pit)) {
-				Pit pit = new Pit();
-
-				if (pit.GenerateInRoom(room)) { // Recompute valid floor tile positions after modifying the room
-					validPositions = room.GetPositionsAboveFloorTiles();
-				} else {
-					GD.Print("🚫 No valid spot for pit. Removing it from env list.");
-					environmentalTypes.Remove(environmentalType);
-					i--; // Retry the current iteration
-				}
-
-				continue; // Skip the rest of the loop for pit
-			}
-
-			// For non-pit hazards
-			int index = random.Next(validPositions.Count);
-			Vector2 chosenPosition = validPositions[index];
-			validPositions.RemoveAt(index);
-
-			Primitive environmental = (Primitive)Activator.CreateInstance(environmentalType);
-			environmental.Position = chosenPosition;
-
-			if (!environmental.GenerateInRoom(room)) {
-				GD.Print($"❌ Failed to place {environmentalType.Name} at {chosenPosition}. Trying another...");
-				i--; // Retry
+		// 2. Add bottoms of water
+		foreach (Water water in room.Primitives.Where(p => p is Water).Cast<Water>().ToList()) {
+			float x = water.Position.X + ((water.Width - 1) * tileWidth / 2) + 1; 
+			float y = water.Position.Y + ((water.Depth - 1) * tileWidth);
+			Vector2 pos = new Vector2(x, y);
+			if (!room.HasAtomAt(pos)) {
+				candidatePositions.Add(pos);
 			}
 		}
-	}
 	
-	
-	public void BuildPathsBetweenDoors(Room room)
-	{
-		GD.Print("🔗 Building anchor graph...");
-		BuildGraph(room.Primitives); // Build the full anchor graph
-
-		var doorAnchors = room.Primitives
-			.Where(p => p is Door)
-			.SelectMany(p => p.Anchors)
-			.Where(a => a.Type == "center")
+		// 3. Get 4 furthest floor tile positions from the target door
+		var floorPositions = room.GetPositionsAboveFloorTiles();
+		floorPositions = floorPositions
+			.Where(pos => !room.HasAtomAt(pos)) // ensure tile is not already occupied 
+			.OrderByDescending(pos => (pos - targetDoor.Position).LengthSquared())
+			.Take(4)
 			.ToList();
-
-		var collectibleAnchors = room.Primitives
-			.Where(p => p.Category == Primitive.PrimitiveCategory.Collectible)
-			.SelectMany(p => p.Anchors)
-			.Where(a => a.Type == "center")
-			.ToList();
-
-		GD.Print($"🚪 Found {doorAnchors.Count} door anchors");
-		GD.Print($"🎁 Found {collectibleAnchors.Count} collectible anchors");
-
-		// Log connections for debug
-		foreach (var anchor in graph.Keys.Where(a => a.Owner is Door))
-		{
-			GD.Print($"🚪 Door anchor at {anchor.Position} has {graph[anchor].Count} connections.");
-			foreach (var connected in graph[anchor])
-				GD.Print($"     ↳ Connected to {connected.Position} ({connected.Owner?.GetType().Name})");
+	
+		candidatePositions.AddRange(floorPositions);
+	
+		// 4. Convert positions to temporary key primtives
+		foreach (var pos in candidatePositions) {
+			DoorKey doorKey = new DoorKey {
+				Position = pos,
+				Colour = targetDoor.Colour
+			};
+			doorKey.GenerateAnchors(room);
+			idealKeys.Add(doorKey);
 		}
-
-		for (int i = 0; i < doorAnchors.Count; i++)
-		{
-			Anchor doorAnchor = doorAnchors[i];
-
-			// 1. Check path to other doors
-			for (int j = i + 1; j < doorAnchors.Count; j++)
-			{
-				List<Anchor> path = FindPath(doorAnchor, doorAnchors[j]);
-				if (path?.Count > 0)
-				{
-					GD.Print($"✅ Path found between Door {i} and Door {j}");
-					DrawPath(path, room);
-				}
-				else GD.PrintErr($"❌ No path found between Door {i} and Door {j}");
-			}
-
-			// 2. Check path to any collectible
-			bool foundKey = collectibleAnchors.Any(keyAnchor =>
-			{
-				var path = FindPath(doorAnchor, keyAnchor);
-				if (path?.Count > 0)
-				{
-					GD.Print($"✅ Path from Door {i} to collectible at {keyAnchor.Position}");
-					DrawPath(path, room);
-					return true;
-				}
-				return false;
-			});
-
-			if (!foundKey)
-				GD.PrintErr($"❌ No path from Door {i} to ANY collectible!");
-		}
+	
+		return idealKeys;
 	}
 	
-public void BuildGraph(List<Primitive> primitives)
-{
-	graph.Clear();
-	List<Anchor> allAnchors = new List<Anchor>();
-
-	// Step 0: Gather all anchors and add them to the graph with empty lists
-	foreach (var primitive in primitives)
+	public void BuildGraph(List<Primitive> primitives, List<Primitive> idealKeys)
 	{
-		foreach (var anchor in primitive.Anchors)
-		{
-			if (!graph.ContainsKey(anchor))
-				graph[anchor] = new List<Anchor>();
-		}
-
-		allAnchors.AddRange(primitive.Anchors);
-	}
-
-	// Step 1: Add internal connections
-	foreach (var primitive in primitives)
-	{
-		foreach (var connection in primitive.InternalPaths)
-		{
-			graph[connection.From].Add(connection.To);
-
-			if (connection.IsBidirectional)
-			{
-				graph[connection.To].Add(connection.From);
-			}
-		}
-	}
-
-	// Step 2: Connect intersecting orbits between anchors from different primitives
-	for (int i = 0; i < allAnchors.Count; i++)
-	{
-		for (int j = i + 1; j < allAnchors.Count; j++)
-		{
-			Anchor a = allAnchors[i];
-			Anchor b = allAnchors[j];
-
-			//if (a.Owner == b.Owner)
-				//continue; // only allow internal connections from InternalPaths
-				//
-			if ((a.Position - b.Position).Length() <= (a.Radius + b.Radius))
-			{
-				graph[a].Add(b);
-				graph[b].Add(a);
-			}
-		}
-	}
-
-	GD.Print($"✅ Anchor graph built with {graph.Count} nodes.");
-}
+		graph.Clear();
+		List<Anchor> allAnchors = new List<Anchor>();
 		
+		List<Primitive> tempPrimitives = primitives.Concat(idealKeys).ToList();
+		
+		// Step 0: Gather all anchors and add them to the graph with empty lists
+		foreach (var primitive in tempPrimitives)
+		{
+			foreach (var anchor in primitive.Anchors)
+			{
+				if (!graph.ContainsKey(anchor))
+					graph[anchor] = new List<Anchor>();
+			}
+
+			allAnchors.AddRange(primitive.Anchors);
+		}
+
+		// Step 1: Add internal connections
+		foreach (var primitive in tempPrimitives)
+		{
+			foreach (var connection in primitive.InternalPaths)
+			{
+				graph[connection.From].Add(connection.To);
+
+				if (connection.IsBidirectional)
+				{
+					graph[connection.To].Add(connection.From);
+				}
+			}
+		}
+		
+		// Step 2: Connect intersecting orbits between anchors from different primitives
+		for (int i = 0; i < allAnchors.Count; i++)
+		{
+			for (int j = i + 1; j < allAnchors.Count; j++)
+			{
+				Anchor a = allAnchors[i];
+				Anchor b = allAnchors[j];
+
+				//if (a.Owner == b.Owner)
+					//continue; // only allow internal connections from InternalPaths
+					//
+				if ((a.Position - b.Position).Length() <= (a.Radius + b.Radius))
+				{
+					graph[a].Add(b);
+					graph[b].Add(a);
+				}
+			}
+		}
+		
+		GD.Print($"Graph built with {graph.Count} nodes.");
+	}
+	
 	// BFS to find path between two anchors
 	public List<Anchor> FindPath(Anchor start, Anchor goal) {
 		
@@ -260,12 +128,12 @@ public void BuildGraph(List<Primitive> primitives)
 
 		Queue<List<Anchor>> queue = new();
 		HashSet<Anchor> visited = new();
-
+		
 		queue.Enqueue(new List<Anchor> { start });
 		visited.Add(start);
 
 		int iteration = 0;
-
+		
 		while (queue.Count > 0)
 		{
 			List<Anchor> path = queue.Dequeue();
@@ -279,11 +147,7 @@ public void BuildGraph(List<Primitive> primitives)
 				return path;
 			}
 
-			if (!graph.ContainsKey(current))
-			{
-				GD.Print($"⚠️ Current anchor {current.Position} not found in graph.");
-				continue;
-			}
+			if (!graph.ContainsKey(current)) { continue; }
 
 			foreach (var neighbor in graph[current])
 			{
@@ -294,131 +158,115 @@ public void BuildGraph(List<Primitive> primitives)
 					var newPath = new List<Anchor>(path) { neighbor };
 					queue.Enqueue(newPath);
 				}
-				else
-				{
-					//GD.Print($"⛔ Already visited: {neighbor.Position}");
-				}
 			}
 		}
 
 		GD.PrintErr($"❌ No path found from {start.Position} to {goal.Position}");
 		return null;
 	}
+	
+	private int EvaluatePathDifficulty(List<Anchor> path) {
+		
+		int Difficulty = 0;
+		Primitive currentOwner = null;
+		foreach (Anchor anchor in path) {
+			if (anchor.Owner != currentOwner) {
+				Difficulty += anchor.Owner.Difficulty;
+				currentOwner = anchor.Owner;
+			}
+		}
+		return Difficulty;
+	}
+	
+	public List<Anchor> FindBestPath(Anchor start, Anchor goal, List<Primitive> idealKeys)
+	{
+		BuildGraph(room.Primitives, idealKeys);
+		
+		List<Anchor> bestPath = null;
+		int bestScore = 0;
+		Primitive bestKey = null;
+		
+		foreach (Primitive idealKey in idealKeys) {
+			List<Anchor> pathToKey = FindPath(start, idealKey.Anchors.First());
+			List<Anchor> pathFromKey = FindPath(idealKey.Anchors.First(), goal);
+			if (pathToKey != null && pathFromKey != null) {
+				int score = EvaluatePathDifficulty(pathToKey) + EvaluatePathDifficulty(pathFromKey);
+				if (score > bestScore){
+					bestPath = pathToKey.Concat(pathFromKey).ToList();
+					bestScore = score;
+					bestKey = idealKey;
+				}
+			}
+		}
+		
+		if (bestKey != null) {
+			bestKey.GenerateInRoom(room);
+		}
+		
+		return bestPath;
+	}
+	
+	public void GenerateKeysFromStartDoor()
+	{
+		List<Door> allDoors = room.Primitives.OfType<Door>().ToList();
+		if (allDoors.Count < 2) {
+			GD.Print("🚪 Not enough doors to generate paths.");
+			return;
+		}
 
-	private void DrawPath(List<Anchor> path, Room room)
+		// Step 1: Pick a start door (e.g. leftmost one)
+		Door startDoor = allDoors.OrderBy(d => d.Position.X).First();
+		var startAnchor = startDoor.Anchors.FirstOrDefault(a => a.Type == "center");
+		if (startAnchor == null) {
+			GD.PrintErr("❌ Start door has no center anchor.");
+			return;
+		}
+
+		GD.Print($"🚪 Chosen start door: {startDoor.Colour} at {startDoor.Position}");
+
+		// Step 2: For each other door, find a path
+		foreach (Door targetDoor in allDoors)
+		{			
+			if (targetDoor == startDoor) continue;
+
+			var targetAnchor = targetDoor.Anchors.FirstOrDefault(a => a.Type == "center");
+			if (targetAnchor == null) continue;
+			
+			List<Anchor> path = FindBestPath(startAnchor, targetAnchor, GenerateKeysAtIdealPositions(targetDoor));
+			if (path == null || path.Count == 0)
+			{
+				GD.PrintErr($"❌ No path to {targetDoor.Colour} door");
+				continue;
+			}
+
+			// 🎨 Draw the path in the door's color
+			Color doorColor = GetColorFromDoor(targetDoor.Colour);
+			DrawPath(path, doorColor, room);
+
+			int difficulty = EvaluatePathDifficulty(path);
+			GD.Print($"✅ Path to {targetDoor.Colour}: {path.Count} steps, difficulty {difficulty}");
+		}
+	}
+	
+	public Color GetColorFromDoor(DoorColour colour)
+	{
+		return colour switch
+		{
+			DoorColour.Red => Colors.Red,
+			DoorColour.Blue => Colors.Blue,
+			DoorColour.Green => Colors.Green,
+			DoorColour.Yellow => Colors.Yellow,
+			_ => Colors.White
+		};
+	}
+
+	public void DrawPath(List<Anchor> path, Color color, Room room)
 	{
 		for (int i = 0; i < path.Count - 1; i++)
 		{
-			Vector2 from = path[i].Position;
-			Vector2 to = path[i + 1].Position;
-
-			room.DebugPathLines.Add((from, to));
+			var a = path[i].Position;
+			var b = path[i + 1].Position;
+			room.ColoredDebugPathLines.Add((a, b, color));
 		}
-		room.QueueRedraw();
-	}
-
-	public bool GeneratePath(Anchor start, Anchor end)
-	{
-		GD.Print($"🚶 Starting path from {start.Type} at {start.Position} to {end.Type} at {end.Position}");
-
-		Anchor current = start;
-		int maxSteps = 20;
-		int steps = 0;
-
-		while (steps < maxSteps)
-		{
-			// Step 1: Find all anchors currently in the room that intersect with the current one
-			Anchor nextAnchor = FindNextAnchor(current, end);
-
-			if (nextAnchor == null)
-			{
-				GD.Print("⚠️ No valid next anchor found. Path generation failed.");
-				return false;
-			}
-
-			// Step 2: Connect the current anchor to the next anchor
-			GD.Print($"🔗 Step {steps + 1}: Connecting {current.Type} to {nextAnchor.Type}.");
-			DrawDebugLine(current.Position, nextAnchor.Position);
-
-			if (nextAnchor == end)
-			{
-				GD.Print("✅ Path successfully connected to exit!");
-				return true;
-			}
-
-			current = nextAnchor;
-			steps++;
-		}
-
-		GD.Print("❌ Max steps reached. Path generation failed.");
-		return false;
-	}
-
-	private Anchor FindNextAnchor(Anchor current, Anchor target)
-	{
-		List<Anchor> allAnchors = room.GetAllAnchors();
-		Anchor best = null;
-		float bestScore = float.MaxValue;
-
-		// 1. Try to find a direct connection from current to any existing anchor
-		foreach (Anchor candidate in allAnchors)
-		{
-			if (candidate == current) continue;
-
-			if (current.IsConnectedTo(candidate))
-			{
-				float score = candidate.Position.DistanceTo(target.Position);
-				if (score < bestScore)
-				{
-					best = candidate;
-					bestScore = score;
-				}
-			}
-		}
-
-		if (best != null)
-			return best;
-
-		// 2. No connection found — try to place a new primitive
-		GD.Print("➕ Attempting to place a bridging primitive...");
-
-		// Get compatible types from matrix
-		Dictionary<Type, float> compatibleTypes = CompatibilityMatrix.GetCompatibleTypes(current.Owner.GetType()); // You need to set OwnerType when creating anchors
-
-		foreach (KeyValuePair<Type, float> entry in compatibleTypes) {
-			Type type = entry.Key;
-			float probability = entry.Value;
-	
-			// Create a new primitive of that type
-			Primitive newPrimitive = (Primitive)Activator.CreateInstance(type);
-			newPrimitive.Position = current.Position + new Vector2(50, 0); // Offset position near anchor
-
-			newPrimitive.GenerateInRoom(room); // Attempt to add it to the room
-			newPrimitive.GenerateAnchors(room);
-
-			foreach (Anchor a in newPrimitive.Anchors)
-			{
-				if (current.IsConnectedTo(a))
-				{
-					GD.Print($"✅ Placed {type.Name} near anchor. New anchor found.");
-					return a;
-				}
-			}
-
-			// If anchor didn’t connect, remove it
-			room.RemovePrimitive(newPrimitive);
-		}
-
-		return null; // Failed to find or place a connector
-	}
-
-	private void DrawDebugLine(Vector2 from, Vector2 to)
-	{
-		var line = new Line2D();
-		line.Width = 2;
-		line.DefaultColor = Colors.Red;
-		line.AddPoint(from);
-		line.AddPoint(to);
-		room.AddChild(line); // Add the line to the room for visualization
 	}
 }

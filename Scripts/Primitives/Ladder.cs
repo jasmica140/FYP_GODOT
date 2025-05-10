@@ -40,9 +40,15 @@ public partial class Ladder : Primitive {
 	
 	public override bool GenerateInRoom(Room room) {
 		
+		this.Position = new Vector2(position.X * 70, position.Y * 70);
+		
+		if ((room.HasAtomAt(this.Position + new Vector2(70, 0)) && !room.HasAtomOfTypeAt(this.Position + new Vector2(70, 0), typeof(LadderTile)) )
+		|| (room.HasAtomAt(this.Position - new Vector2(70, 0))) && !room.HasAtomOfTypeAt(this.Position - new Vector2(70, 0), typeof(LadderTile)) ) 
+		{ return false; }
+		
 		for (int y = 0; y < length; y++) {
 			LadderTile tile = new LadderTile();
-			tile.GlobalPosition = new Vector2(position.X * 70, position.Y * 70) + new Vector2(0, y * 70); 
+			tile.GlobalPosition = this.Position + new Vector2(0, y * 70); 
 			if (y == 0) { // change sprite for top tile
 				tile.SetTexture((Texture2D)GD.Load("res://Assets/Sprites/Tiles/ladder_top.png")); // Replace with actual path
 			} else if (y == length - 1) { // remove collision from bottom tile
@@ -62,7 +68,6 @@ public partial class Ladder : Primitive {
 			AddAtom(tile);
 		}
 		
-		this.Position = new Vector2(position.X * 70, position.Y * 70);
 		return room.AddPrimitive(this);
 	}
 	

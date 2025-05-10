@@ -126,15 +126,16 @@ public partial class PlayerController : CharacterBody2D
 	public override void _PhysicsProcess(double delta) {	
 		velocity = Velocity;
 		bool duck = false;
-		
+		bool roll = false;
+
 		// apply gravity if in air
-		if (!isOnFloor() && (!isNearWall() || !wallJump.wallFriction || !wallJump.canWallJump)) {
+		if (isOnFloor()) {
+			velocity.Y = 0;
+		} else if (!isOnFloor() && (!isNearWall() || !wallJump.wallFriction || !wallJump.canWallJump)) {
 			velocity.Y += gravity * (float)delta;	
 		} else if (!isOnFloor() && isNearWall() && wallJump.wallFriction && wallJump.canWallJump) { // slide down wall
 			velocity.Y = gravity * (float)delta;
-		} else if (isOnFloor() || isOnSlope()) {
-			velocity.Y = 0;
-		} 
+		}  
 				
 		// handle swim 
 		if (inWater) {
@@ -217,7 +218,7 @@ public partial class PlayerController : CharacterBody2D
 			pc._spriteContainer.RotationDegrees = -45;
 		} else if (isOnLeftSlope()) {
 			pc._spriteContainer.RotationDegrees = 45;
-		} else { // reset when not on slope
+		} else {  // reset when not on slope
 			pc._spriteContainer.RotationDegrees = 0;
 		}
 		
@@ -252,9 +253,13 @@ public partial class PlayerController : CharacterBody2D
 			climb.Deactivate();
 		}
 
-		// handle duck
+		// handle duck and roll
 		if (Input.IsKeyPressed(Key.Down) && isOnFloor() && !inWater) {
-			duck = true;
+			if (Input.IsKeyPressed(Key.Left) || Input.IsKeyPressed(Key.Right)) {
+				roll = true;
+			} else {
+				duck = true;
+			}
 			CapsuleShape2D shape = new CapsuleShape2D();
 			shape.Radius = 32;
 			shape.Height = 74; 
@@ -262,6 +267,7 @@ public partial class PlayerController : CharacterBody2D
 			pc._hazardsCollisionShape.Position = new Vector2(0, 6);
 		} else {
 			duck = false;
+			roll = false;
 			CapsuleShape2D shape = new CapsuleShape2D();
 			shape.Radius = 32;
 			shape.Height = 88; 
@@ -287,7 +293,7 @@ public partial class PlayerController : CharacterBody2D
 		 
 		setDirection();
 		
-		_UpdateSpriteRenderer(velocity.X, velocity.Y, duck);
+		_UpdateSpriteRenderer(velocity.X, velocity.Y, delta, duck, roll);
 		Velocity = velocity;
 		
 		MoveAndSlide();
@@ -361,15 +367,15 @@ public partial class PlayerController : CharacterBody2D
 	}
 	
 	public bool isOnSlope() { //check if player is on slope
-		return pc._leftSlopeChecker.IsColliding() || pc._rightSlopeChecker.IsColliding();
+		return (pc._leftSlopeChecker.IsColliding() || pc._rightSlopeChecker.IsColliding()) && !isOnFloor();
 	}
 	
 	public bool isOnRightSlope() { //check if player is on slope
-		return pc._rightSlopeChecker.IsColliding();
+		return pc._rightSlopeChecker.IsColliding() && !isOnFloor();
 	}
 		
 	public bool isOnLeftSlope() { //check if player is on slope
-		return pc._leftSlopeChecker.IsColliding();
+		return pc._leftSlopeChecker.IsColliding() && !isOnFloor();
 	}
 	
 	public bool isOnMushroom() { //check if player is on mushroom
@@ -531,24 +537,28 @@ public partial class PlayerController : CharacterBody2D
 	}
 	
 	
-	private void _UpdateSpriteRenderer(float velX, float velY, bool ducking) {		
+	private void _UpdateSpriteRenderer(float velX, float velY, double delta, bool ducking, bool rolling) {		
 		bool walking = velX != 0;
 		bool jumping = velY != 0;
 		bool dashing = isDashingLeft != isDashingRight;
 
-
 		pc._hurtSprite.Visible = isHurt;
 		pc._climbSprite.Visible = (climb.isClimbingUp || climb.isClimbingDown || onLadder && !isOnFloor() && !jumping) && !pc._hurtSprite.Visible;
 		pc._duckSprite.Visible = ducking && !inWater && !pc._climbSprite.Visible;
+		pc._rollSprite.Visible = rolling && !inWater && !pc._climbSprite.Visible;
 		pc._swimSprite.Visible = inWater;
-		pc._walkSprite.Visible = (walking && !ducking && !dashing && !pc._climbSprite.Visible) && (isOnFloor() || isOnSlope()) && !pc._hurtSprite.Visible && !inWater;
-		pc._idleSprite.Visible = !walking && !jumping && !ducking && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
-		pc._dashSprite.Visible = dashing && !jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
-		pc._jumpSprite.Visible = jumping && !ducking && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
+		pc._walkSprite.Visible = (walking && !ducking && !rolling && !dashing && !pc._climbSprite.Visible) && (isOnFloor() || isOnSlope()) && !pc._hurtSprite.Visible && !inWater;
+		pc._idleSprite.Visible = !walking && !jumping && !ducking && !rolling && !dashing && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
+		pc._dashSprite.Visible = dashing && !jumping && !ducking && !rolling && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
+		pc._jumpSprite.Visible = jumping && !ducking && !rolling && !pc._climbSprite.Visible && !pc._walkSprite.Visible && !pc._hurtSprite.Visible && !inWater;
 
 		if (pc._hurtSprite.Visible)
 		{
 			pc._hurtSprite.FlipH = direction == 1;
+		}  
+		else if (pc._rollSprite.Visible)
+		{
+			pc._rollSprite.Rotation += (float)(5 * delta) * direction;
 		} 
 		else if (pc._swimSprite.Visible)
 		{

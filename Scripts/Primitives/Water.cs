@@ -269,47 +269,6 @@ public partial class Water : Primitive {
 		return false;
 	}
 	
-	//public override bool GenerateInRoom(Room room) {
-		//// Look for the Floor primitive in the room
-		//Primitive floorPrimitive = room.Primitives.Find(p => p is Floor);
-		//List<Atom> tilesToReplace = new List<Atom>();
-		//List<Atom> floorTiles = floorPrimitive.GetAtoms();
-		//
-		//float minX = floorTiles.Min(a => a.GlobalPosition.X);
-		//float maxX = floorTiles.Max(a => a.GlobalPosition.X);
-//
-		//Random rng = new Random();
-		//float x1 = (float)rng.NextDouble() * (maxX - minX) + minX;
-		//float x2 = (float)rng.NextDouble() * (maxX - minX) + minX;
-		//
-		//float lower = Mathf.Min(x1, x2);
-		//float upper = Mathf.Max(x1, x2);
-	//
-		//if (floorPrimitive != null) {
-			//foreach (Atom atom in floorTiles) {
-				//if (atom is FloorTile && atom.GlobalPosition.X > lower && atom.GlobalPosition.X < upper) {
-					//
-					//WaterTile tile = new WaterTile(); // Create new water tile
-					//tile.GlobalPosition = atom.GlobalPosition;
-					//AddAtom(tile); 
-					//room.AddAtom(tile);
-					//tilesToReplace.Add(atom);
-				//} 
-			//}
-			//
-			//foreach (var tile in tilesToReplace) {
-				//floorPrimitive.RemoveAtom(tile);
-			//}
-			//
-			//this.Position = tilesToReplace[0].GlobalPosition;
-			//return room.AddPrimitive(this);
-			//GD.Print("💧 Floor tiles replaced with water tiles.");
-		//} else {
-			//GD.PrintErr("❌ No Floor primitive found in the room!");
-			//return false;
-		//}
-	//}
-	
 	public override void GenerateAnchors(Room room)
 	{
 		Anchors.Clear();
@@ -324,11 +283,25 @@ public partial class Water : Primitive {
 
 		float orbit = 20f; // radius in pixels
 
+		Vector2 offsetUp = new Vector2(0, -tiles.First().Size.Y / 2);
 		Vector2 offsetDown = new Vector2(0, tiles.First().Size.Y / 2);
-		
+		Vector2 offsetSide = new Vector2(tiles.First().Size.X / 2, 0);
+			
 		foreach (Atom tile in tiles) {
 			Vector2 pos = tile.GlobalPosition;
-			Anchors.Add(new Anchor(pos + offsetDown, orbit, "bottom", this));
+			Anchor topLeft = new Anchor(pos + offsetUp - offsetSide, orbit, "topLeft", this);
+			Anchor bottomLeft = new Anchor(pos + offsetDown - offsetSide, orbit, "bottomLeft", this);
+			Anchor topRight = new Anchor(pos + offsetUp + offsetSide, orbit, "topRight", this);
+			Anchor bottomRight = new Anchor(pos + offsetDown + offsetSide, orbit, "bottomRight", this);
+
+			Anchors.Add(topLeft);
+			Anchors.Add(bottomLeft);
+			Anchors.Add(topRight);
+			Anchors.Add(bottomRight);
+
+			InternalPaths.Add(new AnchorConnection(topLeft, topRight));
+			InternalPaths.Add(new AnchorConnection(topLeft, bottomLeft));
+			InternalPaths.Add(new AnchorConnection(bottomRight, bottomLeft));
 		}
 	}
 }

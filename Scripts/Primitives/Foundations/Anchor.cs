@@ -176,6 +176,8 @@ public static class AnchorConnector
 	{
 		foreach (Primitive primitive in room.Primitives)
 		{
+			if (primitive is Pit || primitive is Water) { continue; }
+			
 			List<AnchorConnection> toRemove = new List<AnchorConnection>();
 
 			foreach (AnchorConnection connection in primitive.InternalPaths)

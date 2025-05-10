@@ -392,14 +392,12 @@ public class ZoneHandler
 			slope.length = verticalGap;
 			slope.zone = upper;
 			placedSlope = slope.GenerateInRoom(room);
-			//slope.GenerateAnchors();
 		} else {
 			RightSlope slope = new RightSlope();
 			slope.position = worldPosition;
 			slope.length = verticalGap;
 			slope.zone = upper;
 			placedSlope = slope.GenerateInRoom(room);
-			//slope.GenerateAnchors();
 		}
 		 return placedSlope;
 	}
@@ -416,7 +414,6 @@ public class ZoneHandler
 		Mushroom spring = new Mushroom();
 		spring.position = position * new Vector2(70, 70);
 		return spring.GenerateInRoom(room);
-		//spring.GenerateAnchors();
 	}
 	
 	void PlacePlatformPath(Zone upper, int verticalGap, bool right) {
@@ -459,72 +456,3 @@ public class ZoneHandler
 		}
 	}
 }
-
-//else if (upper.X == 0 && !zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height))
-							//{ 	// Left wall and no floor to the right - place on right
-								//if (canPlaceSpring(upper, verticalGap, true)) { // on left or right and no obstacles withing jumping area
-									//PlaceSpring(upper, verticalGap, true);
-								//} else if (canPlaceSlope(upper, verticalGap, true)) { // enough floor space below
-									//placedConnection = PlaceSlope(upper, verticalGap, true);  
-								//} 
-								//if (!placedConnection) {
-									//PlaceLadder(upper, verticalGap, true);
-								//}
-							//}
-							//else if (upper.X + upper.Width == room.Width && !zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height))
-							//{ 	// Right wall and no floor to the left - place on left
-								//if (canPlaceSpring(upper, verticalGap, false)) { // on left or right and no obstacles withing jumping area
-									//PlaceSpring(upper, verticalGap, false);
-								//} else if (canPlaceSlope(upper, verticalGap, false)) { // enough floor space below
-									//placedConnection = PlaceSlope(upper, verticalGap, false); 
-								//} 
-								//if (!placedConnection) {
-									//PlaceLadder(upper, verticalGap, false); 
-								//}
-							//}
-							//else if (zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height) && upper.X != 0)
-							//{ 	// Floor to the right and no wall to the left - place on left
-								//if (canPlaceSpring(upper, verticalGap, false)) { // on left or right and no obstacles withing jumping area
-									//PlaceSpring(upper, verticalGap, false);
-								//} else if (canPlaceSlope(upper, verticalGap, false)) { // enough floor space below
-									//placedConnection = PlaceSlope(upper, verticalGap, false); 
-								//} 
-								//if (!placedConnection) { // ladder on the left
-									//PlaceLadder(upper, verticalGap, false);
-								//}
-							//}
-							//else if (zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height) && upper.X + upper.Width != room.Width)
-							//{ 	// Floor to the left and no wall to the right - place on right
-								//if (canPlaceSpring(upper, verticalGap, true)) { // on left or right and no obstacles withing jumping area
-									//PlaceSpring(upper, verticalGap, true);
-								//} else if (canPlaceSlope(upper, verticalGap, true)) { // enough floor space below
-									//placedConnection = PlaceSlope(upper, verticalGap, true); 
-								//} 
-								//if (!placedConnection) { // ladder on the right
-									//PlaceLadder(upper, verticalGap, true);
-								//}
-							//}
-							//else if ( !zones.Any(z => z.X + z.Width == upper.X && z.Y + z.Height == upper.Y + upper.Height) 
-									//&& !zones.Any(z => z.X == upper.X + upper.Width && z.Y + z.Height == upper.Y + upper.Height) 
-									//&& upper.X != 0 && upper.X + upper.Width != room.Width)
-							//{ 	// No wall or floor adjacent 
-								//if (upper.X + upper.Width == lower.X) { // if lower is on right - place on right
-									//if (canPlaceSpring(upper, verticalGap, true)) { // on left or right and no obstacles withing jumping area
-									//PlaceSpring(upper, verticalGap, true);
-									//} else if (canPlaceSlope(upper, verticalGap, true)) { // enough floor space below
-										//placedConnection = PlaceSlope(upper, verticalGap, true); 
-									//} 
-									//if (!placedConnection) { // ladder on the right
-										//PlaceLadder(upper, verticalGap, true);
-									//}
-								//} else if (lower.X + lower.Width == upper.X) { // if lower is on left - place on left
-									//if (canPlaceSpring(upper, verticalGap, false)) { // on left or right and no obstacles withing jumping area
-									//PlaceSpring(upper, verticalGap, false);
-									//} else if (canPlaceSlope(upper, verticalGap, false)) { // enough floor space below
-										//placedConnection = PlaceSlope(upper, verticalGap, false); 
-									//} 
-									//if (!placedConnection) { // ladder on the left
-										//PlaceLadder(upper, verticalGap, false);
-									//}
-								//}
-							//}

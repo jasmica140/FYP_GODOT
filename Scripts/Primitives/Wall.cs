@@ -32,45 +32,6 @@ public partial class Wall : Primitive {
 		Anchors.Clear();
 		InternalPaths.Clear();
 
-		//List<Atom> tiles = GetAtoms(); // This should return the ladder tiles
-//
-		//if (tiles.Count == 0)
-			//return;
-//
-		//// Sort by Y to identify top and bottom
-		//tiles.Sort((a, b) => a.GlobalPosition.Y.CompareTo(b.GlobalPosition.Y));
-//
-		//float orbit = 20f; // radius in pixels
-//
-		//Vector2 offsetUp = new Vector2(0, -tiles.First().Size.Y / 2);
-		//Vector2 offsetDown = new Vector2(0, tiles.First().Size.Y / 2);
-		//Vector2 offsetSide = new Vector2(tiles.First().Size.X / 2, 0);
-			//
-		//foreach (Atom tile in tiles) {
-			//Vector2 pos = tile.GlobalPosition;
-			//Anchor topLeft = new Anchor(pos + offsetUp - offsetSide, orbit, "topLeft", this);
-			//Anchor topRight = new Anchor(pos + offsetUp + offsetSide, orbit, "topRight", this);
-//
-			//Anchors.Add(topLeft);
-			//Anchors.Add(topRight);
-			//InternalPaths.Add(new AnchorConnection(topLeft, topRight));
-		//}
-		//
-		//Anchor left = new Anchor(tiles.First().GlobalPosition - offsetSide + offsetDown, orbit, "left", this);
-		//Anchor right = new Anchor(tiles.Last().GlobalPosition + offsetSide + offsetDown, orbit, "right", this);
-		//Anchor leftJump = new Anchor(tiles.First().GlobalPosition - offsetSide + (offsetDown * 3), orbit, "leftJump", this);
-		//Anchor rightJump = new Anchor(tiles.Last().GlobalPosition + offsetSide + (offsetDown * 3), orbit, "rightJump", this);
-		//
-		//InternalPaths.Add(new AnchorConnection(left, Anchors.First()));
-		//InternalPaths.Add(new AnchorConnection(left, leftJump));
-		//InternalPaths.Add(new AnchorConnection(right, Anchors.Last()));
-		//InternalPaths.Add(new AnchorConnection(right, rightJump));
-		//
-		//Anchors.Add(left); 
-		//Anchors.Add(right);
-		//Anchors.Add(leftJump); 
-		//Anchors.Add(rightJump);
-
 		GenerateObstructionLines();
 	}
 	

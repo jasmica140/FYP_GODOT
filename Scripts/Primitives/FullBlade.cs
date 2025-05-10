@@ -45,12 +45,21 @@ public partial class FullBlade : Primitive
 {
 	public FullBlade() : base(Vector2.Zero) {	
 		Category = PrimitiveCategory.Hazard;
+		Difficulty = 2;
 	}  // Default constructor needed for instantiation
 	
 	public FullBlade(Vector2 position) : base(position) {}
 	
 	
 	public override bool GenerateInRoom(Room room) {
+		if (room.HasAtomAt(this.Position) || room.HasAtomAt(this.Position + new Vector2(0, 20))
+		|| room.HasAtomAt(this.Position + new Vector2(70, 0)) || room.HasAtomAt(this.Position + new Vector2(-70, 0))
+		|| room.HasAtomAt(this.Position + new Vector2(70, 20)) || room.HasAtomAt(this.Position + new Vector2(-70, 20))
+		|| !room.HasAtomOfTypeAt(this.Position + new Vector2(70, 70), typeof(FloorTile)) || !room.HasAtomOfTypeAt(this.Position + new Vector2(-70, 70), typeof(FloorTile))) 
+		{ 
+			return false;
+		}
+		
 		this.Position -= new Vector2(0, 70); // put blade one tile higher
 		FullBladeAtom atom = new FullBladeAtom();
 		atom.GlobalPosition = this.Position;

@@ -33,6 +33,8 @@ public abstract partial class Primitive : StaticBody2D
 	protected Sprite2D sprite;
 
 	public Vector2 Position { get; set; }
+	public int Difficulty = 1;
+	
 	public List<AnchorConnection> InternalPaths { get; private set; } = new List<AnchorConnection>();
 	
 	// Define categories
@@ -117,7 +119,7 @@ public abstract partial class Primitive : StaticBody2D
 			//// Draw point
 			//DrawCircle(anchor.Position, 4, new Color(1, 0, 1)); // purple center
 		//}
-		
+		//
 
 		//
 		//// Optional: Draw lines between your own anchors (for testing)

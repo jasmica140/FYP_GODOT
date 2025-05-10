@@ -47,13 +47,14 @@ public partial class Room : Node2D
 		ZoneHandler.ConnectZonesVertically(this);
 		ZoneHandler.DrawZoneBorders(this);
 		DetectAndFillEnclosedAreas();
+		GenerateEnvironmentals();
+		GenerateHazards();
 		GenerateDoors();
-		PathBuilder.GenerateEnvironmentals();
-		replaceFloorTilesWithTilesAbove();
-		PathBuilder.GenerateHazards();
 		AnchorConnector.RemoveIntersectingAnchorConnections(this);
-		PathBuilder.BuildPathsBetweenDoors(this);
-
+		replaceFloorTilesWithTilesAbove();
+		//PathBuilder.BuildPathsBetweenDoors(this);
+		PathBuilder.GenerateKeysFromStartDoor();
+		
 		SpawnPlayer(); // spawn the player after generating the room
 		Node2D primitivesContainer = GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
 		primitivesContainer.Position = new Vector2(40, 70);
@@ -108,6 +109,10 @@ public partial class Room : Node2D
 					tile.SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/grassRight.png")); 
 				}
 			}
+		}
+		
+		foreach(Floor floor in Primitives.Where(p => p is Floor).Cast<Floor>().ToList()) {
+			floor.GenerateSideAnchors(this);
 		}
 	}
 	
@@ -305,12 +310,125 @@ public partial class Room : Node2D
 		return false;
 	}
 	
+	public void GenerateHazards()
+	{
+		List<Type> hazardTypes = new List<Type> { typeof(FloorBlade), typeof(FullBlade), typeof(Fish), typeof(Slug) };
+		List<Vector2> validPositions = GetPositionsAboveFloorTiles();
+
+		// Scale min and max with difficulty
+		Random random = new Random();
+		int minHazards = (int)MathF.Floor(15 * DifficultyPercent);
+		int maxHazards = (int)MathF.Ceiling(20 * DifficultyPercent);
+		int noOfHazards = random.Next(minHazards, maxHazards);
+
+		for (int i = 0; i < noOfHazards; i++) {
+			if (hazardTypes.Count == 0 ) {
+				GD.Print("⚠️ No hazard types remaining.");
+				break;
+			}
+
+			if (validPositions.Count == 0) {
+				GD.Print("⚠️ No more valid positions left for hazards.");
+				break;
+			}
+
+			// Pick a hazard type
+			Type hazardType = hazardTypes[random.Next(hazardTypes.Count)];
+			int index = random.Next(validPositions.Count);
+			Vector2 chosenPosition = validPositions[index];
+			validPositions.RemoveAt(index);
+
+			Primitive hazard = (Primitive)Activator.CreateInstance(hazardType);
+			hazard.Position = chosenPosition;
+
+			if (!hazard.GenerateInRoom(this)) {
+				GD.Print($"❌ Failed to place {hazardType.Name} at {chosenPosition}. Trying another...");
+				i--; // Retry
+			}
+		}
+	}
+	
+	public void GenerateEnvironmentals()
+	{
+		List<Type> environmentalTypes = new List<Type> { typeof(Water), typeof(Pit) };
+		List<Vector2> validPositions = GetPositionsAboveFloorTiles();
+
+		// Scale min and max with difficulty
+		Random random = new Random();
+		//int minHazards = (int)MathF.Floor(15 * room.DifficultyPercent);
+		//int maxHazards = (int)MathF.Ceiling(20 * room.DifficultyPercent);
+		int noOfEnv = random.Next(1, 5);
+
+		for (int i = 0; i < noOfEnv; i++) {
+			if (environmentalTypes.Count == 0) {
+				GD.Print("⚠️ No hazard types remaining.");
+				break;
+			}
+
+			if (validPositions.Count == 0) {
+				GD.Print("⚠️ No more valid positions left for hazards.");
+				break;
+			}
+
+			// Pick a hazard type
+			Type environmentalType = environmentalTypes[random.Next(environmentalTypes.Count)];
+
+			if (environmentalType == typeof(Water)) {
+				Water water = new Water();
+
+				// Let Pit find its own valid placement
+				bool success = water.GenerateInRoom(this);
+
+				if (success) {
+					// Recompute valid floor tile positions after modifying the room
+					validPositions = GetPositionsAboveFloorTiles();
+				} else {
+					GD.Print("🚫 No valid spot for water. Removing it from env list.");
+					environmentalTypes.Remove(environmentalType);
+					i--; // Retry the current iteration
+				}
+
+				continue; // Skip the rest of the loop for pit
+			} else if (environmentalType == typeof(Pit)) {
+				Pit pit = new Pit();
+
+				if (pit.GenerateInRoom(this)) { // Recompute valid floor tile positions after modifying the room
+					validPositions = GetPositionsAboveFloorTiles();
+				} else {
+					GD.Print("🚫 No valid spot for pit. Removing it from env list.");
+					environmentalTypes.Remove(environmentalType);
+					i--; // Retry the current iteration
+				}
+
+				continue; // Skip the rest of the loop for pit
+			}
+
+			// For non-pit hazards
+			int index = random.Next(validPositions.Count);
+			Vector2 chosenPosition = validPositions[index];
+			validPositions.RemoveAt(index);
+
+			Primitive environmental = (Primitive)Activator.CreateInstance(environmentalType);
+			environmental.Position = chosenPosition;
+
+			if (!environmental.GenerateInRoom(this)) {
+				GD.Print($"❌ Failed to place {environmentalType.Name} at {chosenPosition}. Trying another...");
+				i--; // Retry
+			}
+		}
+	}
+	
 	public void GenerateDoors()
 	{
+		List<Pit> pitPrimitives = Primitives.Where(p => p is Pit).Cast<Pit>().OrderByDescending(p => p.Depth).ThenByDescending(p => p.Width).ToList();
+		List<Water> waterPrimitives = Primitives.Where(p => p is Water).Cast<Water>().OrderByDescending(p => p.Depth).ThenByDescending(p => p.Width).ToList();
+		
+		GD.Print($"🌊 Water count: {waterPrimitives.Count}, 🕳️ Pit count: {pitPrimitives.Count}");
+		
 		List<Vector2> validPositions = this.GetPositionsAboveFloorTiles();
 		Random random = new Random();
 
-		int noOfDoors = random.Next(1, 5); // max 4 doors
+		int noOfDoors = random.Next(2, 5); // max 4 doors
 		List<DoorColour> availableColors = Enum.GetValues(typeof(DoorColour)).Cast<DoorColour>().ToList();
 
 		// Shuffle colors
@@ -345,32 +463,71 @@ public partial class Room : Node2D
 				doorLock = new DoorLock();
 				doorLock.Colour = door.Colour;
 				doorLock.Position = door.Position + new Vector2(70, 0);
-
+				
 				validPositions.RemoveAt(index);
 			}
 
 			// Now spawn the matching key at a random floor tile
 			if (validPositions.Count == 0) break;
 
-			bool keyPlaced = false;
-			while (!keyPlaced && validPositions.Count > 0)
-			{
-				int keyIndex = random.Next(validPositions.Count);
-				Vector2 keyPosition = validPositions[keyIndex];
-				validPositions.RemoveAt(keyIndex);
-
-				DoorKey key = new DoorKey
-				{
-					Colour = door.Colour,
-					Position = keyPosition 
-				};
-
-				if (key.GenerateInRoom(this))
-				{
-					GD.Print($"🗝️ Placed key at {key.Position} for colour {key.Colour}");
-					keyPlaced = true;
-				}
-			}
+			//bool keyPlaced = false;
+			//while (!keyPlaced && (validPositions.Count > 0 || pitPrimitives.Count > 0 || waterPrimitives.Count > 0))
+			//{
+				//float roll = GD.Randf(); // Value between 0 and 1
+//
+				//Vector2 keyPosition = Vector2.Zero;
+//
+				//// Decide placement type
+				//if (roll < 0.2f && validPositions.Count > 0) {
+					//// Floor tile (20%)
+					//int keyIndex = random.Next(validPositions.Count);
+					//keyPosition = validPositions[keyIndex];
+					//validPositions.RemoveAt(keyIndex);
+				//}
+				//else if (roll < 0.6f && pitPrimitives.Count > 0) {
+					//// Pit (40%)
+					//GD.Print("Placing key in pit");
+					//Pit pit = pitPrimitives[0];
+					//pitPrimitives.RemoveAt(0);
+//
+					//int tileWidth = 70;
+					//float x = pit.Position.X + ((pit.Width - 1) * tileWidth / 2) + 1; 
+					//float y = pit.Position.Y + ((pit.Depth - 1) * tileWidth);
+//
+					//keyPosition = new Vector2(x, y);
+				//}
+				//else if (waterPrimitives.Count > 0) {
+					//// Water (40%)
+					//GD.Print("Placing key in water");
+					//Water water = waterPrimitives[0];
+					//waterPrimitives.RemoveAt(0);
+//
+					//int tileWidth = 70;
+					//float x = water.Position.X + ((water.Width - 1) * tileWidth / 2) + 1; 
+					//float y = water.Position.Y + ((water.Depth - 1) * tileWidth);
+//
+					//keyPosition = new Vector2(x, y);
+				//}
+				//else {
+					//// Fallback to valid floor tile if other options are empty
+					//if (validPositions.Count == 0) break;
+					//int keyIndex = random.Next(validPositions.Count);
+					//keyPosition = validPositions[keyIndex];
+					//validPositions.RemoveAt(keyIndex);
+				//}
+//
+				//DoorKey key = new DoorKey
+				//{
+					//Colour = door.Colour,
+					//Position = keyPosition
+				//};
+//
+				//if (key.GenerateInRoom(this))
+				//{
+					//GD.Print($"🗝️ Placed key at {key.Position} for colour {key.Colour}");
+					//keyPlaced = true;
+				//}
+			//}
 		}
 	}
 
@@ -428,7 +585,9 @@ public partial class Room : Node2D
 		foreach (Atom atom in primitive.GetAtoms()) {
 			if (atom is FloorBladeAtom || atom is SlugAtom) {
 				atom.GlobalPosition += new Vector2(0, 20);
-			} 
+			} else if (atom is LockAtom) {
+				atom.GlobalPosition += new Vector2(40, 70);
+			}
 			this.AddAtom(atom);
 		}
 
@@ -528,13 +687,14 @@ public partial class Room : Node2D
 		}
 	}
 	
-	public List<(Vector2, Vector2)> DebugPathLines = new List<(Vector2, Vector2)>();
+	public List<(Vector2 start, Vector2 end, Color color)> ColoredDebugPathLines = new();
+
 
 	public override void _Draw()
 	{
-		foreach (var (start, end) in DebugPathLines)
+		foreach (var (start, end, color) in ColoredDebugPathLines)
 		{
-			DrawLine(start + new Vector2(40, 60), end + new Vector2(40, 60), Colors.Blue, 6f);
+			DrawLine(start + new Vector2(40, 60), end + new Vector2(40, 60), color, 6f);
 		}
 	}
 }

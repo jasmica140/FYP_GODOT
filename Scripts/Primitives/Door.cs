@@ -104,32 +104,6 @@ public partial class Door : Primitive {
 		return room.AddPrimitive(this);
 	}
 	
-	//public override bool GenerateInRoom(Room room) {
-		//List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
-//
-		//if (validPositions.Count == 0) {
-			//GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
-			//return false;
-		//}
-//
-		//// Pick a random valid position from the list
-		//Random random = new Random();
-		//Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-//
-		//DoorBottomAtom bottomAtom = new DoorBottomAtom();
-		//bottomAtom.GlobalPosition = chosenPosition;
-		//AddAtom(bottomAtom);
-		//room.AddAtom(bottomAtom); 
-		//
-		//DoorTopAtom topAtom = new DoorTopAtom();
-		//topAtom.GlobalPosition = chosenPosition - new Vector2(0,bottomAtom.Size.Y);
-		//AddAtom(topAtom);
-		//room.AddAtom(topAtom); 
-		//
-		//this.Position = chosenPosition;
-		//return room.AddPrimitive(this);
-	//}
-	
 	public override void GenerateAnchors(Room room) {
 		Anchors.Clear();
 

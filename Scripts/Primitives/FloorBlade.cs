@@ -53,17 +53,28 @@ public partial class FloorBladeAtom : Atom {
 
 public partial class FloorBlade : Primitive
 {
+	
+	
 	public FloorBlade() : base(Vector2.Zero) {	
 		Category = PrimitiveCategory.Hazard;
+		Difficulty = 2;
 	}  // Default constructor needed for instantiation
 	
 	public FloorBlade(Vector2 position) : base(position) {}
 	
 	
 	public override bool GenerateInRoom(Room room) {
-		if (room.HasAtomAt(this.Position)) {
+		if (room.HasAtomAt(this.Position)
+		|| room.HasAtomAt(this.Position - new Vector2(0, 70))
+		|| room.HasAtomAt(this.Position + new Vector2(70, 0))
+		|| room.HasAtomAt(this.Position - new Vector2(70, 0))
+		|| room.HasAtomOfTypeAt(this.Position - new Vector2(70, 70), typeof(FullBladeAtom))
+		|| room.HasAtomOfTypeAt(this.Position - new Vector2(-70, 70), typeof(FullBladeAtom))
+		|| !room.HasAtomOfTypeAt(this.Position + new Vector2(70, 70), typeof(FloorTile)) 
+		|| !room.HasAtomOfTypeAt(this.Position + new Vector2(-70, 70), typeof(FloorTile))) {
 			return false;
 		}
+		
 		FloorBladeAtom atom = new FloorBladeAtom();
 		atom.GlobalPosition = this.Position;
 		AddAtom(atom);

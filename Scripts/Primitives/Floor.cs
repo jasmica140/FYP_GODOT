@@ -29,6 +29,7 @@ public partial class FloorTile : Atom {
 public partial class Floor : Primitive {
 
 	public Zone zone { get; set; }
+	public int Width { get; set; }
 	public bool hasEnemy = false;
 	
 	public Floor() : base(Vector2.Zero) {
@@ -38,6 +39,7 @@ public partial class Floor : Primitive {
 	public Floor(Vector2 position) : base(position) { }
 	
 	public override bool GenerateInRoom(Room room) {
+		Width = zone.Width;
 		
 		int y = zone.Y + zone.Height - 1;
 		for (int x = zone.X; x < zone.X + zone.Width; x++) {
@@ -52,21 +54,6 @@ public partial class Floor : Primitive {
 		this.Position = new Vector2(zone.X * 70, y * 70); 
 		return room.AddPrimitive(this);
 	}
-
-	//public override void GenerateInRoom(Room room) {
-		//
-		//for (int x = 0; x < room.Width; x++) {
-			//Vector2 position = new Vector2(x * 70, 0); 
-			//
-			//FloorTile tile = new FloorTile();
-			//tile.GlobalPosition = position;
-			//AddAtom(tile);
-			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
-		//}
-//
-		////this.GlobalPosition = new Vector2(0, 0); 
-		//room.AddPrimitive(this);
-	//}
 	
 	public override void GenerateAnchors(Room room)
 	{
@@ -96,23 +83,50 @@ public partial class Floor : Primitive {
 			Anchors.Add(topRight);
 			InternalPaths.Add(new AnchorConnection(topLeft, topRight));
 		}
-		
-		Anchor left = new Anchor(tiles.First().GlobalPosition - offsetSide + offsetDown, orbit, "left", this);
-		Anchor right = new Anchor(tiles.Last().GlobalPosition + offsetSide + offsetDown, orbit, "right", this);
-		Anchor leftJump = new Anchor(tiles.First().GlobalPosition - offsetSide + (offsetDown * 3), orbit, "leftJump", this);
-		Anchor rightJump = new Anchor(tiles.Last().GlobalPosition + offsetSide + (offsetDown * 3), orbit, "rightJump", this);
-		
-		InternalPaths.Add(new AnchorConnection(left, Anchors.First()));
-		InternalPaths.Add(new AnchorConnection(left, leftJump));
-		InternalPaths.Add(new AnchorConnection(right, Anchors.Last()));
-		InternalPaths.Add(new AnchorConnection(right, rightJump));
-		
-		Anchors.Add(left); 
-		Anchors.Add(right);
-		Anchors.Add(leftJump); 
-		Anchors.Add(rightJump);
 
 		GenerateObstructionLines();
+	}
+	
+	public void GenerateSideAnchors(Room room)
+	{
+		List<Atom> tiles = GetAtoms();
+		if (tiles.Count == 0) return;
+
+		tiles.Sort((a, b) => a.GlobalPosition.X.CompareTo(b.GlobalPosition.X));
+		int tileSize = (int)tiles.First().Size.X;
+		float orbit = 20f;
+
+		List<Atom> floorTiles = room.Atoms
+			.Where(a => a is FloorTile || a is FillerStoneTile || a is RightSlopeTile || a is LeftSlopeTile || a is MiddleRightSlopeTile || a is MiddleLeftSlopeTile || a is TopWaterTile)
+			.OrderBy(a => a.GlobalPosition.Y)
+			.ToList();
+
+		void TryGenerateSide(Vector2 offset, Atom tile)
+		{
+			Vector2 pos = tile.GlobalPosition;
+			if (room.HasAtomAt(pos + offset) || room.HasAtomAt(pos + offset + new Vector2(0, offset.Y != 0 ? 0 : 70)))
+				return;
+
+			float xCheck = pos.X + offset.X;
+			Atom floorBelow = floorTiles.FirstOrDefault(a =>
+				a.GlobalPosition.Y > pos.Y && Mathf.IsEqualApprox(a.GlobalPosition.X, xCheck));
+
+			if (floorBelow == null) return;
+
+			int steps = (int)((floorBelow.GlobalPosition.Y - pos.Y) / 70);
+			for (int i = 0; i < steps; i++)
+			{
+				Vector2 baseOffset = offset.Normalized() * 35 + new Vector2(0, 70 * i);
+				Anchor top = new Anchor(pos + baseOffset - new Vector2(0, 35), orbit, "side", this);
+				Anchor bottom = new Anchor(pos + baseOffset + new Vector2(0, 35), orbit, "side", this);
+				Anchors.Add(top);
+				Anchors.Add(bottom);
+				InternalPaths.Add(new AnchorConnection(top, bottom, i < 2));
+			}
+		}
+
+		TryGenerateSide(new Vector2(-tileSize, 0), tiles.First());
+		TryGenerateSide(new Vector2(tileSize, 0), tiles.Last());
 	}
 	
 	public void GenerateObstructionLines()
@@ -131,21 +145,6 @@ public partial class Floor : Primitive {
 		ObstructionLines.Add((topRight, bottomRight));
 		ObstructionLines.Add((bottomRight, bottomLeft));
 		ObstructionLines.Add((bottomLeft, topLeft));
-			
-		//foreach (Atom tile in GetAtoms())
-		//{
-			//Vector2 pos = tile.GlobalPosition;
-			//Vector2 size = tile.Size;
-//
-			//Vector2 topLeft = pos - size / 2;
-			//Vector2 topRight = pos + new Vector2(size.X / 2, -size.Y / 2);
-			//Vector2 bottomLeft = pos + new Vector2(-size.X / 2, size.Y / 2);
-			//Vector2 bottomRight = pos + size / 2;
-//
-			//ObstructionLines.Add((topLeft, topRight));
-			//ObstructionLines.Add((topRight, bottomRight));
-			//ObstructionLines.Add((bottomRight, bottomLeft));
-			//ObstructionLines.Add((bottomLeft, topLeft));
-		//}
+
 	}
 }

@@ -228,21 +228,20 @@ public partial class PlayerController : CharacterBody2D
 		}
 		
 		// handle jump
-		if (wallJump.gripTimer == wallJump.gripTime){
-			if (!jump.variableHeight && Input.IsActionJustPressed("jump")) { // handle jump
-				jump.Activate();
-				GD.Print("jumping");
-			} else if (jump.variableHeight && Input.IsKeyPressed(Key.Space)) {
-				jump.Activate();
-				GD.Print("jumping");
-				if (jump.isJumping) {
-					jump.jumpVariableHeight((float)delta);
-				}
-			} else if (jump.variableHeight && jump.isJumping) { //space was pressed and released
-				jump.jumped = true;
-				jump.spaceReleased = true;
+		if (!jump.variableHeight && Input.IsActionJustPressed("jump")) { // handle jump
+			jump.Activate();
+			GD.Print("jumping");
+		} else if (jump.variableHeight && Input.IsKeyPressed(Key.Space)) {
+			jump.Activate();
+			GD.Print("jumping");
+			if (jump.isJumping) {
+				jump.jumpVariableHeight((float)delta);
 			}
+		} else if (jump.variableHeight && jump.isJumping) { //space was pressed and released
+			jump.jumped = true;
+			jump.spaceReleased = true;
 		}
+		
 		
 		// handle climb
 		if (onLadder && Input.IsKeyPressed(Key.Up)) {

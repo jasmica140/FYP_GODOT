@@ -26,10 +26,10 @@ public class BSPNode
 	public int Y { get; private set; }
 	public int Width { get; private set; }
 	public int Height { get; private set; }
-
+	
 	public BSPNode left;
 	public BSPNode right;
-
+	
 	public BSPNode(int x, int y, int width, int height)
 	{
 		X = x;

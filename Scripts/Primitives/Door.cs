@@ -85,7 +85,8 @@ public partial class Door : Primitive {
 	public Vector2 LinkedDoorPosition;
 	public DoorColour Colour;
 	public bool isOpen = false;
-	
+	public bool isStartDoor = false;
+
 	public Door() : base(Vector2.Zero) {	
 		Category = PrimitiveCategory.Environmental;
 	}  // Default constructor needed for instantiation

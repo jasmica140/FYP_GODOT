@@ -6,9 +6,7 @@ using System.Linq;
 public partial class SlugAtom : Atom {
 	
 	public float speed = 100f;
-	private int direction;
-	//public float leftBound;
-	//public float rightBound;
+	public int direction;
 
 	public SlugAtom() {
 		// Create animated sprite
@@ -117,6 +115,12 @@ public partial class Slug : Primitive {
 	}  // Default constructor needed for instantiation
 	
 	public Slug(Vector2 position) : base(position) {}
+	
+	public void ChangeDirection () {
+		SlugAtom slugAtom = GetAtoms().First() as SlugAtom;
+		slugAtom.direction *= -1;
+		slugAtom.Scale = new Vector2(-slugAtom.Scale.X, slugAtom.Scale.Y);
+	}
 	
 	public override bool GenerateInRoom(Room room) {
 		SlugAtom atom = new SlugAtom();

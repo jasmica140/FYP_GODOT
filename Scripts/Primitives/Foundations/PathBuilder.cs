@@ -221,7 +221,10 @@ public class PathBuilder
 			GD.PrintErr("❌ Start door has no center anchor.");
 			return;
 		}
-
+		
+		startDoor.OpenDoor(room);
+		startDoor.isStartDoor = true;
+		
 		GD.Print($"🚪 Chosen start door: {startDoor.Colour} at {startDoor.Position}");
 
 		// Step 2: For each other door, find a path

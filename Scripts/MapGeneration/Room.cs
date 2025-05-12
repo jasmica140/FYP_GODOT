@@ -52,7 +52,7 @@ public partial class Room : Node2D
 		GenerateDoors();
 		AnchorConnector.RemoveIntersectingAnchorConnections(this);
 		replaceFloorTilesWithTilesAbove();
-		//PathBuilder.BuildPathsBetweenDoors(this);
+		////PathBuilder.BuildPathsBetweenDoors(this);
 		PathBuilder.GenerateKeysFromStartDoor();
 		
 		SpawnPlayer(); // spawn the player after generating the room
@@ -67,15 +67,15 @@ public partial class Room : Node2D
 		PlayerController player = (PlayerController)playerScene.Instantiate();
 
 		// Place player on a floor tile
-		Atom spawnAtom = Atoms.Find(p => p is FloorTile);
-		if (spawnAtom != null)
-		{
-			player.GlobalPosition = spawnAtom.GlobalPosition + new Vector2(200, -140);
-		}
-		else
-		{
-			player.GlobalPosition = new Vector2(0, 0);
-			GD.Print("⚠️ WARNING: No valid floor found for player spawn.");
+		//Atom spawnAtom = Primitives.Find(p => p is Door) as Door;
+		List<Door> doors = Primitives.Where(p => p is Door).Cast<Door>().ToList();
+		Door startDoor = doors.FirstOrDefault(d => d.isStartDoor);
+
+		if (startDoor != null) {
+			player.GlobalPosition = startDoor.GetAtoms().First().GlobalPosition + new Vector2(35, -70);
+		} else {
+			player.GlobalPosition = doors.First().GetAtoms().First().GlobalPosition + new Vector2(35, -70);
+			GD.Print("⚠️ WARNING: No start door found for player spawn.");
 		}
 
 		Node2D playerSpawn = GetTree().Root.FindChild("PlayerSpawn", true, false) as Node2D;
@@ -358,7 +358,7 @@ public partial class Room : Node2D
 		//int minHazards = (int)MathF.Floor(15 * room.DifficultyPercent);
 		//int maxHazards = (int)MathF.Ceiling(20 * room.DifficultyPercent);
 		int noOfEnv = random.Next(1, 5);
-
+		
 		for (int i = 0; i < noOfEnv; i++) {
 			if (environmentalTypes.Count == 0) {
 				GD.Print("⚠️ No hazard types remaining.");
@@ -469,65 +469,6 @@ public partial class Room : Node2D
 
 			// Now spawn the matching key at a random floor tile
 			if (validPositions.Count == 0) break;
-
-			//bool keyPlaced = false;
-			//while (!keyPlaced && (validPositions.Count > 0 || pitPrimitives.Count > 0 || waterPrimitives.Count > 0))
-			//{
-				//float roll = GD.Randf(); // Value between 0 and 1
-//
-				//Vector2 keyPosition = Vector2.Zero;
-//
-				//// Decide placement type
-				//if (roll < 0.2f && validPositions.Count > 0) {
-					//// Floor tile (20%)
-					//int keyIndex = random.Next(validPositions.Count);
-					//keyPosition = validPositions[keyIndex];
-					//validPositions.RemoveAt(keyIndex);
-				//}
-				//else if (roll < 0.6f && pitPrimitives.Count > 0) {
-					//// Pit (40%)
-					//GD.Print("Placing key in pit");
-					//Pit pit = pitPrimitives[0];
-					//pitPrimitives.RemoveAt(0);
-//
-					//int tileWidth = 70;
-					//float x = pit.Position.X + ((pit.Width - 1) * tileWidth / 2) + 1; 
-					//float y = pit.Position.Y + ((pit.Depth - 1) * tileWidth);
-//
-					//keyPosition = new Vector2(x, y);
-				//}
-				//else if (waterPrimitives.Count > 0) {
-					//// Water (40%)
-					//GD.Print("Placing key in water");
-					//Water water = waterPrimitives[0];
-					//waterPrimitives.RemoveAt(0);
-//
-					//int tileWidth = 70;
-					//float x = water.Position.X + ((water.Width - 1) * tileWidth / 2) + 1; 
-					//float y = water.Position.Y + ((water.Depth - 1) * tileWidth);
-//
-					//keyPosition = new Vector2(x, y);
-				//}
-				//else {
-					//// Fallback to valid floor tile if other options are empty
-					//if (validPositions.Count == 0) break;
-					//int keyIndex = random.Next(validPositions.Count);
-					//keyPosition = validPositions[keyIndex];
-					//validPositions.RemoveAt(keyIndex);
-				//}
-//
-				//DoorKey key = new DoorKey
-				//{
-					//Colour = door.Colour,
-					//Position = keyPosition
-				//};
-//
-				//if (key.GenerateInRoom(this))
-				//{
-					//GD.Print($"🗝️ Placed key at {key.Position} for colour {key.Colour}");
-					//keyPlaced = true;
-				//}
-			//}
 		}
 	}
 
@@ -550,7 +491,6 @@ public partial class Room : Node2D
 			Node2D primitivesContainer = GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
 			primitivesContainer.AddChild(atom); // Add atoms to the correct container
 			return true;
-			//GD.Print($"✅ Added {atom.GetType().Name} to PrimitivesContainer at {atom.GlobalPosition}");
 		} else {
 			GD.Print($"❌ ERROR: Invalid placement for {atom.GetType().Name} at {atom.GlobalPosition}");
 			return false;

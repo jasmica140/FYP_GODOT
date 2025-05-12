@@ -129,7 +129,7 @@ public partial class PlayerController : CharacterBody2D
 		bool roll = false;
 
 		// apply gravity if in air
-		if (isOnFloor()) {
+		if (isOnFloor() || isOnSlope()) {
 			velocity.Y = 0;
 		} else if (!isOnFloor() && (!isNearWall() || !wallJump.wallFriction || !wallJump.canWallJump)) {
 			velocity.Y += gravity * (float)delta;	
@@ -156,7 +156,7 @@ public partial class PlayerController : CharacterBody2D
 		
 		// handle walk
 		velocity.X = 0;
-		if (Input.IsKeyPressed(Key.Left)) {
+		if (Input.IsKeyPressed(Key.Left) && !touchedHazard) {
 			direction = -1; // face left
 			if (!isNearWall()) { // dont move horizontally if against wall
 				velocity.X = -moveSpeed;
@@ -172,7 +172,7 @@ public partial class PlayerController : CharacterBody2D
 				}
 			}
 			
-		} else if (Input.IsKeyPressed(Key.Right)) {
+		} else if (Input.IsKeyPressed(Key.Right) && !touchedHazard) {
 			direction = 1; // face right
 			if (!isNearWall()) { // dont move horizontally if against wall
 				velocity.X = moveSpeed;
@@ -441,15 +441,19 @@ public partial class PlayerController : CharacterBody2D
 		}
 	}
 	
-	private bool IsEnemy(Node2D body) {
-		return body.IsInGroup("Fish") || body.IsInGroup("FloorBlade") || body.IsInGroup("FullBlade");
+	private bool IsHazard(Node2D body) {
+		return body.IsInGroup("Fish") || body.IsInGroup("FloorBlade") || body.IsInGroup("FullBlade") || body.IsInGroup("Slug");
 	}
 	
 	public void _on_enemy_checker_body_entered(Node2D body) {
-		if (IsEnemy(body)) {
+		if (IsHazard(body)) {
 			DecreaseLife();
-			if (body.IsInGroup("FloorBlade") || body.IsInGroup("FullBlade")) {
+			if (body.IsInGroup("FloorBlade") || body.IsInGroup("FullBlade") || body.IsInGroup("Slug")) {
 				touchedHazard = true;
+				if (body.IsInGroup("Slug")) {
+					Slug slug = CurrentRoom.Primitives.FirstOrDefault(p => p.GetAtoms().Contains(body)) as Slug;
+					slug.ChangeDirection();
+				}
 			}
 		}
 	}

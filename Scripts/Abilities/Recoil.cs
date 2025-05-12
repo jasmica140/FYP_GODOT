@@ -8,9 +8,9 @@ public class Recoil : Ability
 	private float startXPos;       // player starting X position
 
 	// parameters 
-	public float distance = 50.0f;
-	public float speed = 250.0f; // Velocity during dash
-	public float airAcceleration = 100.0f;
+	public float distance = 0.05f;
+	public float speed = 150.0f; // Velocity during dash
+	public float airAcceleration = 400.0f;
 	
 	public Recoil(PlayerController playerController) : base(playerController){	}
 
@@ -24,7 +24,8 @@ public class Recoil : Ability
 	public void UpdateRecoil(float delta)
 	{
 		if (player.isRecoilingRight || player.isRecoilingLeft) {
-			player.velocity.Y = -airAcceleration; // First jump
+			
+			
 
 			// Check for dash input
 			if (player.isRecoilingRight) {
@@ -36,9 +37,9 @@ public class Recoil : Ability
 			// Check if dash distance has been reached or player hit wall
 			if (Math.Abs(startXPos - player.Position.X) >= distance || player.isNearWall()) {
 				
-				player.velocity.Y = airAcceleration; // start going down
+				//player.velocity.Y = player.; // start going down
 
-				if (player.isOnFloor()) { // if player lands on floor
+				if (player.isOnFloor() || player.inWater || player.isOnSlope()) { // if player lands on floor
 					player.velocity.X = 0; // stop horizontal movement after dash
 					
 					if (player.isRecoilingRight) { // reset drection
@@ -52,6 +53,8 @@ public class Recoil : Ability
 					player.isRecoilingLeft = false; // Reset left recoil flag
 					player.isHurt = false;
 				}
+			} else {
+				player.velocity.Y = -airAcceleration; // First jump
 			}
 		}
 	}

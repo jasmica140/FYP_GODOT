@@ -71,31 +71,6 @@ public partial class Ladder : Primitive {
 		return room.AddPrimitive(this);
 	}
 	
-	//public override void GenerateInRoom(Room room) {
-		//List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
-//
-		//if (validPositions.Count == 0) {
-			//GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
-			//return;
-		//}
-		//
-		//// Pick a random valid position from the list
-		//Random random = new Random();
-		//Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-		//int numOfTiles = random.Next(2, 10);
-//
-		//for (int y = 0; y < numOfTiles; y++) {
-			//Vector2 position =  chosenPosition - new Vector2(0, y * 70); 
-			//LadderTile tile = new LadderTile();
-			//tile.GlobalPosition = position;
-			//AddAtom(tile);
-			//room.AddAtom(tile); // ✅ `AddAtom()` is called here to place each FloorTile atom
-		//}
-		//
-		//this.Position = chosenPosition;
-		//room.AddPrimitive(this);
-	//}
-	
 	public override void GenerateAnchors(Room room)
 	{
 		Anchors.Clear();
@@ -116,12 +91,6 @@ public partial class Ladder : Primitive {
 		Vector2 offsetUp = new Vector2(0, -tiles.First().Size.Y / 2);
 		Vector2 offsetDown = new Vector2(0, tiles.First().Size.Y / 2);
 		Vector2 offsetSide = new Vector2(tiles.First().Size.X / 2, 0);
-
-		//// Bottom anchor
-		//Anchors.Add(new Anchor(bottomPos + offsetDown, orbit, "bottom"));
-//
-		//// Top anchor
-		//Anchors.Add(new Anchor(topPos + offsetUp, orbit, "top"));
 
 		// Side anchors
 		Anchor? prevCenter = null; // Use nullable to check if it's the first iteration

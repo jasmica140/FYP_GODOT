@@ -8,7 +8,7 @@ public partial class KeyAtom : Atom {
 	public KeyAtom() { }
 
 	public KeyAtom(DoorColour colour) {
-
+		// load texture based on key colour
 		switch (colour) {
 			case DoorColour.Red:
 				SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Items/keyRed.png"));
@@ -23,14 +23,15 @@ public partial class KeyAtom : Atom {
 				SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Items/keyYellow.png"));
 				break;
 			default:
-				GD.PrintErr("⚠️ Invalid key color.");
+				// invalid colour
 				break;
 		}
 		
-		this.Scale = new Vector2(0.7f, 0.7f); // Scale down the key
+		// scale and size
+		this.Scale = new Vector2(0.7f, 0.7f);
 		Size = new Vector2(55, 35);
 		
-		// Add a collision shape
+		// add collision
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
 		shape.Size = new Vector2(Size.X, Size.Y); 
@@ -44,7 +45,7 @@ public partial class KeyAtom : Atom {
 	}
 	
 	public override bool ValidatePlacement(Room room) {
-		// Ensure Mushroom is placed on a floor
+		// always valid
 		return true;
 	}
 }
@@ -54,6 +55,7 @@ public partial class LockAtom : Atom {
 	public LockAtom() { }
 	
 	public LockAtom(DoorColour colour) {
+		// load texture based on lock colour
 		switch (colour) {
 			case DoorColour.Red:
 				SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/lock_red.png"));
@@ -68,14 +70,15 @@ public partial class LockAtom : Atom {
 				SetTexture((Texture2D)GD.Load("res://Assets/kenney_platformer-art-deluxe/Base pack/Tiles/lock_yellow.png"));
 				break;
 			default:
-				GD.PrintErr("⚠️ Invalid key color.");
+				// invalid colour
 				break;
 		}
 		
-		this.Scale = new Vector2(0.5f, 0.5f); // Scale down the lock
+		// scale and size
+		this.Scale = new Vector2(0.5f, 0.5f);
 		Size = new Vector2(70, 70);
 		
-		// Add a collision shape
+		// add collision
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
 		shape.Size = new Vector2(Size.X, Size.Y); 
@@ -89,7 +92,7 @@ public partial class LockAtom : Atom {
 	}
 	
 	public override bool ValidatePlacement(Room room) {
-		// Ensure Mushroom is placed on a floor
+		// always valid
 		return true;
 	}
 }
@@ -98,13 +101,14 @@ public partial class DoorKey : Primitive {
 
 	public DoorColour Colour { get; set; }
 
-	public DoorKey() : base(Vector2.Zero) {	
+	public DoorKey() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Collectible;
-	}  // Default constructor needed for instantiation
-	
-	public DoorKey(Vector2 position) : base(position) { }
+	}
+
+	public DoorKey(Vector2 position) : base(position) {}
 	
 	public override bool GenerateInRoom(Room room) {
+		// spawn key atom
 		KeyAtom atom = new KeyAtom(Colour);
 		atom.GlobalPosition = this.Position;
 		AddAtom(atom);
@@ -115,9 +119,7 @@ public partial class DoorKey : Primitive {
 	public override void GenerateAnchors(Room room) {
 		Anchors.Clear();
 
-		//Atom tile = GetAtoms().First(); // Assume one atom
-
-		//Vector2 basePos = tile.GlobalPosition;
+		// place center anchor at key position
 		Vector2 basePos = this.Position;
 		float orbit = 40f;
 		
@@ -129,15 +131,19 @@ public partial class DoorLock : Primitive {
 
 	public DoorColour Colour { get; set; }
 
-	public DoorLock() : base(Vector2.Zero) {	
+	public DoorLock() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Environmental;
-	}  // Default constructor needed for instantiation
-	
-	public DoorLock(Vector2 position) : base(position) { }
+	}
+
+	public DoorLock(Vector2 position) : base(position) {}
 	
 	public override bool GenerateInRoom(Room room) {
-		if (!room.HasAtomOfTypeAt(this.Position + new Vector2(0, 70), typeof(FloorTile))) { return false; }
+		// make sure there's a floor below the lock
+		if (!room.HasAtomOfTypeAt(this.Position + new Vector2(0, 70), typeof(FloorTile))) {
+			return false;
+		}
 		
+		// spawn lock atom slightly above position
 		LockAtom atom = new LockAtom(Colour);
 		atom.GlobalPosition = this.Position - new Vector2(40, 70);
 		AddAtom(atom);
@@ -146,6 +152,6 @@ public partial class DoorLock : Primitive {
 	}
 
 	public override void GenerateAnchors(Room room) {
-		
+		// no anchors for lock
 	}
 }

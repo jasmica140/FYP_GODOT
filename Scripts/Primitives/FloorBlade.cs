@@ -5,12 +5,12 @@ using System.Linq;
 
 public partial class FloorBladeAtom : Atom {
 	public FloorBladeAtom() {
-		// Create animated sprite
+		// animated sprite setup
 		var animSprite = new AnimatedSprite2D();
 		var frames = new SpriteFrames();
 		
 		frames.AddAnimation("spin");
-		frames.SetAnimationSpeed("spin", 10); // 4 FPS
+		frames.SetAnimationSpeed("spin", 10);
 		frames.SetAnimationLoop("spin", true);
 		
 		frames.AddFrame("spin", GD.Load<Texture2D>("res://Assets/kenney_platformer-art-deluxe/Extra animations and enemies/Enemy sprites/spinnerHalf.png"));
@@ -18,14 +18,13 @@ public partial class FloorBladeAtom : Atom {
 
 		animSprite.SpriteFrames = frames;
 		animSprite.Play("spin");
-
 		AddChild(animSprite);
 
+		// size + collision shape
 		Size = new Vector2(60, 30);
-
-		// Collision shape (unchanged)
 		CollisionShape2D collision = new CollisionShape2D();
 		ConvexPolygonShape2D shape = new ConvexPolygonShape2D();
+
 		Vector2[] points = new Vector2[9];
 		float radius = 30;
 
@@ -39,31 +38,29 @@ public partial class FloorBladeAtom : Atom {
 		collision.Position += new Vector2(0, 15);
 		AddChild(collision);
 
+		// group + collision settings
 		AddToGroup("FloorBlade");
-
 		SetCollisionLayerValue(6, true);
 		SetCollisionMaskValue(1, true);
 	}
 	
 	public override bool ValidatePlacement(Room room) {
-		// Ensure Mushroom is placed on a floor
+		// always valid
 		return true;
 	}
 }
 
-public partial class FloorBlade : Primitive
-{
-	
-	
-	public FloorBlade() : base(Vector2.Zero) {	
+public partial class FloorBlade : Primitive {
+
+	public FloorBlade() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.Hazard;
 		Difficulty = 2;
-	}  // Default constructor needed for instantiation
-	
+	}
+
 	public FloorBlade(Vector2 position) : base(position) {}
-	
-	
+
 	public override bool GenerateInRoom(Room room) {
+		// check for empty space around blade
 		if (room.HasAtomAt(this.Position)
 		|| room.HasAtomAt(this.Position - new Vector2(0, 70))
 		|| room.HasAtomAt(this.Position + new Vector2(70, 0))
@@ -74,56 +71,35 @@ public partial class FloorBlade : Primitive
 		|| !room.HasAtomOfTypeAt(this.Position + new Vector2(-70, 70), typeof(FloorTile))) {
 			return false;
 		}
-		
+
+		// spawn blade
 		FloorBladeAtom atom = new FloorBladeAtom();
 		atom.GlobalPosition = this.Position;
 		AddAtom(atom);
-		
+
 		return room.AddPrimitive(this);
 	}
-	
-	//public override bool GenerateInRoom(Room room) {
-		//List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
-//
-		//if (validPositions.Count == 0) {
-			//GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
-			//return false;
-		//}
-//
-		//// Pick a random valid position from the list
-		//Random random = new Random();
-		//Vector2 chosenPosition = validPositions[random.Next(validPositions.Count)];
-//
-		//FloorBladeAtom atom = new FloorBladeAtom();
-		//atom.GlobalPosition = chosenPosition + new Vector2(0, 20);
-		//AddAtom(atom);
-		//room.AddAtom(atom); 
-		//
-		//this.Position = chosenPosition;
-		//return room.AddPrimitive(this);
-	//}
-	
-	public override void GenerateAnchors(Room room)
-	{
-		Anchors.Clear();
 
-		List<Atom> atoms = GetAtoms(); // This should return the ladder tiles
+	public override void GenerateAnchors(Room room) {
+		// adds one anchor just above blade
+		Anchors.Clear();
+		List<Atom> atoms = GetAtoms();
 		Atom atom = atoms.First();
 		
-		Vector2 topPosition = atom.GlobalPosition - new Vector2(0, atom.Size.Y / 2 + 5); // 10 pixels above the top
-		float orbit = 40f; // orbit radius around the anchor
+		Vector2 topPosition = atom.GlobalPosition - new Vector2(0, atom.Size.Y / 2 + 5);
+		float orbit = 40f;
 
 		Anchor topAnchor = new Anchor(topPosition, orbit, "over_blade", this);
 		Anchors.Add(topAnchor);
 		
 		GenerateObstructionLines();
 	}
-	
-	public void GenerateObstructionLines()
-	{
+
+	public void GenerateObstructionLines() {
+		// collision line across top of blade
 		ObstructionLines.Clear();
-		
-		List<Atom> atoms = GetAtoms(); // This should return the ladder tiles
+
+		List<Atom> atoms = GetAtoms();
 		Atom atom = atoms.First();
 		
 		Vector2 bottomLeft = atom.GlobalPosition + new Vector2((-atom.Size.X / 2) - 10, (atom.Size.Y / 2) - 2);

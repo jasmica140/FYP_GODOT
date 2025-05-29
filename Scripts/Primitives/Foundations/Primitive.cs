@@ -82,9 +82,9 @@ public abstract partial class Primitive : StaticBody2D
 			oldAtom.QueueFree(); // Remove from scene
 			AddChild(newAtom); // Add to scene
 			newAtom.GlobalPosition = oldAtom.GlobalPosition; // Copy position
-			GD.Print($"🔄 Replaced {oldAtom.GetType().Name} with {newAtom.GetType().Name} at {newAtom.GlobalPosition}");
+			//GD.Print($"🔄 Replaced {oldAtom.GetType().Name} with {newAtom.GetType().Name} at {newAtom.GlobalPosition}");
 		} else {
-			GD.PrintErr("❌ Tried to replace an atom not part of this primitive.");
+			//GD.PrintErr("❌ Tried to replace an atom not part of this primitive.");
 		}
 	}
 	
@@ -101,31 +101,17 @@ public abstract partial class Primitive : StaticBody2D
 
 	public override void _Draw()
 	{
-		//foreach (var line in ObstructionLines)
-		//{
+		//foreach (var line in ObstructionLines) {
 			//DrawLine(line.start, line.end, Colors.Red, 5);
 		//}
 		//
-		//foreach (var conn in InternalPaths)
-		//{
+		//foreach (var conn in InternalPaths) {
 			//DrawLine(conn.From.Position, conn.To.Position, Colors.Green, 5);
 		//}
 		//
-		//foreach (Anchor anchor in Anchors)
-		//{
-			//// Draw orbit
+		//foreach (Anchor anchor in Anchors) {
 			//DrawCircle(anchor.Position, anchor.Radius, new Color(0, 0, 1, 0.3f)); // blue transparent
-//
-			//// Draw point
 			//DrawCircle(anchor.Position, 4, new Color(1, 0, 1)); // purple center
-		//}
-		//
-
-		//
-		//// Optional: Draw lines between your own anchors (for testing)
-		//for (int i = 0; i < Anchors.Count - 1; i++)
-		//{
-			//DrawLine(ToLocal(Anchors[i].Position), ToLocal(Anchors[i + 1].Position), Colors.Green, 2);
 		//}
 	}
 }

@@ -3,7 +3,6 @@ using System;
 using ImGuiNET;
 using System.Linq;
 
-public enum PlayerAbility { Walk, Dash, Jump, DoubleJump, WallJump, Swim }
 
 public partial class PlayerController : CharacterBody2D
 {	
@@ -70,6 +69,7 @@ public partial class PlayerController : CharacterBody2D
 	
 	public PlayerController()
 	{
+		//pc = null;
 		jump = new Jump(this);
 		dash = new Dash(this);
 		climb = new Climb(this);
@@ -80,7 +80,7 @@ public partial class PlayerController : CharacterBody2D
 	public override void _Ready()
 	{
 		pc = this;
-		
+
 		Viewport root = GetTree().Root;
 		CurrentScene = root.GetChild(root.GetChildCount() - 1);
 		
@@ -118,9 +118,9 @@ public partial class PlayerController : CharacterBody2D
 		wallJump = new WallJump(this);
 		recoil = new Recoil(this);
 	}
-
+	
 	public override void _Process(double delta) {
-		Vector2 position = Position;
+		//Vector2 position = Position;
 	}
 	
 	public override void _PhysicsProcess(double delta) {	
@@ -150,7 +150,7 @@ public partial class PlayerController : CharacterBody2D
 		// handle wall jump
 		if (!isOnFloor() && isNearWall() && Input.IsKeyPressed(Key.Space) 
 			&& ((direction == -1 && Input.IsKeyPressed(Key.Right)) ||(direction == 1 && Input.IsKeyPressed(Key.Left)))) {
-				GD.Print("wall jumping");
+				//GD.Print("wall jumping");
 			wallJump.Activate();
 		} 
 		
@@ -230,10 +230,10 @@ public partial class PlayerController : CharacterBody2D
 		// handle jump
 		if (!jump.variableHeight && Input.IsActionJustPressed("jump")) { // handle jump
 			jump.Activate();
-			GD.Print("jumping");
+			//GD.Print("jumping");
 		} else if (jump.variableHeight && Input.IsKeyPressed(Key.Space)) {
 			jump.Activate();
-			GD.Print("jumping");
+			//GD.Print("jumping");
 			if (jump.isJumping) {
 				jump.jumpVariableHeight((float)delta);
 			}
@@ -276,7 +276,7 @@ public partial class PlayerController : CharacterBody2D
 		
 		// handle door
 		if (currentDoor != null && currentDoor.isOpen && Input.IsActionJustPressed("ui_accept")) {
-			GD.Print("opening door");
+			//GD.Print("opening door");
 			//RoomManager.GoToRoomFromDoor(this, currentDoor, this); // assuming 'this' is PlayerController
 		} 
 		
@@ -315,6 +315,8 @@ public partial class PlayerController : CharacterBody2D
 	}
 	
 	public void DecreaseLife(float amount = 0.5f) {
+		if (CurrentRoom.DifficultyLevel > 3) { amount = 1.0f; }
+		
 		currentHealth = Mathf.Max(currentHealth - amount, 0); // Clamp at 0
 
 		for (int i = 0; i < 5; i++) {
@@ -469,11 +471,11 @@ public partial class PlayerController : CharacterBody2D
 			if (doorPrimitive is Door)
 			{
 				currentDoor = (Door)doorPrimitive;
-				GD.Print($"✅ Found door: {currentDoor.Colour}");
+				//GD.Print($"✅ Found door: {currentDoor.Colour}");
 			}
 			
 		} else if (body.IsInGroup("Key")) {
-			GD.Print("🔑 Picked up key!");
+			//GD.Print("🔑 Picked up key!");
 			Node2D primitivesContainer = CurrentRoom.GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
 			Primitive keyPrimitive = CurrentRoom.Primitives.FirstOrDefault(p => p.GetAtoms().Contains(body));
 			primitivesContainer.RemoveChild(keyPrimitive); // Remove key primitive from PrimitivesContainer
@@ -488,7 +490,7 @@ public partial class PlayerController : CharacterBody2D
 			if (lockPrimitive is DoorLock)
 			{
 				currentLock = (DoorLock)lockPrimitive;
-				GD.Print($"✅ Found lock: {currentLock.Colour}");
+				//GD.Print($"✅ Found lock: {currentLock.Colour}");
 			}
 		}
 	}
@@ -510,7 +512,7 @@ public partial class PlayerController : CharacterBody2D
 			.Any(key => key.Colour == lockColour);
 
 		if (hasKey) {
-			GD.Print($"🔓 Unlocked {lockColour} door!");
+			//GD.Print($"🔓 Unlocked {lockColour} door!");
 
 			// Remove key from container 
 			var keyNode = pc._collectiblesContainer.GetChildren()
@@ -532,10 +534,10 @@ public partial class PlayerController : CharacterBody2D
 			if (doorToOpen != null) {
 				doorToOpen.OpenDoor(CurrentRoom);
 			} else {
-				GD.PrintErr($"⚠️ No matching door found for color {lockColour}");
+				//GD.PrintErr($"⚠️ No matching door found for color {lockColour}");
 			}
 		} else {
-			GD.Print($"🔒 You don't have the {lockColour} key!");
+			//GD.Print($"🔒 You don't have the {lockColour} key!");
 		}
 	}
 	
@@ -594,26 +596,5 @@ public partial class PlayerController : CharacterBody2D
 		{
 			pc._idleSprite.FlipH = direction == -1;
 		} 
-	}
-	
-	public void GotoScene(string path) {
-		CallDeferred(MethodName.DeferredGotoScene, path);
-	}
-	
-	public void DeferredGotoScene(string path) {
-		// It is now safe to remove the current scene.
-		CurrentScene.Free();
-
-		// Load a new scene.
-		var nextScene = GD.Load<PackedScene>(path);
-
-		// Instance the new scene.
-		CurrentScene = nextScene.Instantiate();
-
-		// Add it to the active scene, as child of root.
-		GetTree().Root.AddChild(CurrentScene);
-
-		// Optionally, to make it compatible with the SceneTree.change_scene_to_file() API.
-		GetTree().CurrentScene = CurrentScene;
 	}
 }

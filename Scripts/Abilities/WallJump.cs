@@ -20,7 +20,7 @@ public class WallJump : Ability
 			player.velocity.X = -distance*player.direction; // doesnt work bc its before handle walk in physics process
 			player.velocity.Y = -airAcceleration; 
 			resetGrip();
-			GD.Print("activating wall jumping");
+			//GD.Print("activating wall jumping");
 		} 
 	}
 	

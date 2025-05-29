@@ -10,9 +10,6 @@ public partial class ParamaterEditor : Node2D
 	[Export] private MarginContainer dashContainer;
 	[Export] private MarginContainer climbContainer;
 
-	public override void _Ready() {
-
-	}
 	
 	//// ABILITIES MENU 
 	

@@ -141,6 +141,6 @@ public partial class Door : Primitive {
 		room.AddAtom(openBottom);
 		room.AddAtom(openTop);
 
-		GD.Print($"🚪 Door at {this.Position} opened.");
+		//GD.Print($"🚪 Door at {this.Position} opened.");
 	}
 }

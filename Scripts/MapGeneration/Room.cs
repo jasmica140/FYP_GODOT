@@ -22,45 +22,63 @@ public partial class Room : Node2D
 		Width = width;
 		Height = height;
 		DifficultyLevel = difficulty;
-		DifficultyPercent = DifficultyLevel / 5; // 1 = 20%, 5 = 100%
+		DifficultyPercent = (float)DifficultyLevel / 5; // 1 = 20%, 5 = 100%
 		ZoneHandler = new ZoneHandler(this);
 		PathBuilder = new PathBuilder(this);
 	}
 	
-	public void Initialize(RoomTemplate template)
-	{
-		GD.Print($"Initializing {template.Type} room...");
-		
-		//foreach (Primitive.PrimitiveCategory category in template.RequiredPrimitiveCategories) {
-			//Primitive chosenPrimitive = GetRandomPrimitiveFromCategory(category);
-			//if (chosenPrimitive != null) { chosenPrimitive.GenerateInRoom(this); }
-		//}
-		//
-		//// generate anchors AFTER all primitives are placed
-		//foreach (Primitive p in Primitives) { p.GenerateAnchors(); }
+	public InterestingnessResult Initialize(RoomTemplate template)
+	{		
 		PackedScene playerScene = GD.Load<PackedScene>("res://Scenes/player.tscn");
 		PlayerController player = (PlayerController)playerScene.Instantiate();
-		this.Player = player; // ← Set reference here
+		this.Player = player; // set reference here
 		
+		Node2D playerSpawn = GetTree().Root.FindChild("PlayerSpawn", true, false) as Node2D;
+		playerSpawn.AddChild(this.Player);
+		
+		//GD.Print("🚀 Step 1: Starting zone generation");
 		GenerateBorder();
+
+		//GD.Print("🚀 Step 2: Generate zones");
 		ZoneHandler.GenerateZones();
+
+		//GD.Print("🚀 Step 3: Connect zones");
 		ZoneHandler.ConnectZonesVertically(this);
+
+		//GD.Print("🚀 Step 4: Draw borders");
 		ZoneHandler.DrawZoneBorders(this);
+
+		//GD.Print("🚀 Step 5: Detect and fill enclosed areas");
 		DetectAndFillEnclosedAreas();
+	//
+		//GD.Print("🚀 Step 6: Generate Envronmentals");
 		GenerateEnvironmentals();
-		GenerateHazards();
-		GenerateDoors();
-		AnchorConnector.RemoveIntersectingAnchorConnections(this);
-		replaceFloorTilesWithTilesAbove();
-		////PathBuilder.BuildPathsBetweenDoors(this);
-		PathBuilder.GenerateKeysFromStartDoor();
 		
+		//GD.Print("🚀 Step 7: Generate Hazards");
+		GenerateHazards();
+		
+		//GD.Print("🚀 Step 8: Generate Doors and Locks");
+		GenerateDoors();
+		
+		//GD.Print("🚀 Step 9: Remove Intersecting Anchor Connections");
+		AnchorConnector.RemoveIntersectingAnchorConnections(this);
+		
+		//GD.Print("🚀 Step 10: Modify Floor Tile Behaviour");
+		replaceFloorTilesWithTilesAbove();
+		
+		//GD.Print("🚀 Step 11: Build Path");
+		InterestingnessResult result = PathBuilder.GeneratePathsFromStartDoor();
+		this.Player.QueueFree();
+		
+		//GD.Print("🚀 Step 12: Spawn Player");
 		SpawnPlayer(); // spawn the player after generating the room
+		
 		Node2D primitivesContainer = GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
 		primitivesContainer.Position = new Vector2(40, 70);
-
+		
+		return result;
 	}
-	
+
 	private void SpawnPlayer()
 	{
 		PackedScene playerScene = GD.Load<PackedScene>("res://Scenes/player.tscn");
@@ -75,7 +93,7 @@ public partial class Room : Node2D
 			player.GlobalPosition = startDoor.GetAtoms().First().GlobalPosition + new Vector2(35, -70);
 		} else {
 			player.GlobalPosition = doors.First().GetAtoms().First().GlobalPosition + new Vector2(35, -70);
-			GD.Print("⚠️ WARNING: No start door found for player spawn.");
+			//GD.Print("⚠️ WARNING: No start door found for player spawn.");
 		}
 
 		Node2D playerSpawn = GetTree().Root.FindChild("PlayerSpawn", true, false) as Node2D;
@@ -84,7 +102,7 @@ public partial class Room : Node2D
 		player.CurrentRoom = this;
 		this.Player = player; // ← Set reference here
 
-		GD.Print($"✅ Player spawned at {player.GlobalPosition}");
+		//GD.Print($"✅ Player spawned at {player.GlobalPosition}");
 	}
 	
 	private void replaceFloorTilesWithTilesAbove() {
@@ -208,7 +226,7 @@ public partial class Room : Node2D
 
 								visitedRectangles.Add(rectKey);
 
-								GD.Print($"🟥 Rectangle found between {topLeft} and {bottomRight}");
+								//GD.Print($"🟥 Rectangle found between {topLeft} and {bottomRight}");
 
 								if (FillRectangleWithWall(topLeft + new Vector2(35, 35), bottomRight + new Vector2(35, 35))) {
 									addedWall = true;
@@ -302,7 +320,7 @@ public partial class Room : Node2D
 
 		if (wall.width > 0 && wall.height > 0)
 		{
-			GD.Print($"✅ Placing Wall at {wall.Position} with size {wall.width}x{wall.height}");
+			//GD.Print($"✅ Placing Wall at {wall.Position} with size {wall.width}x{wall.height}");
 			if (wall.GenerateInRoom(this)) {
 				return true;
 			}
@@ -317,18 +335,31 @@ public partial class Room : Node2D
 
 		// Scale min and max with difficulty
 		Random random = new Random();
-		int minHazards = (int)MathF.Floor(15 * DifficultyPercent);
-		int maxHazards = (int)MathF.Ceiling(20 * DifficultyPercent);
-		int noOfHazards = random.Next(minHazards, maxHazards);
+
+		float roomArea = Width * 30;
+		float baseDensity = 0.0045f; // Tunable: hazards per tile at 100% difficulty
+		float density = baseDensity * DifficultyPercent;
+
+		int expectedHazards = Mathf.RoundToInt(roomArea * density);
+
+		// Add variability
+		int variation = (int)(expectedHazards * 0.2f); // ±20% variation
+		int minHazards = Math.Max(1, expectedHazards - variation);
+		int maxHazards = expectedHazards + variation;
+
+		int noOfHazards = random.Next(minHazards, maxHazards + 1);
+		
+		
+		//int noOfHazards = random.Next(1, 15);
 
 		for (int i = 0; i < noOfHazards; i++) {
 			if (hazardTypes.Count == 0 ) {
-				GD.Print("⚠️ No hazard types remaining.");
+				//GD.Print("⚠️ No hazard types remaining.");
 				break;
 			}
 
 			if (validPositions.Count == 0) {
-				GD.Print("⚠️ No more valid positions left for hazards.");
+				//GD.Print("⚠️ No more valid positions left for hazards.");
 				break;
 			}
 
@@ -342,7 +373,7 @@ public partial class Room : Node2D
 			hazard.Position = chosenPosition;
 
 			if (!hazard.GenerateInRoom(this)) {
-				GD.Print($"❌ Failed to place {hazardType.Name} at {chosenPosition}. Trying another...");
+				//GD.Print($"❌ Failed to place {hazardType.Name} at {chosenPosition}. Trying another...");
 				i--; // Retry
 			}
 		}
@@ -355,18 +386,34 @@ public partial class Room : Node2D
 
 		// Scale min and max with difficulty
 		Random random = new Random();
-		//int minHazards = (int)MathF.Floor(15 * room.DifficultyPercent);
-		//int maxHazards = (int)MathF.Ceiling(20 * room.DifficultyPercent);
-		int noOfEnv = random.Next(1, 5);
+
+		float roomArea = Width * 30;
+		float baseDensity = 0.01f;
+		float exponent = 0.75f;
+		float baseCount = Mathf.Max(0, Mathf.Pow(roomArea, exponent) * baseDensity * DifficultyPercent); // clamp to ≥0
+
+		int expected = Mathf.RoundToInt(baseCount);
+		int variation = Math.Max(1, expected / 2);
+
+		int min = expected - variation;
+		int max = expected + variation;
+
+		// ✅ FINAL SAFETY CHECK
+		min = Math.Max(1, Math.Min(min, max));
+		max = Math.Max(min, max);
+
+		int noOfEnvironmentals = random.Next(min, max + 1);
 		
-		for (int i = 0; i < noOfEnv; i++) {
+		//int noOfEnvironmentals = random.Next(3, 15);
+		
+		for (int i = 0; i < noOfEnvironmentals; i++) {
 			if (environmentalTypes.Count == 0) {
-				GD.Print("⚠️ No hazard types remaining.");
+				//GD.Print("⚠️ No environmental types remaining.");
 				break;
 			}
 
 			if (validPositions.Count == 0) {
-				GD.Print("⚠️ No more valid positions left for hazards.");
+				//GD.Print("⚠️ No more valid positions left for environmentals.");
 				break;
 			}
 
@@ -378,7 +425,6 @@ public partial class Room : Node2D
 
 				// Let Pit find its own valid placement
 				bool success = water.GenerateInRoom(this);
-
 				if (success) {
 					// Recompute valid floor tile positions after modifying the room
 					validPositions = GetPositionsAboveFloorTiles();
@@ -391,7 +437,6 @@ public partial class Room : Node2D
 				continue; // Skip the rest of the loop for pit
 			} else if (environmentalType == typeof(Pit)) {
 				Pit pit = new Pit();
-
 				if (pit.GenerateInRoom(this)) { // Recompute valid floor tile positions after modifying the room
 					validPositions = GetPositionsAboveFloorTiles();
 				} else {
@@ -403,7 +448,7 @@ public partial class Room : Node2D
 				continue; // Skip the rest of the loop for pit
 			}
 
-			// For non-pit hazards
+			// For non-pit envs
 			int index = random.Next(validPositions.Count);
 			Vector2 chosenPosition = validPositions[index];
 			validPositions.RemoveAt(index);
@@ -412,7 +457,7 @@ public partial class Room : Node2D
 			environmental.Position = chosenPosition;
 
 			if (!environmental.GenerateInRoom(this)) {
-				GD.Print($"❌ Failed to place {environmentalType.Name} at {chosenPosition}. Trying another...");
+				//GD.Print($"❌ Failed to place {environmentalType.Name} at {chosenPosition}. Trying another...");
 				i--; // Retry
 			}
 		}
@@ -423,12 +468,13 @@ public partial class Room : Node2D
 		List<Pit> pitPrimitives = Primitives.Where(p => p is Pit).Cast<Pit>().OrderByDescending(p => p.Depth).ThenByDescending(p => p.Width).ToList();
 		List<Water> waterPrimitives = Primitives.Where(p => p is Water).Cast<Water>().OrderByDescending(p => p.Depth).ThenByDescending(p => p.Width).ToList();
 		
-		GD.Print($"🌊 Water count: {waterPrimitives.Count}, 🕳️ Pit count: {pitPrimitives.Count}");
+		//GD.Print($"🌊 Water count: {waterPrimitives.Count}, 🕳️ Pit count: {pitPrimitives.Count}");
 		
 		List<Vector2> validPositions = this.GetPositionsAboveFloorTiles();
 		Random random = new Random();
 
 		int noOfDoors = random.Next(2, 5); // max 4 doors
+
 		List<DoorColour> availableColors = Enum.GetValues(typeof(DoorColour)).Cast<DoorColour>().ToList();
 
 		// Shuffle colors
@@ -448,9 +494,9 @@ public partial class Room : Node2D
 
 			validPositions.RemoveAt(index);
 
-			while (!door.GenerateInRoom(this) || !doorLock.GenerateInRoom(this))
+			while (HasAtomAt(door.Position) || HasAtomAt(door.Position - new Vector2(0, 70)) || HasAtomAt(doorLock.Position))
 			{
-				GD.Print($"Cannot place door at ({validPositions[index].X}, {validPositions[index].Y})");
+				//GD.Print($"Cannot place door at ({validPositions[index].X}, {validPositions[index].Y})");
 
 				if (validPositions.Count == 0) break;
 
@@ -466,7 +512,10 @@ public partial class Room : Node2D
 				
 				validPositions.RemoveAt(index);
 			}
-
+			
+			door.GenerateInRoom(this);
+			doorLock.GenerateInRoom(this);
+			
 			// Now spawn the matching key at a random floor tile
 			if (validPositions.Count == 0) break;
 		}
@@ -489,10 +538,10 @@ public partial class Room : Node2D
 		if (atom.ValidatePlacement(this)) {
 			Atoms.Add(atom);
 			Node2D primitivesContainer = GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
-			primitivesContainer.AddChild(atom); // Add atoms to the correct container
+			//primitivesContainer.AddChild(atom); // Add atoms to the correct container
 			return true;
 		} else {
-			GD.Print($"❌ ERROR: Invalid placement for {atom.GetType().Name} at {atom.GlobalPosition}");
+			//GD.Print($"❌ ERROR: Invalid placement for {atom.GetType().Name} at {atom.GlobalPosition}");
 			return false;
 		}
 		return true;
@@ -504,20 +553,23 @@ public partial class Room : Node2D
 		{ 		// Prevent duplicate placement of atoms			
 			if (Primitives.Exists(p => p.GetAtoms().Exists(a => a.GlobalPosition == atom.GlobalPosition)))
 			{
-				GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");
+				//GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");
+				primitive.Free();
 				return false; // Prevent adding overlapping atoms
 			}
 
-			if (Atoms.Exists(a => a.GlobalPosition == atom.GlobalPosition))
+			if (HasAtomAt(atom.GlobalPosition))
 			{
-				GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");
+				//GD.Print($"❌ ERROR: Overlapping atom detected for {primitive.GetType().Name} at {atom.GlobalPosition}");
+				primitive.Free();
 				return false; // Prevent adding overlapping atoms
 			}
 			
 			// Validate placement rules before adding the atom
 			if (!atom.ValidatePlacement(this))
 			{
-				GD.Print($"❌ ERROR: Invalid placement for {atom.GetType().Name} at {atom.GlobalPosition}");
+				//GD.Print($"❌ ERROR: Invalid placement for {atom.GetType().Name} at {atom.GlobalPosition}");
+				primitive.Free();
 				return false;
 			}
 		} 
@@ -536,7 +588,7 @@ public partial class Room : Node2D
 		Primitives.Add(primitive);		
 		Node2D primitivesContainer = GetTree().Root.FindChild("PrimitivesContainer", true, false) as Node2D;
 		primitivesContainer.AddChild(primitive); // Add atoms to the correct container
-		GD.Print($"✅ Added {primitive.GetType().Name} to PrimitivesContainer at {primitive.Position}");
+		//GD.Print($"✅ Added {primitive.GetType().Name} to PrimitivesContainer at {primitive.Position}");
 		return true;
 	}
 	
@@ -546,11 +598,8 @@ public partial class Room : Node2D
 		{
 			Primitives.Remove(primitive);
 			RemoveChild(primitive);
-			GD.Print($"🗑️ Removed {primitive.GetType().Name} from room.");
-		}
-		else
-		{
-			GD.Print($"⚠️ Tried to remove {primitive.GetType().Name} but it was not found.");
+			primitive.QueueFree();
+			//GD.Print($"🗑️ Removed {primitive.GetType().Name} from room.");
 		}
 	}
 	
@@ -567,7 +616,7 @@ public partial class Room : Node2D
 		}
 
 		if (matchingPrimitives.Count == 0) {
-			GD.Print($"⚠️ WARNING: No primitives found for category {category}");
+			//GD.Print($"⚠️ WARNING: No primitives found for category {category}");
 			return null;
 		}
 
@@ -589,7 +638,7 @@ public partial class Room : Node2D
 	}
 	
 	public bool HasAtomAt(Vector2 position) {
-			return Atoms.Exists(a => a.GlobalPosition == position);
+			return Atoms.Exists(a => a.GlobalPosition == position || a.GlobalPosition - new Vector2(0, 20) == position || a.GlobalPosition - new Vector2(40, 70) == position);
 	}
 	
 	public bool HasAtomOfTypeAt(Vector2 position, Type atomType) {
@@ -627,14 +676,15 @@ public partial class Room : Node2D
 		}
 	}
 	
-	public List<(Vector2 start, Vector2 end, Color color)> ColoredDebugPathLines = new();
-
+	public List<(Vector2 start, Vector2 end, Color colour)> ColouredDebugPathLines = new();
 
 	public override void _Draw()
 	{
-		foreach (var (start, end, color) in ColoredDebugPathLines)
+		foreach (var (start, end, colour) in ColouredDebugPathLines)
 		{
-			DrawLine(start + new Vector2(40, 60), end + new Vector2(40, 60), color, 6f);
+			DrawLine(start + new Vector2(40, 60), end + new Vector2(40, 60), colour, 6f);
 		}
 	}
+	
+
 }

@@ -5,12 +5,20 @@ using System.Linq;
 
 public class Zone
 {
+	// top-left corner coordinates
 	public int X { get; }
+
 	public int Y { get; }
+
+	// dimensions of the zone
 	public int Width { get; }
+
 	public int Height { get; }
+
+	// flag used to track reachability during connectivity analysis
 	public bool isReachable { get; set; }
 
+	// constructor sets position and size
 	public Zone(int x, int y, int width, int height)
 	{
 		X = x;
@@ -22,14 +30,17 @@ public class Zone
 
 public class BSPNode
 {
+	// node rectangle position and size
 	public int X { get; private set; }
 	public int Y { get; private set; }
 	public int Width { get; private set; }
 	public int Height { get; private set; }
-	
+
+	// child nodes after split
 	public BSPNode left;
 	public BSPNode right;
-	
+
+	// constructor sets area boundaries
 	public BSPNode(int x, int y, int width, int height)
 	{
 		X = x;
@@ -37,18 +48,22 @@ public class BSPNode
 		Width = width;
 		Height = height;
 	}
-	
+
+	// recursive method splits node into smaller parts
 	public void Split(int depth)
 	{
 		if (depth <= 0)
 			return;
 
 		Random random = new Random();
+
+		// decide split direction based on dimensions
 		bool splitHorizontally = Width > Height;
 
 		if (splitHorizontally)
 		{
-			float ratio = (float)random.NextDouble() * 0.5f + 0.25f; // Between 25% and 75%
+			// choose random horizontal split point between 25% and 75%
+			float ratio = (float)random.NextDouble() * 0.5f + 0.25f;
 			int splitX = (int)(Width * ratio);
 
 			left = new BSPNode(X, Y, splitX, Height);
@@ -56,20 +71,24 @@ public class BSPNode
 		}
 		else
 		{
-			float ratio = (float)random.NextDouble() * 0.6f + 0.15f; // between 0.15 and 0.75
+			// choose random vertical split point between 15% and 75%
+			float ratio = (float)random.NextDouble() * 0.6f + 0.15f;
 			int splitY = (int)(Height * ratio);
 
 			left = new BSPNode(X, Y, Width, splitY);
 			right = new BSPNode(X, Y + splitY, Width, Height - splitY);
 		}
 
+		// recursively split child nodes
 		left.Split(depth - 1);
 		right.Split(depth - 1);
 	}
-	
+
+	// returns all leaf nodes of the current subtree
 	public List<BSPNode> GetLeaves()
 	{
 		List<BSPNode> leaves = new List<BSPNode>();
+		
 		if (left == null && right == null)
 		{
 			leaves.Add(this);
@@ -81,6 +100,7 @@ public class BSPNode
 			if (right != null)
 				leaves.AddRange(right.GetLeaves());
 		}
+
 		return leaves;
 	}
 }
@@ -104,10 +124,14 @@ public class ZoneHandler
 	{
 		zones.Clear();
 
+		// calculate tree depth based on room size and minimum zone dimensions
 		int splitDepth = CalculateSplitDepth(room.Width, room.Height, minZoneWidth, minZoneHeight);
+
+		// initialize root node and split
 		BSPNode root = new BSPNode(0, 0, room.Width, room.Height);
 		root.Split(splitDepth);
 
+		// collect leaf nodes from split tree
 		List<BSPNode> leaves = root.GetLeaves();
 		foreach (var leaf in leaves)
 		{
@@ -115,22 +139,23 @@ public class ZoneHandler
 			zones.Add(zone);
 		}
 		
+		// retry generation if unreachable zones form horizontal strip
 		if(HasUnreachableZoneCluster()) {
 			zones.Clear();
 			GenerateZones();
 		} else {
 			foreach (Zone zone in zones) {
-				GD.Print($"🟦 Generated Zone: X={zone.X}, Y={zone.Y}, W={zone.Width}, H={zone.Height}");
 				zone.isReachable = false;
-				GenerateFloorForZone(zone);
+				GenerateFloorForZone(zone); // spawn floor primitive
 			} 
-			CheckHorizontallyReachableZones();
+			CheckHorizontallyReachableZones(); // mark zones reachable by floor adjacency
 		}
 	}
 	
 	public bool HasUnreachableZoneCluster()
 	{
-		List<Zone> startingZones = zones.Where(z => z.X == 0 && z.Y != 0).ToList(); // Skip zones at Y == 0
+		// try to walk from left to right using horizontally connected zones
+		List<Zone> startingZones = zones.Where(z => z.X == 0 && z.Y != 0).ToList();
 
 		foreach (Zone startZone in startingZones)
 		{
@@ -152,7 +177,6 @@ public class ZoneHandler
 
 				if (totalWidth == room.Width)
 				{
-					GD.Print("⚠️ Unreachable zone cluster detected. Suggest regenerating zones.");
 					return true;
 				}
 			}
@@ -163,9 +187,10 @@ public class ZoneHandler
 
 	private int CalculateSplitDepth(int width, int height, int minZoneWidth, int minZoneHeight)
 	{
+		// estimate depth by averaging required splits along x and y
 		int horizontalSplits = (int)Math.Floor(Math.Log2(width / (float)minZoneWidth));
 		int verticalSplits = (int)Math.Floor(Math.Log2(height / (float)minZoneHeight));
-		return Math.Max(1, (horizontalSplits + verticalSplits) / 2); // Ensure at least one split
+		return Math.Max(1, (horizontalSplits + verticalSplits) / 2);
 	}
 
 	private void GenerateFloorForZone(Zone zone)
@@ -173,21 +198,19 @@ public class ZoneHandler
 		Floor floor = new Floor();
 		floor.zone = zone;
 		floor.GenerateInRoom(room);
-		//floor.GenerateAnchors();
 	}
 	
 	public void CheckHorizontallyReachableZones()
 	{
 		foreach (Zone zone in zones)
 		{
-			// if zone floor is between two zone floors ±1y or between wall and floor
-			if ((zones.Any(z => z.X + z.Width == zone.X && Math.Abs(z.Y + z.Height - zone.Y - zone.Height) <= 1) // there is a zone floor to the left ±1y
-			|| zone.X == 0) // or a wall to the left 
-			&& (zones.Any(z => z.X == zone.X + zone.Width && Math.Abs(z.Y + z.Height - zone.Y - zone.Height) <= 1) // and floor to the right
-			|| zone.X + zone.Width == room.Width) // or wall to the right
+			// check if floor exists to left and right (or wall), within ±1 tile in y
+			if ((zones.Any(z => z.X + z.Width == zone.X && Math.Abs(z.Y + z.Height - zone.Y - zone.Height) <= 1)
+			|| zone.X == 0)
+			&& (zones.Any(z => z.X == zone.X + zone.Width && Math.Abs(z.Y + z.Height - zone.Y - zone.Height) <= 1)
+			|| zone.X + zone.Width == room.Width)
 			) { 
-				GD.Print($"zone at ({zone.X},{zone.Y}) is reachable.");
-				zone.isReachable = true; // zone must be reachable ✅
+				zone.isReachable = true;
 			} 
 		}
 	}
@@ -200,16 +223,13 @@ public class ZoneHandler
 		{
 			foreach (Zone other in zones)
 			{
-				// Check for horizontal overlap and if the other zone is directly above this one
 				bool horizontalOverlap = 
 					(zone.X < other.X + other.Width && zone.X + zone.Width > other.X);
-
 				bool directlyAbove = zone.Y + zone.Height == other.Y;
 
 				if (horizontalOverlap && directlyAbove)
 				{
 					connections.Add((zone, other));
-					GD.Print($"🔗 Vertical connection found between zone at ({zone.X}, {zone.Y}) and ({other.X}, {other.Y})");
 				}
 			}
 		}
@@ -218,84 +238,53 @@ public class ZoneHandler
 	}
 	
 	public void placePlatforms() {
-		// add logic for situations when to add platforms 
+		// todo: implement platform placement logic
 	}
 	
 	public void ConnectZonesVertically(Room room)
 	{ 		
-		placePlatforms();
-		
+		placePlatforms(); // placeholder for platform placement
+
 		foreach (Zone upper in zones)
 		{
 			foreach (Zone lower in zones)
 			{
-				// Skip if it's the same zone
 				if (lower == upper || upper.isReachable) continue;
 
-				// Only check zones where the second one is higher up
 				if (upper.Y + upper.Height <= lower.Y + lower.Height)
 				{
-					
-					// Check if there's any horizontal overlap
 					int left = Math.Max(lower.X, upper.X);
 					int right = Math.Min(lower.X + lower.Width, upper.X + upper.Width);
 					int overlapWidth = right - left;
 
+					// ensure proper zone alignment for connection
 					if (upper.X + upper.Width == lower.X + lower.Width || upper.X == lower.X
-					|| upper.X == lower.X + lower.Width || upper.X + upper.Width == lower.X) // Ensure there’s at least 1 tile of overlap
+					|| upper.X == lower.X + lower.Width || upper.X + upper.Width == lower.X)
 					{
 						int verticalGap = lower.Y + lower.Height - (upper.Y + upper.Height);
-						if (verticalGap > 2){
-							GD.Print($"🔍 Vertical connection possible from Zone at ({lower.X},{lower.Y}) to ({upper.X},{upper.Y})");
-							GD.Print($"➡️ Overlap Width: {overlapWidth}, Vertical Gap: {verticalGap}");
 
-							// Decision logic — for now, just print which primitive would make sense
-							if (verticalGap <= 0) {
-								GD.Print("📦 Use a platform.");
-							}							
-							
-							if (upper.X + upper.Width == lower.X) { // if lower is on right - place on right
-								//if (canPlacePlatformPath(upper, verticalGap, true)) {
-									//PlacePlatformPath(upper, verticalGap, true);
-									//GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
-									//upper.isReachable = true;
-								//} else 
-								
-								if (canPlaceSpring(upper, verticalGap, true)) { // on left or right and no obstacles withing jumping area
+						if (verticalGap > 2){
+							if (upper.X + upper.Width == lower.X) {
+								if (canPlaceSpring(upper, verticalGap, true)) {
 									upper.isReachable = PlaceSpring(upper, verticalGap, true);
-									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
 								} 
-								if (canPlaceSlope(upper, verticalGap, true) && !upper.isReachable) { // enough floor space below
+								if (canPlaceSlope(upper, verticalGap, true) && !upper.isReachable) {
 									upper.isReachable = PlaceSlope(upper, verticalGap, true); 
-									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
 								} 
-								if (!upper.isReachable) { // ladder on the right
+								if (!upper.isReachable) {
 									upper.isReachable = PlaceLadder(upper, verticalGap, true);
-									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
 								}
-								
-							} else if (lower.X + lower.Width == upper.X) { // if lower is on left - place on left
-								//if (canPlacePlatformPath(upper, verticalGap, false)) {
-									//PlacePlatformPath(upper, verticalGap, false);
-									//GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
-									//upper.isReachable = true;
-								//} else 
-								
-								if (canPlaceSpring(upper, verticalGap, false) ) { // on left or right and no obstacles withing jumping area
+							} else if (lower.X + lower.Width == upper.X) {
+								if (canPlaceSpring(upper, verticalGap, false) ) {
 									upper.isReachable = PlaceSpring(upper, verticalGap, false);
-									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
 								} 
-								if (canPlaceSlope(upper, verticalGap, false) && !upper.isReachable) { // enough floor space below
+								if (canPlaceSlope(upper, verticalGap, false) && !upper.isReachable) {
 									upper.isReachable = PlaceSlope(upper, verticalGap, false); 
-									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
 								} 
-								if (!upper.isReachable) { // ladder on the left
+								if (!upper.isReachable) {
 									upper.isReachable = PlaceLadder(upper, verticalGap, false);
-									GD.Print($"zone at ({upper.X},{upper.Y}) is reachable.");
 								}
 							}
-						} else {
-								GD.Print("❌ No vertical connection possible.");
 						}
 					}
 				}
@@ -305,7 +294,7 @@ public class ZoneHandler
 		foreach (Zone zone in zones)
 		{ 
 			if (!zone.isReachable) {
-				GD.Print($"zone at ({zone.X},{zone.Y}) is not reachable!");
+				// log unreachable zone
 			}
 		}
 	}
@@ -357,7 +346,7 @@ public class ZoneHandler
 	
 	bool PlaceLadder(Zone upper, int verticalGap, bool right)
 	{
-		GD.Print("🪜 Use a ladder.");
+		//GD.Print("🪜 Use a ladder.");
 		
 		Vector2 position; 
 		if (right) {
@@ -374,7 +363,7 @@ public class ZoneHandler
 	
 	bool PlaceSlope(Zone upper, int verticalGap, bool right)
 	{
-		GD.Print("🧗 Use a slope.");
+		//GD.Print("🧗 Use a slope.");
 		
 		Vector2 position; 
 		if (right) {
@@ -410,7 +399,7 @@ public class ZoneHandler
 			position = new Vector2(upper.X - 2, upper.Y + upper.Height + verticalGap - 2);
 		}
 		
-		GD.Print("🍄 Use a spring.");
+		//GD.Print("🍄 Use a spring.");
 		Mushroom spring = new Mushroom();
 		spring.position = position * new Vector2(70, 70);
 		return spring.GenerateInRoom(room);
@@ -424,7 +413,7 @@ public class ZoneHandler
 			position = new Vector2(upper.X - 2, upper.Y + upper.Height);
 		}
 		
-		GD.Print("🧗 Use a platform.");
+		//GD.Print("🧗 Use a platform.");
 		Platform platform = new Platform();
 		platform.position = position * new Vector2(70, 70);
 		platform.GenerateInRoom(room);

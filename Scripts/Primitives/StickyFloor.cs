@@ -68,9 +68,9 @@ public partial class StickyFloor : Primitive {
 			
 			this.Position = tilesToReplace[0].GlobalPosition;
 			return room.AddPrimitive(this);
-			GD.Print("💧 Floor tiles replaced with water tiles.");
+			//GD.Print("💧 Floor tiles replaced with water tiles.");
 		} else {
-			GD.PrintErr("❌ No Floor primitive found in the room!");
+			//GD.PrintErr("❌ No Floor primitive found in the room!");
 			return false;
 		}
 	}

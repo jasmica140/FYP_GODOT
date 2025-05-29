@@ -11,59 +11,64 @@ public class Jump : Ability
 	private float startJumpYPos;
 	private float startSecondJumpYPos;
 
-	//parameters (first jump)
-	public bool variableHeight = true; // press and hold for longer jumps
+	// params for first jump
+	public bool variableHeight = true;
 	public float airAcceleration = 400.0f;
 	private float airControl;
 	private float airBrake;
-	public float cutoff = 100.0f; //only when variable height is true
+	public float cutoff = 100.0f;
 	private float downGravity;
-	
-	//parameters (double jump)
-	public bool doubleJump = true; //whether player can perform double jumps
+
+	// params for double jump
+	public bool doubleJump = true;
 	public float djAirAcceleration = 400.0f;
 	private float doubleJumpDist;
 	private float cooldown;
-	private float doubleJumpAirControl; //adjustability of horizontal movement while in mid-air
-	
-	public Jump(PlayerController playerController) : base(playerController) { 	}
+	private float doubleJumpAirControl;
+
+	public Jump(PlayerController playerController) : base(playerController) {}
 
 	public override void Activate()
 	{
+		// if variable height jump enabled
 		if (variableHeight) {
-			
+
+			// first jump
 			if (player.isOnFloor() || player.inWater){
 				startJumpYPos = player.Position.Y;
 				jumpCount++;
 				isJumping = true;
 			}
-			else if (doubleJump && !player.isOnFloor() && !player.inWater && jumpCount == 1 && spaceReleased) // If we are in the air and jump is pressed again
+			// double jump (airborne + jumpCount == 1 + space was released)
+			else if (doubleJump && !player.isOnFloor() && !player.inWater && jumpCount == 1 && spaceReleased)
 			{
-				GD.Print("started double jump");
 				startSecondJumpYPos = player.Position.Y;
-				jumpCount++; // Second jump is executed, set count to 2
+				jumpCount++;
 			} 
 		}
+		// fixed jump height mode
 		else if (!variableHeight) {
-			
+
+			// first jump
 			if ((player.isOnFloor() || player.inWater) && jumpCount == 0)
 			{
-				player.velocity.Y = -airAcceleration; // First jump
-				jumpCount++; // First jump is executed, set count to 1
+				player.velocity.Y = -airAcceleration;
+				jumpCount++;
 				jumped = true;
 			}
-			else if (doubleJump && (!player.isOnFloor() && !player.inWater) && jumpCount == 1) // If we are in the air and jump is pressed again
+			// double jump
+			else if (doubleJump && (!player.isOnFloor() && !player.inWater) && jumpCount == 1)
 			{
-				player.velocity.Y = -djAirAcceleration; // Double jump 
-				jumpCount++; // Second jump is executed, set count to 2
+				player.velocity.Y = -djAirAcceleration;
+				jumpCount++;
 			} 
 		}
 	}
 
-	// Reset jump count when landing on the floor
+	// resets everything after landing
 	public override void Deactivate() {
 		if (player.velocity.Y == 0 && jumped) {
-			jumpCount = 0; // Reset when player touches floor
+			jumpCount = 0;
 			isJumping = false;
 			jumped = false;
 			doubleJumped = false;
@@ -71,62 +76,56 @@ public class Jump : Ability
 		}
 	}
 	
-	public void jumpVariableHeight (float delta) {
+	public void jumpVariableHeight(float delta) {
+		// holding jump: keep rising until cutoff reached
 		if (player.Position.Y - startJumpYPos >= -cutoff && jumpCount == 1 && !jumped) {
-			player.velocity.Y = -airAcceleration; // first jump
-
-		} else if (player.Position.Y - startJumpYPos < -cutoff) { // cutoff position was reached
+			player.velocity.Y = -airAcceleration;
+		} 
+		else if (player.Position.Y - startJumpYPos < -cutoff) {
 			jumped = true;
 		} 
 
+		// double jump variable height
 		if (player.Position.Y - startSecondJumpYPos >= -cutoff && spaceReleased && jumpCount == 2 && doubleJump && !doubleJumped) {
-			player.velocity.Y = -djAirAcceleration; // second jump
-			
-		}  else if (player.Position.Y - startSecondJumpYPos < -cutoff) { // cutoff position was reached
+			player.velocity.Y = -djAirAcceleration;
+		}
+		else if (player.Position.Y - startSecondJumpYPos < -cutoff) {
 			doubleJumped = true;
 		} 
 	}
 	
-	// Display jump paramaters
-	public void displayJumpStats (double delta, Vector2 Position) {
-		// Set colors for the toggle switch
-		Vector4 onColour = new Vector4(0.2f, 0.7f, 0.2f, 1.0f);   // Green for 'On'
-		Vector4 offColour = new Vector4(0.7f, 0.2f, 0.2f, 1.0f);  // Red for 'Off'
+	// tweak jump values live
+	public void displayJumpStats(double delta, Vector2 Position) {
+		Vector4 onColour = new Vector4(0.2f, 0.7f, 0.2f, 1.0f);
+		Vector4 offColour = new Vector4(0.7f, 0.2f, 0.2f, 1.0f);
 
-		// Begin the toggle button
 		ImGui.PushStyleColor(ImGuiCol.Button, ColourToUint(variableHeight ? onColour : offColour));	
-		if (ImGui.Button(variableHeight ? "variable height" : "variable height", new System.Numerics.Vector2(650, 40)))
-		{
-			variableHeight = !variableHeight; // Toggle the boolean on button press
+		if (ImGui.Button(variableHeight ? "variable height" : "variable height", new System.Numerics.Vector2(650, 40))) {
+			variableHeight = !variableHeight;
 		}
 		ImGui.PopStyleColor();
 		
 		ImGui.DragFloat("air acceleration", ref airAcceleration);
 		ImGui.DragFloat("cutoff", ref cutoff);
 		ImGui.DragFloat("gravity", ref player.gravity);
-
 	}
 	
-		// Display double jump paramaters
-	public void displayDoubleJumpStats () {
-		// Set colors for the toggle switch
-		Vector4 onColour = new Vector4(0.2f, 0.7f, 0.2f, 1.0f);   // Green for 'On'
-		Vector4 offColour = new Vector4(0.7f, 0.2f, 0.2f, 1.0f);  // Red for 'Off'
-		
-		// Begin the toggle button
+	// tweak double jump values live
+	public void displayDoubleJumpStats() {
+		Vector4 onColour = new Vector4(0.2f, 0.7f, 0.2f, 1.0f);
+		Vector4 offColour = new Vector4(0.7f, 0.2f, 0.2f, 1.0f);
+
 		ImGui.PushStyleColor(ImGuiCol.Button, ColourToUint(doubleJump ? onColour : offColour));	
-		if (ImGui.Button(doubleJump ? "double jump" : "double jump", new System.Numerics.Vector2(650, 40)))
-		{
-			doubleJump = !doubleJump; // Toggle the boolean on button press
+		if (ImGui.Button(doubleJump ? "double jump" : "double jump", new System.Numerics.Vector2(650, 40))) {
+			doubleJump = !doubleJump;
 		}
 		ImGui.PopStyleColor();
-		
-		ImGui.DragFloat("dj air acc", ref djAirAcceleration);
 
+		ImGui.DragFloat("dj air acc", ref djAirAcceleration);
 	}
-	
-	private uint ColourToUint(Vector4 colour)
-	{
+
+	// helper to convert color to uint
+	private uint ColourToUint(Vector4 colour) {
 		uint r = (uint)(colour.X * 255.0f);
 		uint g = (uint)(colour.Y * 255.0f);
 		uint b = (uint)(colour.Z * 255.0f);

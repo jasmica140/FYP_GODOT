@@ -25,7 +25,7 @@ public partial class Cactus : Primitive
 		List<Vector2> validPositions = room.GetPositionsAboveFloorTiles();
 
 		if (validPositions.Count == 0) {
-			GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
+			//GD.Print($"⚠️ WARNING: No valid floor tile positions found for {this.GetType().Name}");
 			return false;
 		}
 

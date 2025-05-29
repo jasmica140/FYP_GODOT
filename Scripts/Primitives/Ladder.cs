@@ -6,13 +6,14 @@ using System.Linq;
 public partial class LadderTile : Atom {
 	
 	public LadderTile() {
-		SetTexture((Texture2D)GD.Load("res://Assets/Sprites/Tiles/ladder_mid.png")); // Replace with actual path
+		// set texture + size
+		SetTexture((Texture2D)GD.Load("res://Assets/Sprites/Tiles/ladder_mid.png"));
 		Size = new Vector2(70, 70);
 		
-		// Add a collision shape
+		// add collision
 		CollisionShape2D collision = new CollisionShape2D();
 		RectangleShape2D shape = new RectangleShape2D();
-		shape.Size = new Vector2(Size.X-20, Size.Y); 
+		shape.Size = new Vector2(Size.X - 20, Size.Y); 
 		
 		SetCollisionLayerValue(3, true);
 		SetCollisionMaskValue(1, true);
@@ -23,6 +24,7 @@ public partial class LadderTile : Atom {
 	}
 	
 	public override bool ValidatePlacement(Room room) {
+		// always valid
 		return true;
 	}
 }
@@ -34,24 +36,31 @@ public partial class Ladder : Primitive {
 
 	public Ladder() : base(Vector2.Zero) {
 		Category = PrimitiveCategory.MovementModifier;
-	}  // Required constructor
+	}
 
 	public Ladder(Vector2 position) : base(position) {}
 	
 	public override bool GenerateInRoom(Room room) {
-		
+		// convert to pixel position
 		this.Position = new Vector2(position.X * 70, position.Y * 70);
 		
-		if ((room.HasAtomAt(this.Position + new Vector2(70, 0)) && !room.HasAtomOfTypeAt(this.Position + new Vector2(70, 0), typeof(LadderTile)) )
-		|| (room.HasAtomAt(this.Position - new Vector2(70, 0))) && !room.HasAtomOfTypeAt(this.Position - new Vector2(70, 0), typeof(LadderTile)) ) 
-		{ return false; }
+		// check for walls on both sides
+		if ((room.HasAtomAt(this.Position + new Vector2(70, 0)) && !room.HasAtomOfTypeAt(this.Position + new Vector2(70, 0), typeof(LadderTile)))
+		|| (room.HasAtomAt(this.Position - new Vector2(70, 0)) && !room.HasAtomOfTypeAt(this.Position - new Vector2(70, 0), typeof(LadderTile)))) {
+			return false;
+		}
 		
+		// spawn ladder tiles
 		for (int y = 0; y < length; y++) {
 			LadderTile tile = new LadderTile();
-			tile.GlobalPosition = this.Position + new Vector2(0, y * 70); 
-			if (y == 0) { // change sprite for top tile
-				tile.SetTexture((Texture2D)GD.Load("res://Assets/Sprites/Tiles/ladder_top.png")); // Replace with actual path
-			} else if (y == length - 1) { // remove collision from bottom tile
+			tile.GlobalPosition = this.Position + new Vector2(0, y * 70);
+
+			// use top sprite
+			if (y == 0) {
+				tile.SetTexture((Texture2D)GD.Load("res://Assets/Sprites/Tiles/ladder_top.png"));
+			}
+			// remove collision on bottom
+			else if (y == length - 1) {
 				foreach (Node child in tile.GetChildren()) {
 					if (child is CollisionShape2D) {
 						tile.RemoveChild(child);
@@ -62,6 +71,8 @@ public partial class Ladder : Primitive {
 			}
 			AddAtom(tile);
 		}
+
+		// add floor tile under ladder if missing
 		if (!room.HasAtomBelow(new Vector2(position.X * 70, (position.Y + length - 1) * 70), typeof(FloorTile))) {
 			FloorTile tile = new FloorTile();
 			tile.GlobalPosition = new Vector2(position.X * 70, (position.Y + length) * 70);
@@ -71,32 +82,28 @@ public partial class Ladder : Primitive {
 		return room.AddPrimitive(this);
 	}
 	
-	public override void GenerateAnchors(Room room)
-	{
+	public override void GenerateAnchors(Room room) {
 		Anchors.Clear();
 
-		List<Atom> tiles = GetAtoms(); // This should return the ladder tiles
+		List<Atom> tiles = GetAtoms();
+		if (tiles.Count == 0) return;
 
-		if (tiles.Count == 0)
-			return;
-
-		// Sort by Y to identify top and bottom
+		// sort by height
 		tiles.Sort((a, b) => a.GlobalPosition.Y.CompareTo(b.GlobalPosition.Y));
 
 		Vector2 bottomPos = tiles.First().GlobalPosition;
 		Vector2 topPos = tiles.Last().GlobalPosition;
 
-		float orbit = 10f; // radius in pixels
+		float orbit = 10f;
 
 		Vector2 offsetUp = new Vector2(0, -tiles.First().Size.Y / 2);
 		Vector2 offsetDown = new Vector2(0, tiles.First().Size.Y / 2);
 		Vector2 offsetSide = new Vector2(tiles.First().Size.X / 2, 0);
 
-		// Side anchors
-		Anchor? prevCenter = null; // Use nullable to check if it's the first iteration
+		// add side + center anchors for each tile
+		Anchor? prevCenter = null;
 
-		foreach (Atom tile in tiles)
-		{
+		foreach (Atom tile in tiles) {
 			Vector2 pos = tile.GlobalPosition;
 			Anchor left = new Anchor(pos - offsetSide + offsetDown, orbit, "left", this);
 			Anchor right = new Anchor(pos + offsetSide + offsetDown, orbit, "right", this);
@@ -109,8 +116,8 @@ public partial class Ladder : Primitive {
 			InternalPaths.Add(new AnchorConnection(left, center));
 			InternalPaths.Add(new AnchorConnection(center, right));
 
-			if (prevCenter != null)
-			{
+			// connect this tile’s center to previous one
+			if (prevCenter != null) {
 				InternalPaths.Add(new AnchorConnection(prevCenter, center));
 			}
 

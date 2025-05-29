@@ -9,6 +9,7 @@ public class AnchorConnection
 	public Anchor To { get; }
 	public bool IsBidirectional { get; }
 
+	// sets up connection between two anchors
 	public AnchorConnection(Anchor from, Anchor to, bool isBidirectional = true)
 	{
 		From = from;
@@ -16,6 +17,7 @@ public class AnchorConnection
 		IsBidirectional = isBidirectional;
 	}
 	
+	// checks if any obstruction line crosses the connection
 	public bool IsConnectionObstructed(Room room)
 	{
 		foreach (Primitive p in room.Primitives)
@@ -29,10 +31,11 @@ public class AnchorConnection
 		return false;
 	}
 	
+	// basic line intersection check
 	public static bool DoLinesIntersect(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2)
 	{
 		float d = (p2.X - p1.X) * (q2.Y - q1.Y) - (p2.Y - p1.Y) * (q2.X - q1.X);
-		if (d == 0) return false; // parallel lines
+		if (d == 0) return false; // parallel
 
 		float u = ((q1.X - p1.X) * (q2.Y - q1.Y) - (q1.Y - p1.Y) * (q2.X - q1.X)) / d;
 		float v = ((q1.X - p1.X) * (p2.Y - p1.Y) - (q1.Y - p1.Y) * (p2.X - p1.X)) / d;
@@ -43,11 +46,12 @@ public class AnchorConnection
 
 public class Anchor
 {
-	public Vector2 Position { get; private set; } // World/global position
-	public float Radius { get; private set; }     // The orbit radius
-	public string Type { get; private set; }      // e.g., "top", "bottom", "jump_arc", etc.
+	public Vector2 Position { get; private set; } // global pos
+	public float Radius { get; private set; }     // orbit radius
+	public string Type { get; private set; }      // like top, bottom, jump_arc, etc
 	public Primitive Owner { get; private set; }
 
+	// creates anchor
 	public Anchor(Vector2 position, float radius, string type, Primitive owner = null)
 	{
 		Position = position;
@@ -75,12 +79,13 @@ public class Anchor
 		return $"Anchor({Position}, {Type})";
 	}
 
-	// Check if another anchor is close enough to connect
+	// checks if two anchors are close enough to connect
 	public bool IsConnectedTo(Anchor other)
 	{
 		return Position.DistanceTo(other.Position) <= (Radius + other.Radius);
 	}
 	
+	// picks random point in orbit
 	public Vector2 GetRandomNearbyPoint()
 	{
 		Random rand = new Random();
@@ -90,17 +95,19 @@ public class Anchor
 		return Position + new Vector2(dx, dy);
 	}
 	
+	// redraw anchor in editor
 	public void DebugDraw()
 	{
 		if (Owner is Node2D node)
 		{
-			node.QueueRedraw(); // ask Godot to call _Draw
+			node.QueueRedraw();
 		}
 	}
 }
 
 public static class AnchorConnector
 {
+	// tries to grow room by adding new primitives near anchors
 	public static void ExpandRoomFromAnchors(Room room, int expansionLimit = 10)
 	{
 		int expansions = 0;
@@ -134,9 +141,10 @@ public static class AnchorConnector
 		}
 	}
 	
+	// tries to connect every anchor to every other anchor
 	public static void ConnectAnchors(Room room)
 	{
-		var allAnchors = room.GetAllAnchors(); // however you're storing them
+		var allAnchors = room.GetAllAnchors();
 
 		for (int i = 0; i < allAnchors.Count; i++)
 		{
@@ -145,18 +153,15 @@ public static class AnchorConnector
 				Anchor a1 = allAnchors[i];
 				Anchor a2 = allAnchors[j];
 
-				GD.Print($"🧲 Checking anchor from {a1.Owner.GetType().Name} ({a1.Type}) at {a1.Position} " +
-						 $"to {a2.Owner.GetType().Name} ({a2.Type}) at {a2.Position}");
-
 				if (a1.IsConnectedTo(a2))
 				{
-					GD.Print($"✅ Anchors CONNECTED: {a1.Owner.GetType().Name} → {a2.Owner.GetType().Name}");
-					// Optionally place a connector primitive or visual
+					// debug print goes here if needed
 				}
 			}
 		}
 	}
 
+	// picks random primitive type using weighted probs
 	private static Type GetRandomWeightedPrimitive(Type from, Dictionary<Type, float> compatibleTypes, Random rng)
 	{
 		float total = compatibleTypes.Values.Sum();
@@ -172,11 +177,12 @@ public static class AnchorConnector
 		return null;
 	}
 	
+	// removes internal anchor paths if another primitive blocks them
 	public static void RemoveIntersectingAnchorConnections(Room room)
 	{
 		foreach (Primitive primitive in room.Primitives)
 		{
-			if (primitive is Pit || primitive is Water) { continue; }
+			if (primitive is Pit || primitive is Water) continue;
 			
 			List<AnchorConnection> toRemove = new List<AnchorConnection>();
 
@@ -184,7 +190,6 @@ public static class AnchorConnector
 			{
 				foreach (Primitive other in room.Primitives)
 				{
-					// Skip obstruction checks from the same primitive
 					if (other == primitive)
 						continue;
 
@@ -206,22 +211,20 @@ public static class AnchorConnector
 		}
 	}
 	
+	// fancy line intersection check with collinearity handling
 	public static bool DoLinesIntersect(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2)
 	{
-		// If either endpoint of anchor connection lies on the obstruction line → allow it
+		// skip if endpoint lies directly on obstruction
 		if (PointOnSegment(b1, b2, a1) || PointOnSegment(b1, b2, a2))
 			return false;
 
-		// Orientation helper
 		int Orientation(Vector2 p, Vector2 q, Vector2 r)
 		{
-			float val = (q.Y - p.Y) * (r.X - q.X) - 
-						(q.X - p.X) * (r.Y - q.Y);
+			float val = (q.Y - p.Y) * (r.X - q.X) - (q.X - p.X) * (r.Y - q.Y);
 			if (Mathf.Abs(val) < 0.00001f) return 0; // collinear
 			return (val > 0) ? 1 : 2;
 		}
 
-		// Checks if q lies on line segment pr
 		bool PointOnSegment(Vector2 p, Vector2 r, Vector2 q)
 		{
 			return q.X <= Mathf.Max(p.X, r.X) && q.X >= Mathf.Min(p.X, r.X) &&
@@ -234,11 +237,10 @@ public static class AnchorConnector
 		int o3 = Orientation(b1, b2, a1);
 		int o4 = Orientation(b1, b2, a2);
 
-		// General case
 		if (o1 != o2 && o3 != o4)
 			return true;
 
-		// Special case: collinear and overlapping
+		// collinear + overlapping
 		if (o1 == 0 && PointOnSegment(a1, a2, b1)) return true;
 		if (o2 == 0 && PointOnSegment(a1, a2, b2)) return true;
 		if (o3 == 0 && PointOnSegment(b1, b2, a1)) return true;

@@ -139,7 +139,7 @@ public partial class ImGuiController : Node
 	{
 		if (_window.ContentScaleMode == Window.ContentScaleModeEnum.Viewport)
 		{
-			GD.PrintErr("imgui-godot: scale mode `viewport` is unsupported");
+			//GD.PrintErr("imgui-godot: scale mode `viewport` is unsupported");
 		}
 	}
 
